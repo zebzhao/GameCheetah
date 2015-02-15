@@ -4,7 +4,7 @@
   <output>
     <movie outputType="Application" />
     <movie input="" />
-    <movie path="bin\EvoSky.swf" />
+    <movie path="bin\Main.swf" />
     <movie fps="30" />
     <movie width="800" />
     <movie height="600" />
@@ -15,7 +15,7 @@
   </output>
   <!-- Other classes to be compiled into your SWF -->
   <classpaths>
-    <class path="src rel-obfus" />
+    <class path="src" />
   </classpaths>
   <!-- Build options -->
   <build>

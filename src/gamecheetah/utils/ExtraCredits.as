@@ -114,7 +114,7 @@ package gamecheetah.utils
 		private var _copyrights:Vector.<String> = new < String > [
 			"Contributions\nSpecial thanks to:   ",
 			"Martin Kallman\ncollision-as3 (c) 2012",
-			"Chevy Ray Johnston\nFlashpunk (c) 2015",
+			"Chevy Ray Johnston\nFlashpunk (c) 2013",
 			"Keith Peters\nMinimalComps (c) 2011",
 			"Oyvind Nordhagen\nBindMax (c) 2011",
 			"Zeb Zhao\nGameCheetah 1.0 (c) 2015\nwww.gamecheetah.net"];

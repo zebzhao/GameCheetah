@@ -83,8 +83,8 @@ package gamecheetah.designer.views
 			tagLabel = new Label(window.content, 0, 0, "Tag");
 			classCombo = new ComboBox(window.content);
 			
-			mouseEnabledButton = new IconPushButton(window.content, 0, 0, "Mouse Enabled", new Assets.Start, defaultButton_Click);
-			openButton = new IconPushButton(window.content, 0, 0, "Open", new Assets.Open2, openButton_Click);
+			mouseEnabledButton = new IconPushButton(window.content, 0, 0, "Mouse Enabled", new Assets.MouseEnabled, defaultButton_Click);
+			openButton = new IconPushButton(window.content, 0, 0, "Open", new Assets.Open, openButton_Click);
 			sxInput = new TypedInput(window.content, 0, 0, TypedInput.TYPE_INTEGER);
 			syInput = new TypedInput(window.content, 0, 0, TypedInput.TYPE_INTEGER);
 			sxLabel = new Label(window.content, 0, 0, "SX");

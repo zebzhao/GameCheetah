@@ -11,67 +11,58 @@ package gamecheetah.designer.views
 	 */
 	public class Assets
 	{	
-		[Embed(source = "/../lib/Icons/gnome_input_mouse.png")]
-		public static var Mouse:Class;
+		//[Embed(source = "/../lib/Icons/tango-image-missing.png")]
+		//public static var Pencil:Class;
+		//
+		//[Embed(source = "/../lib/Icons/tango-image-missing.png")]
+		//public static var Eraser:Class;
+		//
+		//[Embed(source = "/../lib/Icons/tango-image-missing.png")]
+		//public static var Clear:Class;
+		//
+		//[Embed(source = "/../lib/Icons/tango-image-missing.png")]
+		//public static var BucketFill:Class;
 		
-		[Embed(source = "/../lib/Icons/pen_marker.png")]
-		public static var Pencil:Class;
+		[Embed(source = "/../lib/Icons/tango-input-mouse.png")]
+		public static var MouseEnabled:Class;
 		
-		[Embed(source = "/../lib/Icons/gnome_edit_clear.png")]
-		public static var Eraser:Class;
-		
-		[Embed(source = "/../lib/Icons/gnome_insert_object.png")]
-		public static var Start:Class;
-		
-		[Embed(source = "/../lib/Icons/gnome_emblem_unreadable.png")]
+		[Embed(source = "/../lib/Icons/tango-go-home.png")]
 		public static var Mark:Class;
 		
-		[Embed(source = "/../lib/Icons/gnome_colors_emblem_desktop.png")]
+		[Embed(source = "/../lib/Icons/tango-emblem-symbolic-link.png")]
 		public static var Open:Class;
 		
-		[Embed(source = "/../lib/Icons/gnome_colors_emblem_green.png")]
-		public static var Open2:Class;
-		
-		[Embed(source = "/../lib/Icons/gnome_media_eject.png")]
+		[Embed(source = "/../lib/Icons/tango-document-save.png")]
 		public static var Save:Class;
 		
-		[Embed(source = "/../lib/Icons/gnome_folder_saved_search.png")]
+		[Embed(source = "/../lib/Icons/tango-folder-saved-search.png")]
 		public static var Load:Class;
 		
-		[Embed(source = "/../lib/Icons/back.png")]
+		[Embed(source = "/../lib/Icons/tango-go-previous.png")]
 		public static var Arrow:Class;
 		
-		[Embed(source = "/../lib/Icons/gnome_list_add.png")]
+		[Embed(source = "/../lib/Icons/tango-list-add.png")]
 		public static var Add:Class;
 		
-		[Embed(source = "/../lib/Icons/gnome_list_remove.png")]
+		[Embed(source = "/../lib/Icons/tango-list-remove.png")]
 		public static var Remove:Class;
 		
-		[Embed(source = "/../lib/Icons/bullet_arrow_up.png")]
+		[Embed(source = "/../lib/Icons/arrow-up.png")]
 		public static var Up:Class;
 		
-		[Embed(source = "/../lib/Icons/bullet_arrow_down.png")]
+		[Embed(source = "/../lib/Icons/arrow-down.png")]
 		public static var Down:Class;
 		
-		[Embed(source = "/../lib/Icons/gnome_view_fullscreen_small.png")]
+		[Embed(source = "/../lib/Icons/tango-view-fullscreen.png")]
 		public static var AutoScale:Class;
 		
-		[Embed(source = "/../lib/Icons/gnome_edit_undo.png")]
+		[Embed(source = "/../lib/Icons/tango-edit-undo.png")]
 		public static var Undo:Class;
 		
-		[Embed(source = "/../lib/Icons/gnome_user_trash_full.png")]
-		public static var Trash:Class;
-		
-		[Embed(source = "/../lib/Icons/paintbucket.png")]
-		public static var BucketFill:Class;
-		
-		[Embed(source = "/../lib/Icons/gnome_zoom_in.png")]
+		[Embed(source = "/../lib/Icons/tango-list-add.png")]
 		public static var ZoomIn:Class;
 		
-		[Embed(source = "/../lib/Icons/gnome_zoom_out.png")]
+		[Embed(source = "/../lib/Icons/tango-list-remove.png")]
 		public static var ZoomOut:Class;
-		
-		[Embed(source = "/../lib/Icons/gnome_input_gaming.png")]
-		public static var Play:Class;
 	}
 }

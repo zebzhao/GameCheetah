@@ -89,6 +89,7 @@ package gamecheetah.designer.views
 		override protected function initialize():void 
 		{
 			classCombo.items = Engine.__entityClasses;
+			classCombo.defaultLabel = "[Select a Registered Entity Class]"
 			accordian.getWindowAt(0).minimized = false;
 			tagInput.textField.background = true;
 			tagInput.textField.backgroundColor = Style.BACKGROUND;
@@ -587,6 +588,7 @@ class CollisionPanel extends InterfaceGroup
 		{
 			if (selectedMaskFrame >= 0)
 			{
+				// Redraw the collision object on the mask canvas
 				maskCanvas.image = _selectedGraphic._frameImages[selectedMaskFrame];
 				maskCanvas.setMask(_selectedGraphic._frameMasks[selectedMaskFrame]);
 			}
@@ -605,6 +607,8 @@ class CollisionPanel extends InterfaceGroup
 				
 				if (_selectedGraphic._frameMasks[i] is Rectangle)
 					itemEntry += "\tRectangle";
+				if (_selectedGraphic._frameMasks[i] is Point)
+					itemEntry += "\tPoint";
 				else if (_selectedGraphic._frameMasks[i] is BitmapData)
 					itemEntry += "\tPixel Mask";
 				else
@@ -621,7 +625,7 @@ class CollisionPanel extends InterfaceGroup
 	
 	private function mask_Selected(e:Event):void 
 	{
-		if (selectedMaskFrame >= 0)
+		if (selectedMaskFrame >= 0 && _selectedGraphic.hasSpritesheet)
 			_selectedGraphic._frameMasks[selectedMaskFrame] = new BitmapData(_selectedGraphic.frameRect.width, _selectedGraphic.frameRect.height, true, 0);
 		updateMask();
 	}

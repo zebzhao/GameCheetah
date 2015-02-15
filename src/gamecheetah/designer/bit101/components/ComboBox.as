@@ -396,6 +396,7 @@ package gamecheetah.designer.bit101.components
 		public function set items(value:Array):void
 		{
 			_list.items = value;
+			setLabelButtonLabel();
 		}
 		public function get items():Array
 		{

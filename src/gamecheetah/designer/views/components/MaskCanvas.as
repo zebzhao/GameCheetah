@@ -31,22 +31,22 @@ package gamecheetah.designer.views.components
 			bitmapMask:Bitmap,
 			shape:Shape,
 			rect:Rectangle,
+			point:Point,
 			
 			noneRadioButton:RadioButton,
 			rectangleRadioButton:RadioButton,
 			maskRadioButton:RadioButton,
 			pointRadioButton:RadioButton,
 			
-			pencilButton:IconPushButton,
-			eraserButton:IconPushButton,
-			fillButton:IconPushButton,
-			trashButton:IconPushButton,
-			loadButton:IconPushButton;
+			penButton:PushButton,
+			eraseButton:PushButton,
+			fillButton:PushButton,
+			clearButton:PushButton,
+			loadButton:PushButton;
 			
 		protected var
 			bitmapData:BitmapData,
-			mouseDown:Boolean, mousePos:Point,
-			selectedButton:IconPushButton;
+			mouseDown:Boolean, mousePos:Point;
 			
 		
 		public function MaskCanvas(parent:DisplayObjectContainer=null, xpos:Number=0, ypos:Number=0)
@@ -66,7 +66,7 @@ package gamecheetah.designer.views.components
 				
 				// Draw rectangle in shape object.
 				shape.graphics.clear();
-				shape.graphics.beginFill(0xff00ffcc, 0.5);
+				shape.graphics.beginFill(0xff00ffaa, 0.5);
 				this.rect = value as Rectangle;
 				shape.graphics.drawRect(rect.x, rect.y, rect.width, rect.height);
 				shape.graphics.endFill();
@@ -88,8 +88,16 @@ package gamecheetah.designer.views.components
 			{
 				pointRadioButton.selected = true;
 				updateIcons();
-				// Make bitmap mask invisible and shape invisible.
-				shape.visible = false;
+				
+				// Draw rectangle in shape object.
+				shape.graphics.clear();
+				shape.graphics.beginFill(0xff00ffaa, 0.5);
+				this.point = value as Point;
+				shape.graphics.drawCircle(point.x, point.y, 2.5);
+				shape.graphics.endFill();
+				
+				// Make bitmap mask invisible and shape visible.
+				shape.visible = true;
 				bitmapMask.bitmapData = null;
 			}
 			else
@@ -114,22 +122,21 @@ package gamecheetah.designer.views.components
 			maskRadioButton = new RadioButton(this, 0, 0, "Mask", false, radioButton_Select);
 			pointRadioButton = new RadioButton(this, 0, 0, "Point", false, radioButton_Select);
 			
-			pencilButton = new IconPushButton(this, 0, 0, "", new Assets.Pencil, pencilButton_Click);
-			eraserButton = new IconPushButton(this, 0, 0, "", new Assets.Eraser, eraserButton_Click);
-			fillButton = new IconPushButton(this, 0, 0, "", new Assets.BucketFill, fillButton_Click);
-			trashButton = new IconPushButton(this, 0, 0, "", new Assets.Trash, trashButton_Click);
-			loadButton = new IconPushButton(this, 0, 0, "", new Assets.Load, loadButton_Click);
+			penButton = new PushButton(this, 0, 0, "Pen", penButton_Click);
+			eraseButton = new PushButton(this, 0, 0, "Erase", eraseButton_Click);
+			fillButton = new PushButton(this, 0, 0, "Fill", fillButton_Click);
+			clearButton = new PushButton(this, 0, 0, "Clear", clearButton_Click);
+			loadButton = new PushButton(this, 0, 0, "Load", loadButton_Click);
 		}
 		
 		override protected function initialize():void 
 		{
 			super.initialize();
 			
-			loadButton.backgroundVisible = false;
-			pencilButton.backgroundVisible = false;
-			eraserButton.backgroundVisible = false;
-			fillButton.backgroundVisible = false;
-			trashButton.backgroundVisible = false;
+			penButton.toggle = true;
+			eraseButton.toggle = true;
+			fillButton.toggle = true;
+			
 			updateIcons();
 			
 			mousePos = new Point();
@@ -150,17 +157,17 @@ package gamecheetah.designer.views.components
 		{
 			super.onResize();
 			
-			loadButton.setSize(22, 22);
-			loadButton.x = 5;
-			pencilButton.setSize(22, 22);
-			pencilButton.x = _width - 125;
-			eraserButton.setSize(22, 22);
-			eraserButton.x = _width - 95;
-			fillButton.setSize(22, 22);
-			fillButton.x = _width - 65;
-			trashButton.setSize(22, 22);
-			trashButton.x = _width - 35;
-			loadButton.y = pencilButton.y = eraserButton.y = fillButton.y = trashButton.y = _height - 26;
+			loadButton.setSize(_width / 5 + 1, 22);
+			loadButton.x = 0;
+			penButton.setSize(loadButton.width, 22);
+			penButton.x = loadButton.right;
+			eraseButton.setSize(loadButton.width, 22);
+			eraseButton.x = penButton.right;
+			fillButton.setSize(loadButton.width, 22);
+			fillButton.x = eraseButton.right;
+			clearButton.setSize(loadButton.width, 22);
+			clearButton.x = fillButton.right;
+			loadButton.y = penButton.y = eraseButton.y = fillButton.y = clearButton.y = _height - 22;
 			
 			noneRadioButton.move(10, super.pane.bottom + 8);
 			pointRadioButton.move(noneRadioButton.right + 10, noneRadioButton.y);
@@ -171,28 +178,25 @@ package gamecheetah.designer.views.components
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//{ UI input event listeners
 		
-		private function pencilButton_Click(e:Event):void 
+		private function penButton_Click(e:Event):void 
 		{
-			if (selectedButton != null) selectedButton.alpha = 1;
-			selectedButton = pencilButton;
-			selectedButton.alpha = 0.3;
+			eraseButton.selected = false;
+			fillButton.selected = false;
 		}
 		
-		private function eraserButton_Click(e:Event):void 
+		private function eraseButton_Click(e:Event):void 
 		{
-			if (selectedButton != null) selectedButton.alpha = 1;
-			selectedButton = eraserButton;
-			selectedButton.alpha = 0.3;
+			penButton.selected = false;
+			fillButton.selected = false;
 		}
 		
 		private function fillButton_Click(e:Event):void 
 		{
-			if (selectedButton != null) selectedButton.alpha = 1;
-			selectedButton = fillButton;
-			selectedButton.alpha = 0.3;
+			penButton.selected = false;
+			eraseButton.selected = false;
 		}
 		
-		private function trashButton_Click(e:Event):void 
+		private function clearButton_Click(e:Event):void 
 		{
 			if (bitmapMask.bitmapData != null)
 				bitmapMask.bitmapData.fillRect(bitmapMask.bitmapData.rect, 0);
@@ -205,8 +209,8 @@ package gamecheetah.designer.views.components
 		
 		private function updateIcons():void 
 		{
-			loadButton.alpha = pencilButton.alpha = eraserButton.alpha = fillButton.alpha = trashButton.alpha = maskRadioButton.selected ? 1 : 0;
-			loadButton.enabled = pencilButton.enabled = eraserButton.enabled = fillButton.enabled = trashButton.enabled = maskRadioButton.selected;
+			loadButton.alpha = penButton.alpha = eraseButton.alpha = fillButton.alpha = clearButton.alpha = maskRadioButton.selected ? 1 : 0;
+			loadButton.enabled = penButton.enabled = eraseButton.enabled = fillButton.enabled = clearButton.enabled = maskRadioButton.selected;
 		}
 		
 		private function radioButton_Select(e:Event):void 
@@ -225,21 +229,31 @@ package gamecheetah.designer.views.components
 		private function pane_onMouseDown(e:MouseEvent):void 
 		{
 			// Start draw mode.
-			mousePos.setTo(int(e.localX - bitmapMask.x), int(e.localY - bitmapMask.y));
+			mousePos.setTo(int(e.localX - bitmapMask.x), int(e.localY - bitmapMask.y));  // Relative position
 			
 			if (e.buttonDown)
 			{
 				mouseDown = true;
 				
-				if (bitmapMask.bitmapData != null)
+				if (pointRadioButton.selected)
 				{
-					if (selectedButton == pencilButton)
+					point.setTo(mousePos.x, mousePos.y);
+					
+					// Redraw point in a different color
+					shape.graphics.clear();
+					shape.graphics.beginFill(0xff0000, 0.5);
+					shape.graphics.drawCircle(point.x, point.y, 2.5);
+					shape.graphics.endFill();
+				}
+				else if (maskRadioButton.selected)
+				{
+					if (penButton.selected)
 						bitmapMask.bitmapData.setPixel32(mousePos.x, mousePos.y, 0xFFFF0000);
 						
-					if (selectedButton == eraserButton)
+					else if (eraseButton.selected)
 						bitmapMask.bitmapData.setPixel32(mousePos.x, mousePos.y, 0);
 						
-					else if (selectedButton == fillButton)
+					else if (fillButton.selected)
 						bitmapMask.bitmapData.floodFill(mousePos.x, mousePos.y, 0xFFFF0000);
 				}
 			}
@@ -256,10 +270,10 @@ package gamecheetah.designer.views.components
 			{
 				if (mouseDown && bitmapMask.bitmapData != null)
 				{
-					if (selectedButton == pencilButton || selectedButton == eraserButton)
+					if (penButton.selected || eraseButton.selected)
 					{
 						drawLine(bitmapMask.bitmapData, int(mousePos.x), int(mousePos.y), int(e.localX - bitmapMask.x), int(e.localY - bitmapMask.y),
-							selectedButton == eraserButton ? 0 : 0xFFFF0000);
+							eraseButton.selected ? 0 : 0xFFFF0000);
 						mousePos.setTo(int(e.localX - bitmapMask.x), int(e.localY - bitmapMask.y));
 					}
 				}
