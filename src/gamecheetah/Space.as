@@ -19,7 +19,7 @@ package gamecheetah
 	use namespace hidden;
 	
 	/**
-	 * A container which provides the means to spatially manage a group of Entity objects.
+	 * A container spatially manages a group of Entity objects.
 	 * @author 		Zeb Zhao {zeb.zhao(at)gamecheetah[dot]net}
 	 */
 	public class Space extends Restorable
@@ -98,19 +98,19 @@ package gamecheetah
 		public var paused:Boolean;
 		
 		/**
-		 * [Read-only] Entity currently under the cursor if mouseEnabled property is true.
+		 * Entity currently under the cursor if mouseEnabled property is true.
 		 */
 		public function get mouseFocus():Entity { return _mouseFocus };
 		private var _mouseFocus:Entity;
 		
 		/**
-		 * [Read-only] Name or tag of this Space object.
+		 * Name or tag of this Space object.
 		 */
 		public function get tag():String { return _tag };
 		hidden var _tag:String;
 		
 		/**
-		 * [Read-only] Spatial bounds of the container.
+		 * Spatial bounds of the container.
 		 */
 		public function get bounds():Rectangle { return _bounds };
 		hidden var _bounds:Rectangle;
@@ -125,16 +125,16 @@ package gamecheetah
 		private var _totalPixelCollisionChecks:uint;
 		
 		/**
-		 * [Read-only] Number of entities that are rendered.
+		 * Number of entities that are rendered.
 		 */
-		public function get onScreenCount():uint
+		public function get screenCount():uint
 		{
-			return _onScreenCount;
+			return _screenCount;
 		}
-		private var _onScreenCount:uint;
+		private var _screenCount:uint;
 		
 		/**
-		 * [Read-only] Total number of entities in the space.
+		 * Total number of entities in the space.
 		 */
 		public function get totalEntities():uint
 		{
@@ -142,7 +142,7 @@ package gamecheetah
 		}
 		
 		/**
-		 * [Read-only] True if this is the active space.
+		 * True if this is the active space.
 		 */
 		public function get active():Boolean
 		{
@@ -151,7 +151,7 @@ package gamecheetah
 		private var _active:Boolean;
 		
 		/**
-		 * [Read-only] The starting location of the camera.
+		 * The starting location of the camera.
 		 */
 		public function get startLocation():Point 
 		{
@@ -165,7 +165,7 @@ package gamecheetah
 		hidden var invokeCallbacks:Boolean = true;
 		
 		/**
-		 * [Read-only] Returns a copy of the internally stored entity array.
+		 * Returns a copy of the internally stored entity array.
 		 */
 		public function get entities():Array 
 		{
@@ -194,7 +194,7 @@ package gamecheetah
 		public var state:State;
 		
 		/**
-		 * [Read-only] Bounds of the render area rectangle.
+		 * Bounds of the render area rectangle.
 		 */
 		public function get screenBounds():Rectangle 
 		{
@@ -361,12 +361,12 @@ package gamecheetah
 			
 			if (agents == null)
 			{
-				_onScreenCount = 0;
+				_screenCount = 0;
 				return;
 			}
 			
 			// Update number of entities on screen.
-			_onScreenCount = agents.length;
+			_screenCount = agents.length;
 			
 			// Reset entity onScreen status.
 			var entity:Entity;

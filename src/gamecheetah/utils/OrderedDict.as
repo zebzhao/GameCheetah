@@ -17,7 +17,7 @@ package gamecheetah.utils
 	public class OrderedDict extends Restorable
 	{
 		/**
-		 * [Read-only] Return ordered array of values.
+		 * Return ordered array of values.
 		 */
 		public function get values():Array 
 		{
@@ -25,7 +25,7 @@ package gamecheetah.utils
 		}
 		
 		/**
-		 * [Read-only] Return ordered array of keys.
+		 * Return ordered array of keys.
 		 */
 		public function get keys():Array
 		{

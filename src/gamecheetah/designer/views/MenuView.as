@@ -159,7 +159,7 @@ class GameMenu extends InterfaceGroup
 		if (_state == 0)
 			infoButton.label = "FPS: " + _fps;
 		else if (_state == 1)
-			infoButton.label = "On-Screen: " + Engine.space.onScreenCount.toString() + " / " + Engine.space.totalEntities;
+			infoButton.label = "On-Screen: " + Engine.space.screenCount.toString() + " / " + Engine.space.totalEntities;
 	}
 	
 	private function scroller_Move(e:Event):void 

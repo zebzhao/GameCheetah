@@ -21,7 +21,7 @@ package gamecheetah.graphics
 		public var looping:Boolean;
 		
 		/**
-		 * [Read-only] Animation name.
+		 * Animation name.
 		 */
 		public function get tag():String 
 		{

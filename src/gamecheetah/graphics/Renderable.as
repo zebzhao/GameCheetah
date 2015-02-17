@@ -80,7 +80,7 @@ package gamecheetah.graphics
 		public var transformAnchor:Point = new Point;
 		
 		/**
-		* [Read-only] Current image to render.
+		* Current image to render.
 		*/
 		public function get buffer():BitmapData { return _buffer; }
 		protected function setBuffer(value:BitmapData):void 
@@ -103,7 +103,7 @@ package gamecheetah.graphics
 		protected var _buffer:BitmapData;
 		
 		/**
-		 * [Read-only] The assigned to entity.
+		 * The assigned to entity.
 		 */
 		public function get entity():Entity { return _entity; }
 		

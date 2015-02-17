@@ -124,7 +124,7 @@ package gamecheetah.designer.views
 			
 			// Update status label
 			var memUsage:String = Number(System.totalMemory / 1024 / 1024).toFixed(2) + " MB";
-			statusLabel.text = "FPS: " + _fps + "    MEM: " + memUsage + "    EoS: " + Engine.space.onScreenCount.toString() + " / " +  Engine.space.totalEntities +
+			statusLabel.text = "FPS: " + _fps + "    MEM: " + memUsage + "    EoS: " + Engine.space.screenCount.toString() + " / " +  Engine.space.totalEntities +
 				"    PxCC: " + Engine.space.totalPixelCollisionChecks.toString() + "    Press 'Esc' to exit Play mode.";
 			
 			// Update debug watcher

@@ -35,7 +35,7 @@ package gamecheetah.designer
 		public static var instance:Designer;
 		
 		/**
-		 * [Read-only] Stores event identifiers.
+		 * Stores event identifiers.
 		 */
 		public static function get events():Events { return Events.instance };
 		

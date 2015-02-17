@@ -25,7 +25,7 @@ package gamecheetah.graphics
 		public static const ALIGN_JUSTIFY:String = "justify";
 		
 		/**
-		 * [Read-only] The text format object for this text Graphic.
+		 * The text format object for this text Graphic.
 		 */
 		public function get format():TextFormat 
 		{

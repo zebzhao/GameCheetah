@@ -18,7 +18,7 @@ package gamecheetah
 	use namespace hidden;
 	
 	/**
-	 * Extendable this class for handling game logic of graphics.
+	 * Extendable class for handling game logic of graphics.
 	 * @author 		Zeb Zhao {zeb.zhao(at)gamecheetah[dot]net}
 	 */
 	public class Entity extends Restorable 
@@ -59,7 +59,7 @@ package gamecheetah
 		private var _halfWidth:Number, _halfHeight:Number;
 		
 		/**
-		 * [Read-only] The renderable casted as a Clip object. Null if renderable is not a Clip.
+		 * The renderable casted as a Clip object. Null if renderable is not a Clip.
 		 */
 		public final function get clip():Clip 
 		{
@@ -149,7 +149,7 @@ package gamecheetah
 		hidden var _graphicTag:String;
 		
 		/**
-		 * [Read-only] Parent container of this entity.
+		 * Parent container of this entity.
 		 */
 		public final function get space():Space 
 		{
@@ -197,7 +197,7 @@ package gamecheetah
 		public var location:Point = new Point();
 		
 		/**
-		 * [Read-only] Center of the entity in Space object.
+		 * Center of the entity in Space object.
 		 */
 		public final function get center():Point 
 		{
@@ -217,7 +217,7 @@ package gamecheetah
 		public var origin:Point = new Point();
 		
 		/**
-		 * [Read-only] The absolute position is the sum of the origin and relative location.
+		 * The absolute position is the sum of the origin and relative location.
 		 */
 		public final function get absoluteLocation():Point
 		{
@@ -227,7 +227,7 @@ package gamecheetah
 		private var _absoluteLocation:Point = new Point();
 		
 		/**
-		 * [Read-only] The absolute center is the sum of the origin and relative center.
+		 * The absolute center is the sum of the origin and relative center.
 		 */
 		public final function get absoluteCenter():Point
 		{
@@ -237,7 +237,7 @@ package gamecheetah
 		private var _absoluteCenter:Point = new Point();
 		
 		/**
-		 * [Read-only] Gets the bounding rectangle for the entity.
+		 * Gets the bounding rectangle for the entity.
 		 */
 		public final function get bounds():Rectangle 
 		{
@@ -245,7 +245,7 @@ package gamecheetah
 		}
 		
 		/**
-		 * [Read-only] Properties this entity.
+		 * Properties this entity.
 		 */
 		/*public function get properties():Array 
 		{
@@ -255,7 +255,7 @@ package gamecheetah
 		
 		
 		/**
-		 * [Read-only] True if renderable is created.
+		 * True if renderable is created.
 		 */
 		public final function get activated():Boolean 
 		{

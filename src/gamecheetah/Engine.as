@@ -41,12 +41,12 @@ package gamecheetah
 		public static const assets:Assets = new Assets();
 		
 		/**
-		 * [Read-only] Stores event identifiers.
+		 * Stores event identifiers.
 		 */
 		public static function get events():Events { return Events.instance };
 		
 		/**
-		 * [Read-only] Singleton instance of the engine.
+		 * Singleton instance of the engine.
 		 */
 		public static function get instance():Engine { return _singleton };
 		
@@ -57,7 +57,7 @@ package gamecheetah
 		public static var paused:Boolean;
 		
 		/**
-		 * [Read-only] True if the Engine is currently in "design" mode.
+		 * True if the Engine is currently in "design" mode.
 		 */
 		public static function get designMode():Boolean { return _designMode; }
 		hidden static var _designMode:Boolean;
@@ -93,31 +93,31 @@ package gamecheetah
 		public static var menu:ContextMenu;
 		
 		/**
-		 * [Read-only] True if the current stage size is fixed
+		 * True if the current stage size is fixed
 		 */
 		public static function get stageSizeFixed():Boolean { return _stageSizeFixed; }
 		private static var _stageSizeFixed:Boolean;
 		
 		/**
-		 * [Read-only] Flash player stage object.
+		 * Flash player stage object.
 		 */
 		public static function get stage():Stage { return _stage; }
 		private static var _stage:Stage;
 		
 		/**
-		 * [Read-only] BitmapData canvas for graphics.
+		 * BitmapData canvas for graphics.
 		 */
 		public static function get buffer():BitmapData { return _buffer };
 		private static var _buffer:BitmapData;
 		
 		/**
-		 * [Read-only] Bitmap for the buffer.
+		 * Bitmap for the buffer.
 		 */
 		public static function get bitmap():Bitmap { return _bitmap };
 		private static var _bitmap:Bitmap;
 		
 		/**
-		 * [Read-only] Display object of the buffer bitmap.
+		 * Display object of the buffer bitmap.
 		 * BUG: Bitmap mouse events not propagated to top-level sprite object.
 		 */
 		public static const displayObject:Sprite = new Sprite();
@@ -128,19 +128,19 @@ package gamecheetah
 		public static var frameElapsed:uint;
 		
 		/**
-		 * [Read-only] Returns the current active console.
+		 * Returns the current active console.
 		 */
 		public static function get console():Space { return _console; }
 		private static var _console:Space;
 		
 		/**
-		 * [Read-only] The current space container.
+		 * The current space container.
 		 */
 		public static function get space():Space { return _space; }
 		private static var _space:Space;
 		
 		/**
-		 * [Read-only] Prints these variables in the debug watcher. Converts objects to strings using its toString() method.
+		 * Prints these variables in the debug watcher. Converts objects to strings using its toString() method.
 		 */
 		public static const debugWatcher:Object = new Object;
 		

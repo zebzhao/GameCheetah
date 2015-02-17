@@ -16,7 +16,7 @@ package gamecheetah
 	use namespace hidden;
 	
 	/**
-	 * Factory object used to create new Clip objects on the screen.
+	 * Factory object used to create Clip objects on the screen.
 	 * @author 		Zeb Zhao {zeb.zhao(at)gamecheetah[dot]net}
 	 * @version		1.0
 	 */
@@ -50,7 +50,7 @@ package gamecheetah
 		hidden var _collideWith:Array = [];
 		
 		/**
-		 * [Read-only] Unique identifier for this Graphic.
+		 * Unique identifier for this Graphic.
 		 */
 		public function get tag():String 
 		{
@@ -100,7 +100,7 @@ package gamecheetah
 		
 		
 		/**
-		 * [Read-only] Unique identifier for this Graphic.
+		 * Unique identifier for this Graphic.
 		 */
 		public function get hasSpritesheet():Boolean 
 		{
@@ -142,19 +142,19 @@ package gamecheetah
 		
 		
 		/**
-		 * [Read-only] The collision group id used for this Graphic. Finds collidable partners using bitwise AND.
+		 * The collision group id used for this Graphic. Finds collidable partners using bitwise AND.
 		 */
 		public function get group():uint { return _group; }
 		hidden var _group:uint;
 		
 		/**
-		 * [Read-only] Specifies which collision groups to collide with. Finds collidable partners using bitwise AND.
+		 * Specifies which collision groups to collide with. Finds collidable partners using bitwise AND.
 		 */
 		public function get action():uint { return _action; }
 		hidden var _action:uint;
 		
 		/**
-		 * [Read-only] Number of frames for this graphic.
+		 * Number of frames for this graphic.
 		 */
 		public function get frameCount():int { return _rows * _columns; }
 		
