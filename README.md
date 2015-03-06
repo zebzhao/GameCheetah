@@ -1,9 +1,11 @@
 # GameCheetah
 A free open source AS3 game engine.
 
-[Main site](www.gamecheetah.net)
-[Documentation](www.gamecheetah.net/docs/v1.1)
-[Demos](www.gamecheetah.net/demos)
+[Main Site](http://www.gamecheetah.net)
+
+[Documentation](http://www.gamecheetah.net/docs/v1.1)
+
+[Demos](http://www.gamecheetah.net/demos)
 
 ##Changes:
 
