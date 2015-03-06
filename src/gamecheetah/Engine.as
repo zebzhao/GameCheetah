@@ -33,7 +33,7 @@ package gamecheetah
 		/**
 		 * Internal. Version of the engine.
 		 */
-		public static const __VERSION:String = "1.0";
+		public static const __VERSION:String = "1.1";
 		
 		/**
 		 * Contains all game-related assets and asset information.
@@ -257,15 +257,23 @@ package gamecheetah
 		
 		/**
 		 * Stop all the tweens for the invoker.
+		 * @param	complete	Force tween to completion upon stopping.
 		 */
-		public static function cancelTweens(invoker:Object=null):void 
+		public static function cancelTweens(invoker:Object=null, complete:Boolean=true):void 
 		{
-			var i:uint, data:CallbackData;
+			var i:uint, data:CallbackData, propName:String;
 			while (i < _delayCallbackList.length)
 			{
 				data = _delayCallbackList[i];
 				if (data.isTween && data.invoker == invoker)
+				{
+					if (complete)
+					{
+						for (propName in data.to)
+							data.invoker[propName] = data.to[propName];
+					}
 					_delayCallbackList.splice(i, 1);
+				}
 				else i++;
 			}
 		}
@@ -825,8 +833,9 @@ package gamecheetah
 				// This code is compiled ONLY in "developer" configuration.
 				trace("Compiling in developer mode.")
 				
-				_singleton.onEnter();
+				// Tricky: Initialize Designer first since onEnter might fire events Designer subscribes to!
 				_singleton.addChild(new Designer());
+				_singleton.onEnter();
 				
 				return;
 			}

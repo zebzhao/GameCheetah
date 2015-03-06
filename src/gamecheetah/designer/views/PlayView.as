@@ -6,6 +6,7 @@
  */
 package gamecheetah.designer.views 
 {
+	import flash.geom.Point;
 	import gamecheetah.designer.bit101.components.Label;
 	import gamecheetah.designer.bit101.components.PushButton;
 	import gamecheetah.designer.bit101.components.ScrollPane;
@@ -29,7 +30,8 @@ package gamecheetah.designer.views
 	public final class PlayView extends InterfaceGroup
 	{
 		private var
-			statusLabel:Label,
+			infoLabel:Label,
+			performanceLabel:Label,
 			debugButton:PushButton,
 			debugWindow:Window,
 			debugScrollPane:ScrollPane,
@@ -39,7 +41,7 @@ package gamecheetah.designer.views
 		private var
 			_framesElapsed:uint,
 			_time:Number = 0,
-			_fps:String = "";
+			_fps:int;
 		
 		// Arbitrary object to display in debug watch window.
 		public var debugWatcher:Object;
@@ -47,7 +49,8 @@ package gamecheetah.designer.views
 		
 		override protected function build():void 
 		{
-			statusLabel = new Label(this);
+			infoLabel = new Label(this);
+			performanceLabel = new Label(this);
 			debugWindow = new Window(this, 0, 0, "Debug Watch");
 			debugScrollPane = new ScrollPane(debugWindow);
 			debugText = new Text(debugScrollPane);
@@ -91,10 +94,17 @@ package gamecheetah.designer.views
 			debugButton.setSize(80, 20);
 			debugButton.move(_width - debugButton.width, _height - 20);
 			
-			statusLabel.move(10, _height - 20);
+			performanceLabel.move(10, _height - 40);
+			infoLabel.move(10, 0);
+			
 			this.graphics.clear();
+			
 			this.graphics.beginFill(0xffffff, 0.5);
-			this.graphics.drawRect(0, statusLabel.y, Engine.stage.stageWidth, 20);
+			this.graphics.drawRect(0, 0, Engine.stage.stageWidth, 18);
+			this.graphics.endFill();
+			
+			this.graphics.beginFill(0xffffff, 0.5);
+			this.graphics.drawRect(0, performanceLabel.y, Engine.stage.stageWidth, 40);
 			this.graphics.endFill();
 		}
 		
@@ -108,24 +118,58 @@ package gamecheetah.designer.views
 		}
 		
 		/**
+		 * Returns the html mark-up text with the color changed to the one specified.
+		 */
+		private function wrapTextWithColorTag(text:String, color:String="FF0000"):String 
+		{
+			return "<font color='#" + color + "'>" + text + "</font>";
+		}
+		
+		/**
 		 * Called every frame.
 		 */
 		private function onEnterFrame(e:Event):void 
 		{
 			var currentTime:Number = getTimer();
 			var elapsed:Number = currentTime - _time;
+			
 			if (elapsed >= 1000)
 			{
 				_time = currentTime;
-				_fps = String(Math.round(_framesElapsed * 1000 / elapsed));
+				_fps = Math.round(_framesElapsed * 1000 / elapsed);
 				_framesElapsed = 1;
 			}
 			else _framesElapsed ++;
 			
-			// Update status label
-			var memUsage:String = Number(System.totalMemory / 1024 / 1024).toFixed(2) + " MB";
-			statusLabel.text = "FPS: " + _fps + "    MEM: " + memUsage + "    EoS: " + Engine.space.screenCount.toString() + " / " +  Engine.space.totalEntities +
-				"    PxCC: " + Engine.space.totalPixelCollisionChecks.toString() + "    Press 'Esc' to exit Play mode.";
+			// Update info label
+			infoLabel.text = "Space: " + String(Engine.space) + "\t\tConsole: " + String(Engine.console);
+			
+			// Update performance label
+			var memUsageInMB:Number = Number(System.totalMemory / 1024 / 1024);
+			var memUsage:String = memUsageInMB.toFixed(2) + " MB";
+			var pixelCollisionChecks:uint = Engine.space.totalPixelCollisionChecks;
+			var maxBinSize:uint = Engine.space._maxBinSize;
+			var binDispersity:Number = Engine.space._binDispersity;
+			var totalCollisionChecks:uint = Engine.space._totalCollisionChecks;
+			var camera:Point = Engine.space.camera;
+			
+			var performanceText:String = "";
+			
+			performanceText += _fps < 15 ? wrapTextWithColorTag("Frames-per-sec: " + _fps) : "Frames-per-sec: " + _fps;
+			performanceText += "\t";
+			performanceText += memUsageInMB > 80 ? wrapTextWithColorTag("Mem-usage: " + memUsage) : "Mem-usage: " + memUsage;
+			performanceText += "\tPress 'Esc' to exit."
+			performanceText += "\n"
+			performanceText += "Entities-on-screen: " + Engine.space.screenCount.toString() + " / " +  Engine.space.totalEntities;
+			performanceText += pixelCollisionChecks > 50 ? wrapTextWithColorTag("\tPx-collision-checks: " + pixelCollisionChecks) : "\tPx-collision-checks: " + pixelCollisionChecks;
+			performanceText += "\n"
+			performanceText += maxBinSize > 200 ? wrapTextWithColorTag("Qt-max-bin-size: " + maxBinSize) : "Qt-max-bin-size: " + maxBinSize;
+			performanceText += binDispersity > 25 ? wrapTextWithColorTag("\tQt-bin-dispersity: " + binDispersity.toFixed(1)) : "\tQt-bin-dispersity: " + binDispersity.toFixed(1);
+			performanceText += "\n"
+			performanceText += totalCollisionChecks > 50000 ? wrapTextWithColorTag("Qt-max-collision-checks: " + totalCollisionChecks) : "Qt-max-collision-checks: " + totalCollisionChecks;
+			performanceText += "\tCamera: " + camera.x.toFixed(1) + ", " + camera.y.toFixed(1);
+			
+			performanceLabel.text =  performanceText;
 			
 			// Update debug watcher
 			if (debugWindow.visible) debugText.text = PlayView.toString(debugWatcher);

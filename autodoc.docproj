@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<docProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <pageTitle>GameCheetah Documentation</pageTitle>
+  <classPaths>C:\Users\Owner\Desktop\Cheeta\CheetaEngine\src</classPaths>
+  <sourcesList />
+  <outputDirectory>C:\Users\Owner\Desktop\Cheeta\CheetaEngine\site\docs\v1.1</outputDirectory>
+  <activeCompiler>1</activeCompiler>
+  <extraOptions>-define=CONFIG::developer,true</extraOptions>
+</docProject>

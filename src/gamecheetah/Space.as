@@ -98,6 +98,11 @@ package gamecheetah
 		public var paused:Boolean;
 		
 		/**
+		 * Set to <b>false</b> to disable onCollision() callback. (Improves performance)
+		 */
+		public var detectCollisions:Boolean = true;
+		
+		/**
 		 * Entity currently under the cursor if mouseEnabled property is true.
 		 */
 		public function get mouseFocus():Entity { return _mouseFocus };
@@ -116,7 +121,7 @@ package gamecheetah
 		hidden var _bounds:Rectangle;
 		
 		/**
-		 * [Read-only/Debug] Number of pixel-perfect collision checks.
+		 * [Debug] Number of pixel-perfect collision checks.
 		 */
 		public function get totalPixelCollisionChecks():uint
 		{
@@ -183,15 +188,20 @@ package gamecheetah
 		public var mouseAlphaThreshold:uint = 1;
 		
 		/**
-		 * True the space will relay mouse events to entities.
+		 * True the space will relay mouse events to entities. Default is false.
 		 */
-		public var mouseEnabled:Boolean;
+		public var mouseEnabled:Boolean = false;
 		
 		/**
 		 * Can be any subclass of the State class.
 		 * Any properties defined in this class will be resetted upon onExit().
 		 */
 		public var state:State;
+		
+		/**
+		 * Enable or disable the onCollision() handler. Default is true.
+		 */
+		public var collisionDetection:Boolean = true;
 		
 		/**
 		 * Bounds of the render area rectangle.
@@ -201,6 +211,7 @@ package gamecheetah
 			return _screenBounds;
 		}
 		hidden var _screenBounds:Rectangle = new Rectangle();
+		
 		
 		//} Public Properties
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -256,12 +267,10 @@ package gamecheetah
 			_addQueue = new Array();
 			_deactivateQueue = new Array();
 			_activateQueue = new Array();
-			_hashtable = new Dictionary(true);
-			
 			_bounds = new Rectangle();
-			_quadtree = createQuadtree();
+			
+			reindexQuadtree();
 		}
-		
 		
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//{ Public methods
@@ -602,47 +611,27 @@ package gamecheetah
 		{
 			var entity:Entity;
 			
-			if (this._resetInfo != null)
+			// Remove all entities from this space.
+			while (_entities.length > 0)
 			{
-				// Temporarily Remove all entities from this space.
-				while (_entities.length > 0)
-				{
-					entity = _entities[0];
-					removeEntity(entity, true, true);
-				}
-				
-				// Reset space state.
-				_activateQueue.length = 0;
-				_deactivateQueue.length = 0;
-				_mouseFocus = null;
-				_quadtree = createQuadtree();
-				_hashtable = new Dictionary(true);
-				
-				// Reset entities.
-				this.restore(_resetInfo);
+				entity = _entities[0];
+				removeEntity(entity, true, true);
 			}
-			else
-			{
-				// Run-time created space object, reset to initial state.
-				while (_entities.length > 0)
-				{
-					// Remove all entities from this space.
-					entity = _entities[0];
-					removeEntity(entity, true, true);
-				}
-				// Reset space state.
-				_activateQueue.length = 0;
-				_deactivateQueue.length = 0;
-				_mouseFocus = null;
-				_quadtree = createQuadtree();
-				_hashtable = new Dictionary(true);
-			}
+			
+			// Reset entities.
+			if (this._resetInfo != null)	this.restore(_resetInfo);
+			else 							reindexQuadtree();
+			
+			// Reset space state.
+			resetState();
+			
+			if (invokeCallbacks) onReset();
 		}
 		
 		/**
 		 * Return list of entity with the specified tag.
 		 */
-		public function getByTag(tag:String):Vector.<Entity> 
+		public final function getByTag(tag:String):Vector.<Entity> 
 		{
 			var result:Vector.<Entity> = new Vector.<Entity>();
 			var entity:Entity;
@@ -656,7 +645,7 @@ package gamecheetah
 		/**
 		 * Reset camera to be at the original starting location.
 		 */
-		public function resetCamera():void 
+		public final function resetCamera():void 
 		{
 			this.camera.setTo(this.startLocation.x, this.startLocation.y);
 		}
@@ -674,6 +663,8 @@ package gamecheetah
 			
 			_resetInfo = obj;
 			super.restore(obj);
+			
+			resize(bounds.x, bounds.y, bounds.width, bounds.height);
 			
 			CONFIG::developer
 			{
@@ -720,22 +711,13 @@ package gamecheetah
 			_bounds.width += Math.abs(dw);
 			_bounds.height += Math.abs(dh);
 			
-			updateSize();
-		}
-		
-		public final function updateSize():void 
-		{
-			if (_active)
-			{
-				// Quadtree must be reindexed as Space volume changed.
-				reindexQuadtree();
-			}
+			reindexQuadtree();
 		}
 		
 		public final function resize(x:int, y:int, w:int, h:int):void 
 		{
 			_bounds.setTo(x, y, w, h);
-			if (_active) reindexQuadtree();
+			reindexQuadtree();
 		}
 		
 		
@@ -770,6 +752,11 @@ package gamecheetah
 		 * Override this. Called when the active space is set to another.
 		 */
 		public function onExit():void { }
+		
+		/**
+		 * Override this. Called when reset() is called.
+		 */
+		public function onReset():void { }
 		
 		/**
 		 * Override this. Called after an entity is deactivated.
@@ -810,22 +797,45 @@ package gamecheetah
 					newBounds = newBounds.union(entityRect);
 				}
 			}
-			_bounds = newBounds;
 			
-			if (_active)
-			{
-				// Quadtree must be reindexed as Space volume changed.
-				reindexQuadtree();
-			}
+			_bounds = newBounds;
+			reindexQuadtree();
 		}
 		
 		/**
-		 * Convert Quadtree data to string.
+		 * [Developer] Convert Quadtree data to string.
 		 */
 		CONFIG::developer
-		hidden function get _quadtreeData():String 
+		public function get _quadtreeData():String 
 		{
 			return _quadtree.print();
+		}
+		
+		/**
+		 * [Developer] Performance metric for quadtree.
+		 */
+		CONFIG::developer
+		public function get _maxBinSize():int 
+		{
+			return _quadtree.maxBinSize;
+		}
+		
+		/**
+		 * [Developer] Performance metric for quadtree.
+		 */
+		CONFIG::developer
+		public function get _binDispersity():Number 
+		{
+			return _quadtree.binDispersity;
+		}
+		
+		/**
+		 * [Developer] Performance metric for quadtree.
+		 */
+		CONFIG::developer
+		public function get _totalCollisionChecks():uint 
+		{
+			return _quadtree.totalCollisionChecks;
 		}
 		
 		//} Conditionally Compiled methods
@@ -991,45 +1001,48 @@ package gamecheetah
 				
 				_totalPixelCollisionChecks = 0;
 				
-				// Get all overlap collisions with all entities.
-				var collisions:Vector.<Collision> = _quadtree.queryCollisions();
-				
-				if (collisions != null)
+				if (detectCollisions)
 				{
-					var collision:Collision;
-					var a:Entity, b:Entity;
-					var aCb:Boolean, bCa:Boolean;
-					var agentA:Agent, agentB:Agent;
+					// Get all overlap collisions with all entities.
+					var collisions:Vector.<Collision> = _quadtree.queryCollisions();
 					
-					var collisionCount:uint = collisions.length;
-					
-					// Check if onCollision() calls are needed.
-					for (i = 0; i < collisionCount; i++)
+					if (collisions != null)
 					{
-						collision = collisions[i];
-						agentA = collision.a;
-						agentB = collision.b;
-						a = _hashtable[agentA.id];
-						b = _hashtable[agentB.id];
+						var collision:Collision;
+						var a:Entity, b:Entity;
+						var aCb:Boolean, bCa:Boolean;
+						var agentA:Agent, agentB:Agent;
 						
-						aCb = (agentA.action & agentB.group) != 0;
-						bCa = (agentA.group & agentB.action) != 0;
+						var collisionCount:uint = collisions.length;
 						
-						if (!aCb && !bCa) continue;  // Collision cannot happen.
-						else if (!a.collidable || !b.collidable) continue;	// Collision cannot happen.
-						else if (useCollisionMasks && !collisionTest(a._getMask(), b._getMask(), a._agent.topLeft, b._agent.topLeft)) continue;  // Pixel-perfect collision did not happen.
-						
-						// Entity a collides against b.
-						if (aCb)
+						// Check if onCollision() calls are needed.
+						for (i = 0; i < collisionCount; i++)
 						{
-							// Invoke collision handler for Entity a.
-							a.onCollision(b);
-						}
-						
-						// Entity b collides against a.
-						if (bCa)
-						{
-							b.onCollision(a);
+							collision = collisions[i];
+							agentA = collision.a;
+							agentB = collision.b;
+							a = _hashtable[agentA.id];
+							b = _hashtable[agentB.id];
+							
+							aCb = (agentA.action & agentB.group) != 0;
+							bCa = (agentA.group & agentB.action) != 0;
+							
+							if (!aCb && !bCa) continue;  // Collision cannot happen.
+							else if (!a.collidable || !b.collidable) continue;	// Collision cannot happen.
+							else if (useCollisionMasks && !collisionTest(a._getMask(), b._getMask(), a._agent.topLeft, b._agent.topLeft)) continue;  // Pixel-perfect collision did not happen.
+							
+							// Entity a collides against b.
+							if (aCb)
+							{
+								// Invoke collision handler for Entity a.
+								a.onCollision(b);
+							}
+							
+							// Entity b collides against a.
+							if (bCa)
+							{
+								b.onCollision(a);
+							}
 						}
 					}
 				}
@@ -1040,6 +1053,24 @@ package gamecheetah
 			
 			// Call callback.
 			if (invokeCallbacks && !paused) onUpdate();
+		}
+		
+		/**
+		 * Reset all other states of the space not covered by the restore() call.
+		 */
+		private function resetState():void 
+		{
+			_activateQueue.length = 0;
+			_deactivateQueue.length = 0;
+			_mouseFocus = null;
+			
+			alphaThreshold = 1;
+			mouseAlphaThreshold = 1;
+			mouseEnabled = false;
+			useCollisionMasks = true;
+			detectCollisions = true;
+			
+			resetCamera();
 		}
 		
 		/**
@@ -1110,11 +1141,13 @@ package gamecheetah
 		}
 		
 		/**
-		 * Reindex quadtree objects. Needs to be called if quadtree resizes.
+		 * Reindex quadtree objects. Needs to be called if quadtree resizes or
+		 * if manually setting the quadtree depth for performance optimization.
+		 * @param	depth	A power of 2 between 1 and 32. Anything outside this range will initiate auto-depth prediction.
 		 */
-		private function reindexQuadtree():void 
+		public function reindexQuadtree(depth:int=0):void 
 		{
-			_quadtree = createQuadtree();
+			_quadtree = createQuadtree(depth);
 			
 			var entity:Entity;
 			var id:uint;
@@ -1142,18 +1175,23 @@ package gamecheetah
 		
 		/**
 		 * Creates the quadtree container from the current bounds.
+		 * @param	depth	A power of 2 between 1 and 32. Anything outside this range will initiate auto-depth prediction.
+		 * @return	The new quadtree instance.
 		 */
-		private function createQuadtree():Quadtree 
+		private function createQuadtree(depth:int=0):Quadtree 
 		{
 			// Depth is based on the closest power of 2 that divides the bound range to stage size.
 			var averageBound:Number = Math.sqrt(_bounds.width * _bounds.height) + 1;
 			var averageStage:Number = Math.sqrt(Engine.stage.stageWidth * Engine.stage.stageHeight) + 1;
 			var boundsToStageRatio:Number = averageBound / averageStage;
 			
-			var depth:int = 1;
-			if (boundsToStageRatio > 30) depth = 8;
-			else if (boundsToStageRatio > 10) depth = 4;
-			else if (boundsToStageRatio > 2) depth = 2;
+			if (depth <= 0 || depth > 32)
+			{
+				if (boundsToStageRatio > 16) depth = 32;
+				else if (boundsToStageRatio > 8) depth = 16;
+				else if (boundsToStageRatio > 4) depth = 8;
+				else if (boundsToStageRatio > 2) depth = 4;
+			}
 			
 			// Limit max depth to be 8 for memory conservation reasons.
 			return new Quadtree(_bounds, depth);

@@ -283,7 +283,7 @@ package gamecheetah.designer.bit101.components
 		public function set selectedIndex(value:int):void
 		{
 			_list.selectedIndex = value;
-			setLabelButtonLabel();
+			invalidate();
 		}
 		public function get selectedIndex():int
 		{
@@ -296,7 +296,7 @@ package gamecheetah.designer.bit101.components
 		public function set selectedItem(item:Object):void
 		{
 			_list.selectedItem = item;
-			setLabelButtonLabel();
+			invalidate();
 		}
 		public function get selectedItem():Object
 		{

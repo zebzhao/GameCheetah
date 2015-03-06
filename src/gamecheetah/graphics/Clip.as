@@ -35,6 +35,7 @@ package gamecheetah.graphics
 		{
 			value %= _frameImages.length;
 			_frame = value;
+			setBuffer(_frameImages[_frame]);
 		}
 		
 		// Graphic information.
@@ -69,7 +70,6 @@ package gamecheetah.graphics
 		 */
 		override public function dispose():void 
 		{
-				//
 		}
 		
 		/**
@@ -105,10 +105,9 @@ package gamecheetah.graphics
 							}
 						}
 					}
-					_frame = _animData.frames[_index];
+					this.frame = _animData.frames[_index];
 				}
 			}
-			setBuffer(_frameImages[_frame]);;
 		}
 		
 		/**

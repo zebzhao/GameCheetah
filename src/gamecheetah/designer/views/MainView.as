@@ -13,7 +13,7 @@ package gamecheetah.designer.views
 	import gamecheetah.designer.*;
 	import gamecheetah.designer.views.*;
 	import gamecheetah.designer.views.components.*;
-	import gamecheetah.Engine;
+	import gamecheetah.*;
 	
 	/**
 	 * @author 		Zeb Zhao
@@ -33,11 +33,22 @@ package gamecheetah.designer.views
 		
 		private var
 			menus:MenuView,
-			controlsLayout:ControlsLayout,
+			gridControls:GridControls,
 			quadtreeWindow:TextWindow;		// Used to show entities in the quadtree structure.
 		
 		// Context menu items
 		private var viewQuadtreeMenuItem:ContextMenuItem;
+		
+		
+		public function get activeSpace():Space 
+		{
+			return null;
+		}
+		public function set activeSpace(value:Space):void 
+		{
+			if (value == null) return;
+			quadtreeWindow.bind("_quadtreeData", value);
+		}
 		
 		
 		public function get errorMessage():String 
@@ -60,7 +71,7 @@ package gamecheetah.designer.views
 		{
 			// Create UI components.
 			spaceCanvas = new SpaceView(this);
-			controlsLayout = new ControlsLayout(this);
+			gridControls = new GridControls(this);
 			menus = new MenuView(this);
 			quadtreeWindow = new TextWindow(Engine.stage);
 			
@@ -79,6 +90,7 @@ package gamecheetah.designer.views
 		override protected function initialize():void 
 		{
 			Designer.model.bind("errorMessage", this, true);
+			Designer.model.bind("activeSpace", this, true);
 			
 			errorWindow.hide();
 			//propertyPrompt.hide();
@@ -91,7 +103,6 @@ package gamecheetah.designer.views
 		override protected function addListeners():void 
 		{
 			viewQuadtreeMenuItem.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, onShowQuadtree);
-			Engine.instance.addEventListener(Engine.events.E_SPACE_CHANGE, onSpaceChange);
 			Engine.stage.addEventListener(Event.RESIZE, onStageResize);
 			this.addEventListener(Event.ADDED_TO_STAGE, onStageResize);
 		}
@@ -102,23 +113,14 @@ package gamecheetah.designer.views
 		override protected function onResize():void 
 		{
 			menus.setSize(_width, _height);
-			controlsLayout.setSize(_width, _height);
+			gridControls.setSize(_width, _height);
 			MainView.graphicEditor.setSize(_width, _height);
 			MainView.entityEditor.setSize(_width, _height);
 			MainView.spaceEditor.setSize(_width, _height);
 			
-			quadtreeWindow.setSize(200, 200);
+			quadtreeWindow.setSize(300, 300);
 			quadtreeWindow.move(_width - quadtreeWindow.width, _height - quadtreeWindow.height - 20);
 			//MainView.propertyPrompt.move(_width / 2 - MainView.propertyPrompt.width / 2, _height / 2 - MainView.propertyPrompt.height / 2);
-		}
-		
-		/**
-		 * Handles when the active space is swapped.
-		 */
-		private function onSpaceChange(e:Event):void 
-		{
-			quadtreeWindow.bind("_quadtreeData", Engine.space);
-			spaceCanvas.activeSpace = Engine.space;
 		}
 		
 		/**
@@ -142,6 +144,7 @@ package gamecheetah.designer.views
 	
 }
 
+import flash.utils.Dictionary;
 import gamecheetah.designer.bit101.components.*;
 import flash.display.*;
 import flash.events.*;
@@ -153,9 +156,9 @@ import gamecheetah.designer.views.components.*;
 import gamecheetah.graphics.*;
 
 /**
- * Control Icons which display hints about using the interface.
+ * Additional controls on the main view.
  */
-class ControlsLayout extends InterfaceGroup
+class GridControls extends InterfaceGroup
 {
 	private var
 		graphicForeground:Sprite,
@@ -186,18 +189,29 @@ class ControlsLayout extends InterfaceGroup
 	private var _activeClip:Clip;
 	private var _isDraggingClip:Boolean;
 	
-	public function get selectedSpace():Space 
+	public function get activeSpace():Space 
 	{
-		return _selectedSpace;
+		return _activeSpace;
 	}
-	public function set selectedSpace(value:Space):void 
+	public function set activeSpace(value:Space):void 
 	{
-		_selectedSpace = value;
+		_activeSpace = value;
 		spaceTagLabel.text = Engine.space.tag;
+		
+		var spaceContext:Object = Designer.getDesignerContextSetting("SPACE::" + Engine.space.tag);
+		if (spaceContext)
+		{
+			MainView.spaceCanvas.gridW = spaceContext["gridW"];
+			MainView.spaceCanvas.gridH = spaceContext["gridH"];
+			MainView.spaceCanvas.gridSnapping = spaceContext["gridSnapping"];
+			gridWidthInput.text = MainView.spaceCanvas.gridW.toString();
+			gridHeightInput.text = MainView.spaceCanvas.gridH.toString();
+			snapButton.selected = MainView.spaceCanvas.gridSnapping;
+		}
 	}
-	private var _selectedSpace:Space;
+	private var _activeSpace:Space;
 	
-	public function ControlsLayout(parent:DisplayObjectContainer) 
+	public function GridControls(parent:DisplayObjectContainer) 
 	{
 		super(parent);
 	}
@@ -233,7 +247,7 @@ class ControlsLayout extends InterfaceGroup
 		
 		Engine.instance.addEventListener(Engine.events.E_SPACE_CHANGE, activeSpace_Change);
 		Designer.model.bind("activeClip", this);
-		Designer.model.bind("selectedSpace", this);
+		Designer.model.bind("activeSpace", this);
 	}
 	
 	override protected function onResize():void 
@@ -249,6 +263,13 @@ class ControlsLayout extends InterfaceGroup
 		playButton.setSize(110, 22);
 		playButton.move(snapButton.x, gridWidthInput.bottom);
 		spaceTagLabel.move(snapButton.x, snapButton.y - 20);
+	}
+	
+	private function getDesignerContext():Object 
+	{
+		var result:Object = {};
+		result["SPACE::" + Engine.space.tag] = { "gridW": MainView.spaceCanvas.gridW, "gridH": MainView.spaceCanvas.gridH, "gridSnapping": MainView.spaceCanvas.gridSnapping };
+		return result;
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -268,11 +289,13 @@ class ControlsLayout extends InterfaceGroup
 	{
 		MainView.spaceCanvas.gridW = gridWidthInput.value;
 		MainView.spaceCanvas.gridH = gridHeightInput.value;
+		Designer.updateDesignerContext(getDesignerContext());
 	}
 	
 	private function snapButton_Click(e:Event):void 
 	{
 		MainView.spaceCanvas.gridSnapping = snapButton.selected;
+		Designer.updateDesignerContext(getDesignerContext());
 	}
 	
 	private function graphicForeground_onMouseDown(e:Event):void 

@@ -56,6 +56,8 @@ package gamecheetah.strix.collision.quadtree {
             children : Vector.<TreeNode>;
         
         public var objects       : Vector.<Agent>;
+		
+		public var collisionChecks : uint;
         
             
         public function TreeNode(
@@ -269,8 +271,12 @@ package gamecheetah.strix.collision.quadtree {
 			var i:uint, j:uint;
 			var objectCount:uint = objects.length;
 			
+			collisionChecks = 0;
+			
             for( i = 0; i < objectCount-1; i++ ) {
                 for ( j = i + 1; j < objectCount; j++ ) {
+					
+					collisionChecks++;
 					
 					a = objects[i];
 					b = objects[j];

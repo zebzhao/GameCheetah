@@ -137,9 +137,9 @@ package gamecheetah.graphics
 			{
 				_ct.alphaMultiplier = alpha;
 				_ct.greenMultiplier =_ct.blueMultiplier = _ct.redMultiplier = 1 - tintAlpha;
-				_ct.redOffset = Math.round(tintAlpha * ((tint >> 16) & 255));
-				_ct.greenOffset = Math.round(tintAlpha * ((tint >> 8) & 255));
-				_ct.blueOffset = Math.round(tintAlpha * (tint & 255));
+				_ct.redOffset = Math.round(tintAlpha * ((tint >> 16) & 0xff));
+				_ct.greenOffset = Math.round(tintAlpha * ((tint >> 8) & 0xff));
+				_ct.blueOffset = Math.round(tintAlpha * (tint & 0xff));
 				ct = _ct;
 			}
 			

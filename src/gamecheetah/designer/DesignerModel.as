@@ -39,6 +39,7 @@ package gamecheetah.designer
 			this.define("selectedAnimation");
 			this.define("selectedMaskFrame");
 			this.define("activeClip");
+			this.define("activeSpace");
 			this.define("errorMessage");
 		}
 		
@@ -87,6 +88,15 @@ package gamecheetah.designer
 			return result;
 		}
 		public function set spacesList(value:Array):void
+		{
+		}
+		
+		
+		public function get activeSpace():Space 
+		{
+			return Engine.space;
+		}
+		public function set activeSpace(value:Space):void 
 		{
 		}
 		

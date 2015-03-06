@@ -6,6 +6,7 @@
  */
 package gamecheetah.utils 
 {
+	import flash.utils.Dictionary;
 	import gamecheetah.namespaces.hidden;
 	
 	use namespace hidden;
@@ -43,18 +44,22 @@ package gamecheetah.utils
 		}
 		hidden var _textStyles:OrderedDict = new OrderedDict();
 		
+		/**
+		 * Dictory of designer settings.
+		 */
+		hidden var _designerContext:Dictionary = new Dictionary();
 		
 		/**
 		 * Object managing game state.
 		 */
 		public function Assets() 
 		{
-			super(["_graphics", "_spaces", "_textStyles"]);
+			super(["_graphics", "_spaces", "_textStyles", "_designerContext"]);
 		}
 		
-		override public function restore(obj:Object):void 
+		/*override public function restore(obj:Object):void 
 		{
 			super.restore(obj);
-		}
+		}*/
 	}
 }

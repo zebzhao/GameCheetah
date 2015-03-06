@@ -39,7 +39,7 @@ package gamecheetah.designer.views.components
 		public function setItems(value:Array):void 
 		{
 			var selectedIndex:int = mainCombo.selectedIndex;
-			if (mainCombo.items.length < value.length) selectedIndex = value.length - 1;
+			if (selectedIndex >= value.length) selectedIndex = value.length - 1;
 			mainCombo.items = value;
 			mainCombo.numVisibleItems = Math.max(1, Math.min(Engine.stage.stageHeight/mainCombo.listItemHeight - 7, value.length));
 			mainCombo.selectedIndex = Math.min(selectedIndex, value.length - 1);

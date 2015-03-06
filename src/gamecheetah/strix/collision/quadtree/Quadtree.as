@@ -32,6 +32,7 @@ package gamecheetah.strix.collision.quadtree {
 	import gamecheetah.strix.collision.error.IllegalBoundsError;
 	import gamecheetah.strix.collision.error.InvalidObjectError;
 	import gamecheetah.strix.hashtable.Hashtable;
+	import gamecheetah.strix.utils.Statistics;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
    
@@ -46,7 +47,76 @@ package gamecheetah.strix.collision.quadtree {
             
         public static var
             throwExceptions : Boolean = true;
-        
+			
+		
+		/**
+		 * Total number of rough collision checks performed by the quadtree.
+		 * Performance metric used to determine how well the quadtree is scaling to spatial distribution of objects.
+		 */
+		public function get totalCollisionChecks():uint 
+		{
+			var totalChecks:uint;
+			var nodeList:Vector.<TreeNode> = new <TreeNode> [rootNode];
+			var node:TreeNode;
+			
+			while (nodeList.length > 0)
+			{
+				node = nodeList.pop();
+				if (node != null)
+				{
+					nodeList = nodeList.concat(node.children);
+					totalChecks += node.collisionChecks;
+				}
+			}
+			return totalChecks;
+		}
+			
+		/**
+		 * Largest number of entities in any of the quadtree bins.
+		 * Performance metric used to determine how well the quadtree is scaling to spatial distribution of objects.
+		 * Anything over ~20% of total entities is BAD for large number of entities! The higher the entity the count
+		 * the smaller this percentage should be.
+		 */
+		public function get maxBinSize():int 
+		{
+			var maxBinCount:int;
+			var nodeList:Vector.<TreeNode> = new <TreeNode> [rootNode];
+			var node:TreeNode;
+			
+			while (nodeList.length > 0)
+			{
+				node = nodeList.pop();
+				if (node != null)
+				{
+					nodeList = nodeList.concat(node.children);
+					maxBinCount = Math.max(node.objects.length, maxBinCount);
+				}
+			}
+			return maxBinCount;
+		}
+		
+		/**
+		 * Distribution metric (standard-deviation) for entities over quadtree bins.
+		 * Performance metric used to determine how well the quadtree is scaling to spatial distribution of objects.
+		 * Values closest to 0 is good, anything over 1 is BAD!
+		 */
+		public function get binDispersity():Number 
+		{
+			var binCounts:Vector.<int> = new Vector.<int>();
+			var nodeList:Vector.<TreeNode> = new <TreeNode> [rootNode];
+			var node:TreeNode;
+			
+			while (nodeList.length > 0)
+			{
+				node = nodeList.pop();
+				if (node != null)
+				{
+					nodeList = nodeList.concat(node.children);
+					binCounts.push(node.objects.length);
+				}
+			}
+			return Statistics.std(binCounts);
+		}
             
         public function Quadtree( rect:Rectangle, maxDepth:uint=8  ) {
             this.rootNode = new TreeNode(rect, 0, maxDepth-1, null, null);

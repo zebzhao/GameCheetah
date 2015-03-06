@@ -82,7 +82,7 @@ package gamecheetah.designer.bit101.components
 			_tf.selectable = false;
 			_tf.mouseEnabled = false;
 			_tf.defaultTextFormat = new TextFormat(Style.fontName, Style.fontSize, Style.LABEL_TEXT);
-			_tf.text = _text;			
+			_tf.htmlText = _text;			
 			addChild(_tf);
 			draw();
 		}
@@ -100,7 +100,7 @@ package gamecheetah.designer.bit101.components
 		override public function draw():void
 		{
 			super.draw();
-			_tf.text = _text;
+			_tf.htmlText = _text;
 			if(_autoSize)
 			{
 				_tf.autoSize = TextFieldAutoSize.LEFT;

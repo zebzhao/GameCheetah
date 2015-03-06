@@ -13,6 +13,7 @@ package gamecheetah.designer
 	import flash.net.FileFilter;
 	import flash.net.FileReference;
 	import flash.utils.ByteArray;
+	import flash.utils.Dictionary;
 	import gamecheetah.*;
 	import gamecheetah.designer.views.*;
 	import gamecheetah.gameutils.*;
@@ -32,6 +33,7 @@ package gamecheetah.designer
 		public static var mainView:MainView;
 		public static var playView:PlayView;
 		
+		public static var context:Dictionary;
 		public static var instance:Designer;
 		
 		/**
@@ -69,6 +71,7 @@ package gamecheetah.designer
 			Input._eventsEnabled = false;
 			
 			model = new DesignerModel();
+			context = new Dictionary();
 			// Set up scroller.
 			scroller = new Scroller(0.1, 1.5, null, Scroller.ARROW_KEYS);
 			
@@ -233,6 +236,31 @@ package gamecheetah.designer
 			
 			Engine.assets.spaces.updateValue(model.selectedSpace.tag, newObj);
 			model.update("selectedSpace", newObj, true);
+		}
+		
+		/**
+		 * Loads Designer settings.
+		 */
+		public static function loadDesignerContext(context:Dictionary):void 
+		{
+			if (context == null) throw DesignerError("an invalid value found for context object!");
+			Designer.context = context;
+		}
+		
+		/**
+		 * Retrieve a particular setting from the designer context.
+		 */
+		public static function getDesignerContextSetting(name:String):* 
+		{
+			return Designer.context[name];
+		}
+		
+		/**
+		 * Update Designer settings.
+		 */
+		public static function updateDesignerContext(obj:Object):void 
+		{
+			for (var key:String in obj) Designer.context[key] = obj[key];
 		}
 		
 		/**
@@ -427,7 +455,7 @@ package gamecheetah.designer
 			scroller.scrollBounds = Engine.space.bounds.clone();
 			scroller.scrollBounds.offset( -Engine.stage.stageWidth / 2, -Engine.stage.stageHeight / 2);
 			scroller.setTo(scroller.point.x, scroller.point.y);
-			model.update("selectedSpace", model.selectedSpace, true);
+			model.update("activeSpace", model.activeSpace, true);
 		}
 		
 		/**
@@ -457,6 +485,7 @@ package gamecheetah.designer
 				errorMessage("Not all interactions were successfully loaded!\nThe following classes are missing:\n\n" + Restorable.__missing.join("\n"));
 			
 			// Update UI.
+			Designer.loadDesignerContext(Engine.assets._designerContext);
 			Designer.model.propagateAll();
 		}
 		
@@ -467,6 +496,7 @@ package gamecheetah.designer
 		{
 			scroller.point = Engine.space.camera;
 			updateScrollBounds();
+			Designer.model.update("activeSpace", Engine.space);
 		}
 		
 		/**
@@ -491,7 +521,7 @@ package gamecheetah.designer
 		public static function saveContext():void 
 		{
 			var dialog:FileReference = new FileReference();
-			dialog.save(Engine.saveContextFile(), "context.amf");
+			dialog.save(Engine.saveContextFile(), "resource.amf");
 		}
 		
 		/**

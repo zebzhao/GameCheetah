@@ -47,6 +47,8 @@ package gamecheetah.designer.views
 		{
 			if (value == null) return;
 			_activeSpace = value;
+			drawGrid();
+			drawArrows();
 		}
 		private var _activeSpace:Space;
 		
@@ -175,6 +177,7 @@ package gamecheetah.designer.views
 		override protected function initialize():void 
 		{
 			Designer.model.bind("selectedEntity", this, true);
+			Designer.model.bind("activeSpace", this, true);
 			
 			startMarker.backgroundVisible = false;
 			leftArrow.rotation = 0;
@@ -214,6 +217,7 @@ package gamecheetah.designer.views
 			Engine.displayObject.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 			Engine.displayObject.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 			Engine.displayObject.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+			Engine.stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
 		}
 		
 		private function removeListeners():void 
@@ -294,11 +298,8 @@ package gamecheetah.designer.views
 			{
 				_dirty = false;
 				
-				var intersection:Rectangle = _activeSpace.bounds.intersection(_activeSpace._screenBounds);
-				intersection.offset( -_activeSpace._screenBounds.x, -_activeSpace._screenBounds.y);
-				
-				drawGrid(intersection);
-				drawArrows(intersection);
+				drawGrid();
+				drawArrows();
 				drawSelectionRectangle();
 			}
 		}
@@ -363,8 +364,8 @@ package gamecheetah.designer.views
 					// Snap entity to grid when being dragged
 					var w:int = _gridW >= 1 ? _gridW : 1;
 					var h:int = _gridH >= 1 ? _gridH : 1;
-					x = int((e.stageX + _activeSpace.camera.x - _dragEntityMouseOffset.x) / w) * w;
-					y = int((e.stageY + _activeSpace.camera.y - _dragEntityMouseOffset.y) / h) * h;
+					x = Math.floor((e.stageX - _dragEntityMouseOffset.x + _activeSpace.camera.x) / w) * w;
+					y = Math.floor((e.stageY - _dragEntityMouseOffset.y + _activeSpace.camera.y) / h) * h;
 				}
 				else
 				{
@@ -378,23 +379,15 @@ package gamecheetah.designer.views
 				
 				selectedEntity.location.x = Math.max(spaceRect.left, Math.min(x, spaceRect.right - clipRect.width));
 				selectedEntity.location.y = Math.max(spaceRect.top, Math.min(y, spaceRect.bottom - clipRect.height));
-				
 				drawSelectionRectangle();
 			}
 		}
 		
 		/**
-		 * Mouse release event handler for Stage.
+		 * Needed for some drag and drop features.
 		 */
-		private function onMouseUp(e:MouseEvent):void 
+		private function onStageMouseUp(e:MouseEvent):void 
 		{
-			// Stop drag entity.
-			if (_draggingEntity)
-			{
-				_draggingEntity = false;
-				drawSelectionRectangle();
-			}
-			
 			// Stop drag start marker.
 			if (_draggingMarker)
 			{
@@ -406,6 +399,19 @@ package gamecheetah.designer.views
 				_draggingMarker = false;
 				stopDrag();
 			}
+		}
+		
+		/**
+		 * Mouse release event handler.
+		 */
+		private function onMouseUp(e:MouseEvent):void 
+		{
+			// Stop drag entity.
+			if (_draggingEntity)
+			{
+				_draggingEntity = false;
+				drawSelectionRectangle();
+			}	
 		}
 		
 		//} Input event listeners
@@ -436,15 +442,27 @@ package gamecheetah.designer.views
 		/**
 		 * Draw grid lines in the specified region.
 		 */
-		private function drawGrid(region:Rectangle):void 
+		private function drawGrid():void 
 		{
+			var region:Rectangle = _activeSpace.bounds.intersection(_activeSpace._screenBounds);
+			region.offset( -_activeSpace._screenBounds.x, -_activeSpace._screenBounds.y);
+			
 			overlay.graphics.clear();
 			overlay.graphics.lineStyle(0, GRID_COLOR);
+			var cameraX:Number = _activeSpace.camera.x;
+			var cameraY:Number = _activeSpace.camera.y;
 			
 			if (_gridW > 1)
 			{
-				var x:Number;
-				for (x = region.left; x < region.right; x += _gridW)
+				var x:Number, offsetX:Number;
+				// Tricky: Java modulo is a remainder operator (not like C)
+				var remainderX:Number = Math.abs(_activeSpace.bounds.left % _gridW);
+				
+				if (cameraX > _activeSpace.bounds.left)
+					offsetX = Math.ceil(cameraX / gridW) * gridW - cameraX;
+				else offsetX = remainderX;
+				
+				for (x = region.left + offsetX; x < region.right; x += _gridW)
 				{
 					overlay.graphics.moveTo(x, region.top);
 					overlay.graphics.lineTo(x, region.bottom);
@@ -453,8 +471,15 @@ package gamecheetah.designer.views
 			
 			if (_gridH > 1)
 			{
-				var y:Number;
-				for (y = region.top; y < region.bottom; y += _gridH)
+				var y:Number, offsetY:Number;
+				// Tricky: Java modulo is a remainder operator (not like C)
+				var remainderY:Number = Math.abs(_activeSpace.bounds.top % _gridH);
+				
+				if (cameraY > _activeSpace.bounds.top)
+					offsetY = Math.ceil(cameraY / gridH) * gridH - cameraY;
+				else offsetY = remainderY;
+				
+				for (y = region.top + offsetY; y < region.bottom; y += _gridH)
 				{
 					overlay.graphics.moveTo(region.left, y);
 					overlay.graphics.lineTo(region.right, y);
@@ -465,13 +490,16 @@ package gamecheetah.designer.views
 		/**
 		 * Draw arrows near the space's boundaries.
 		 */
-		private function drawArrows(region:Rectangle):void 
+		private function drawArrows():void 
 		{
+			var region:Rectangle = _activeSpace.bounds.intersection(_activeSpace._screenBounds);
+			region.offset( -_activeSpace._screenBounds.x, -_activeSpace._screenBounds.y);
+			
 			// Space boundaries that are currently visible on the screen.
 			var leftBorderVisible:Boolean = region.left >= 1;
-			var rightBorderVisible:Boolean = region.right <= _activeSpace._screenBounds.right - 1;
+			var rightBorderVisible:Boolean = region.right <= Engine.stage.stageWidth - 1;
 			var topBorderVisible:Boolean = region.top >= 1;
-			var bottomBorderVisible:Boolean = region.bottom <= _activeSpace._screenBounds.bottom - 1;
+			var bottomBorderVisible:Boolean = region.bottom <= Engine.stage.stageHeight - 1;
 			
 			leftArrow.visible = leftBorderVisible;
 			rightArrow.visible = rightBorderVisible;

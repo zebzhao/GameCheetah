@@ -338,6 +338,12 @@ package gamecheetah
 			super.restore(obj);
 		}*/
 		
+		/*override public function export():Object 
+		{
+			var obj:Object = super.export();
+			return obj;
+		}*/
+		
 		public function setTint(color:uint, tintAlpha:Number=1):void 
 		{
 			_tint = color;
@@ -475,10 +481,11 @@ package gamecheetah
 		
 		/**
 		 * Stop any tweens started by tweenClip().
+		 * @param	complete	Force tween to completion upon stopping.
 		 */
-		public function stopTween():void 
+		public function stopTween(complete:Boolean=true):void 
 		{
-			if (_renderable != null) Engine.cancelTweens(_renderable);
+			if (_renderable != null) Engine.cancelTweens(_renderable, complete);
 		}
 		
 		/**

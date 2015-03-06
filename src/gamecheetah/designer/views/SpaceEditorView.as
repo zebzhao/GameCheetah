@@ -53,8 +53,8 @@ package gamecheetah.designer.views
 			heightInput.text = _selectedSpace.bounds.height.toString();
 			xInput.text = _selectedSpace.bounds.x.toString();
 			yInput.text = _selectedSpace.bounds.y.toString();
-			sxInput.text = _selectedSpace.startLocation.x.toString();
-			syInput.text = _selectedSpace.startLocation.y.toString();
+			sxInput.text = int(_selectedSpace.startLocation.x).toString();
+			syInput.text = int(_selectedSpace.startLocation.y).toString();
 			mouseEnabledButton.selected = _selectedSpace.mouseEnabled;
 			classCombo.selectedIndex = classCombo.items.indexOf(Object(_selectedSpace).constructor);
 		}
@@ -85,10 +85,10 @@ package gamecheetah.designer.views
 			
 			mouseEnabledButton = new IconPushButton(window.content, 0, 0, "Mouse Enabled", new Assets.MouseEnabled, defaultButton_Click);
 			openButton = new IconPushButton(window.content, 0, 0, "Open", new Assets.Open, openButton_Click);
-			sxInput = new TypedInput(window.content, 0, 0, TypedInput.TYPE_INTEGER);
-			syInput = new TypedInput(window.content, 0, 0, TypedInput.TYPE_INTEGER);
-			sxLabel = new Label(window.content, 0, 0, "SX");
-			syLabel = new Label(window.content, 0, 0, "SY");
+			sxInput = new TypedInput(window.content, 0, 0, TypedInput.TYPE_INTEGER, sxInput_Change);
+			syInput = new TypedInput(window.content, 0, 0, TypedInput.TYPE_INTEGER, syInput_Change);
+			sxLabel = new Label(window.content, 0, 0, "Start-X");
+			syLabel = new Label(window.content, 0, 0, "Start-Y");
 			
 			xInput = new TypedInput(window.content, 0, 0, TypedInput.TYPE_INTEGER, xInput_Change);
 			yInput = new TypedInput(window.content, 0, 0, TypedInput.TYPE_INTEGER, yInput_Change);
@@ -167,31 +167,41 @@ package gamecheetah.designer.views
 			else tagInput.textField.backgroundColor = Style.BACKGROUND;
 		}
 		
+		private function sxInput_Change(e:Event):void 
+		{
+			_selectedSpace.startLocation.x = sxInput.value as int;
+		}
+		
+		private function syInput_Change(e:Event):void 
+		{
+			_selectedSpace.startLocation.y = syInput.value as int;
+		}
+		
 		private function xInput_Change(e:Event):void 
 		{
 			_selectedSpace._bounds.x = xInput.value as int;
-			_selectedSpace.updateSize();
+			_selectedSpace.reindexQuadtree();
 			Designer.updateScrollBounds();
 		}
 		
 		private function yInput_Change(e:Event):void 
 		{
-			_selectedSpace._bounds.y = xInput.value as int;
-			_selectedSpace.updateSize();
+			_selectedSpace._bounds.y = yInput.value as int;
+			_selectedSpace.reindexQuadtree();
 			Designer.updateScrollBounds();
 		}
 		
 		private function widthInput_Change(e:Event):void 
 		{
 			_selectedSpace._bounds.width = widthInput.value as int;
-			_selectedSpace.updateSize();
+			_selectedSpace.reindexQuadtree();
 			Designer.updateScrollBounds();
 		}
 		
 		private function heightInput_Change(e:Event):void 
 		{
 			_selectedSpace._bounds.height = heightInput.value as int;
-			_selectedSpace.updateSize();
+			_selectedSpace.reindexQuadtree();
 			Designer.updateScrollBounds();
 		}
 		
