@@ -4,18 +4,19 @@
   <output>
     <movie outputType="Application" />
     <movie input="" />
-    <movie path="bin\Main.swf" />
+    <movie path="bin\IsometricDemo.swf" />
     <movie fps="30" />
-    <movie width="800" />
+    <movie width="400" />
     <movie height="600" />
     <movie version="11" />
-    <movie minorVersion="0" />
+    <movie minorVersion="9" />
     <movie platform="Flash Player" />
     <movie background="#FFFFFF" />
+    <movie preferredSDK="AIR 16.0.0;16.0.0;" />
   </output>
   <!-- Other classes to be compiled into your SWF -->
   <classpaths>
-    <class path="src" />
+    <class path="demos\Isometric Demo\src" />
   </classpaths>
   <!-- Build options -->
   <build>
@@ -24,6 +25,7 @@
     <option allowSourcePathOverlap="False" />
     <option benchmark="False" />
     <option es="False" />
+    <option inline="False" />
     <option locale="" />
     <option loadConfig="" />
     <option optimize="True" />
@@ -42,7 +44,7 @@
     <option loadExterns="" />
     <option staticLinkRSL="True" />
     <option additional="" />
-    <option compilerConstants="CONFIG::developer,true" />
+    <option compilerConstants="" />
     <option minorVersion="" />
   </build>
   <!-- SWC Include Libraries -->
@@ -51,7 +53,7 @@
   </includeLibraries>
   <!-- SWC Libraries -->
   <libraryPaths>
-    <!-- example: <element path="..." /> -->
+    <element path="site\downloads\gamecheetah-v1.1-release.swc" />
   </libraryPaths>
   <!-- External Libraries -->
   <externalLibraryPaths>
@@ -71,7 +73,7 @@
   </library>
   <!-- Class files to compile (other referenced classes will automatically be included) -->
   <compileTargets>
-    <compile path="src\Main.as" />
+    <compile path="demos\Isometric Demo\src\Main.as" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>
@@ -83,9 +85,13 @@
   <postBuildCommand alwaysRun="False" />
   <!-- Other project options -->
   <options>
-    <option showHiddenPaths="False" />
+    <option showHiddenPaths="True" />
     <option testMovie="Default" />
+    <option testMovieCommand="" />
   </options>
   <!-- Plugin storage -->
-  <storage />
+  <storage>
+    <entry key="at_enabled"><![CDATA[0]]></entry>
+    <entry key="at_password"><![CDATA[]]></entry>
+  </storage>
 </project>

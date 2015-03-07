@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<!--
+Useful links
+http://justinimhoff.com/ant-library-swc-namespaces
+https://github.com/honzabrecka/using-ant-to-build-flash
+-->
+<project name="build all" default="swc" basedir=".">
+    <taskdef resource="flexTasks.tasks" classpath="C:/AIRSDK_Compiler/ant/lib/flexTasks.jar"/>
+	<property name="AIR_SDK_HOME" value="C:/AIRSDK_Compiler" />
+	<property name="PLAYER_VERSION" value="11.9" />
+	<property name="SWC_DIR" value="site\downloads" />
+	<property name="ENGINE_VERSION" value="1.1" />
+	<property name="DEMOS_DIR" value="site\demos\static\swf" />
+    
+    <target name="swc" depends="swc-compile-dev, swc-compile-release"/>
+    
+	<target name="swc-compile-dev">
+        <compc failonerror="true" maxmemory="1024m"
+		 output="${SWC_DIR}\gamecheetah-v${ENGINE_VERSION}-dev.swc">
+			<compiler.external-library-path dir="${AIR_SDK_HOME}/frameworks/" append="true">
+				<include name="libs/player/${PLAYER_VERSION}/playerglobal.swc" />
+            </compiler.external-library-path>
+			<load-config filename="obj/dev- CheetaEngine.flex.compc.xml"/> 
+			<include-sources dir="src" includes="*"  />
+        </compc>
+    </target>
+	
+	<target name="swc-compile-release">
+        <compc failonerror="true" maxmemory="1024m"
+		 output="${SWC_DIR}\gamecheetah-v${ENGINE_VERSION}-release.swc">
+			<compiler.external-library-path dir="${AIR_SDK_HOME}/frameworks/" append="true">
+				<include name="libs/player/${PLAYER_VERSION}/playerglobal.swc" />
+            </compiler.external-library-path>
+			<load-config filename="obj/release- CheetaEngine.flex.compc.xml"/> 
+			<include-sources dir="src" includes="*"  />
+        </compc>
+    </target>
+	
+	<target name="demos" depends="isometric-game-dev, isometric-game-release"/>
+    
+	<target name="isometric-game-dev">
+        <mxmlc failonerror="true" maxmemory="1024m"
+			output="${DEMOS_DIR}\IsometricDemo-dev.swf"
+			file="demos/Isometric Demo/src/Main.as">
+			<compiler.external-library-path dir="${AIR_SDK_HOME}/frameworks/" append="true">
+				<include name="libs/player/${PLAYER_VERSION}/playerglobal.swc" />
+            </compiler.external-library-path>
+			<library-path
+				file="${SWC_DIR}\gamecheetah-v${ENGINE_VERSION}-dev.swc"
+				append="true">
+			</library-path>
+			<source-path path-element="demos/Isometric Demo/src"/>
+        </mxmlc>
+    </target>
+	
+	<target name="isometric-game-release">
+        <mxmlc failonerror="true" maxmemory="1024m"
+			output="${DEMOS_DIR}\IsometricDemo-release.swf"
+			file="demos/Isometric Demo/src/Main.as">
+			<compiler.external-library-path dir="${AIR_SDK_HOME}/frameworks/" append="true">
+				<include name="libs/player/${PLAYER_VERSION}/playerglobal.swc" />
+            </compiler.external-library-path>
+			<library-path
+				file="${SWC_DIR}\gamecheetah-v${ENGINE_VERSION}-release.swc"
+				append="true">
+			</library-path>
+			<source-path path-element="demos/Isometric Demo/src"/>
+        </mxmlc>
+    </target>
+</project>

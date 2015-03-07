@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <flex-config xmlns="http://www.adobe.com/2006/flex-config">
-  <output>C:\Users\Owner\Desktop\Cheeta\CheetaEngine\site\downloads\gamecheetah-dev.swc</output>
+  <output></output>
   <use-network>true</use-network>
   <target-player>11.9</target-player>
   <warnings>true</warnings>

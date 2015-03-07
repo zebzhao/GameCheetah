@@ -1066,7 +1066,6 @@ package gamecheetah
 			
 			alphaThreshold = 1;
 			mouseAlphaThreshold = 1;
-			mouseEnabled = false;
 			useCollisionMasks = true;
 			detectCollisions = true;
 			
