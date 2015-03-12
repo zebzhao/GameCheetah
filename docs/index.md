@@ -24,4 +24,4 @@ GameCheetah was originally inspired by FlashPunk another AS3 game creation libra
 ###License
 This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/4.0/
 
-Flash Games created using GameCheetah can be for commercial purposes as long as proper attribution is given. By default, a list of all required attribution is built into your game's context menu. If this is not tampered with, no further attribution is required, but very much appreciated!
+Flash Games created using GameCheetah can be for commercial purposes as long as proper attribution is given. By default, a list of all required attribution is built into your game's context menu. If this is not tampered with, no further attribution is required, but very much appreciated.

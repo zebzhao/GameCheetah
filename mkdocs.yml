@@ -1,0 +1,8 @@
+site_name: GameCheetah AS3 Library
+repo_url: https://github.com/zebzhao/gamecheetah
+pages:
+- ['index.md', 'About']
+- ['getting-started.md', 'Getting Started']
+- ['building-your-first-entity.md', 'Your First Entity (Part 1)']
+- ['adding-logic-to-entities.md', 'Overrides and Game Logic']
+- ['building-your-first-entity-p2.md', 'Your First Entity (Part 2)']
