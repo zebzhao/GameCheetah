@@ -1,11 +1,14 @@
 # GameCheetah
-A free open source AS3 game engine.
+GameCheetah is a AS3 SWC library created for the purpose of optimizing workflow in prototype game design using FlashDevelop or FlashBuilder.
 
 [Main Site](http://www.gamecheetah.net)
+
+[Getting Started](http://gamecheetah.readthedocs.org)
 
 [Documentation](http://www.gamecheetah.net/docs/v1.1)
 
 [Demos](http://www.gamecheetah.net/demos)
+
 
 ##Changes:
 
