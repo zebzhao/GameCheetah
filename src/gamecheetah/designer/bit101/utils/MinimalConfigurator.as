@@ -231,20 +231,15 @@ package gamecheetah.designer.bit101.utils
 		 */
 		Accordion;
 		CheckBox;
-		ColorChooser;
 		ComboBox;
-		HBox;
 		HRangeSlider;
 		HScrollBar;
 		HSlider;
-		HUISlider;
 		InputText;
 		Label;
 		List;
 		ListItem;
-		NumericStepper;
 		Panel;
-		ProgressBar;
 		PushButton;
 		RadioButton;
 		RangeSlider;
@@ -253,13 +248,8 @@ package gamecheetah.designer.bit101.utils
 		Slider;
 		Style;
 		Text;
-		TextArea;
-		UISlider;
 		VBox;
-		VRangeSlider;
 		VScrollBar;
-		VSlider;
-		VUISlider;
 		Window;
 	}
 }

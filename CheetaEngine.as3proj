@@ -17,6 +17,7 @@
   <!-- Other classes to be compiled into your SWF -->
   <classpaths>
     <class path="demos\Isometric Demo\src" />
+    <class path="src" />
   </classpaths>
   <!-- Build options -->
   <build>
@@ -44,7 +45,7 @@
     <option loadExterns="" />
     <option staticLinkRSL="True" />
     <option additional="" />
-    <option compilerConstants="" />
+    <option compilerConstants="CONFIG::developer, true" />
     <option minorVersion="" />
   </build>
   <!-- SWC Include Libraries -->
@@ -53,7 +54,7 @@
   </includeLibraries>
   <!-- SWC Libraries -->
   <libraryPaths>
-    <element path="site\downloads\gamecheetah-v1.1-release.swc" />
+    <!-- example: <element path="..." /> -->
   </libraryPaths>
   <!-- External Libraries -->
   <externalLibraryPaths>
