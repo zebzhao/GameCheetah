@@ -18,7 +18,6 @@ package gamecheetah
 	/**
 	 * Factory object used to create Clip objects on the screen.
 	 * @author 		Zeb Zhao {zeb.zhao(at)gamecheetah[dot]net}
-	 * @version		1.0
 	 */
 	public class Graphic extends Restorable
 	{

@@ -22,6 +22,9 @@ package gamecheetah.graphics
 	 */
 	public class Renderable
 	{
+		// Shared for setting empty buffers
+		protected static const EMPTY:BitmapData = new BitmapData(1, 1, true, 0);
+		
 		// Shared reusable geometry variables
 		private static var _matrix:Matrix = new Matrix;
 		private static var _ct:ColorTransform = new ColorTransform();
@@ -116,6 +119,14 @@ package gamecheetah.graphics
 		}
 		
 		/**
+		 * Sets transformAnchor to the current center of the renderable.
+		 */
+		public function setTransformAnchorToCenter():void 
+		{
+			transformAnchor.setTo(this.width / 2, this.height / 2);
+		}
+		
+		/**
 		 * Overridable. Disposes the clip.
 		 */
 		public function dispose():void 
@@ -162,6 +173,13 @@ package gamecheetah.graphics
 			if (_buffer == null) return;
 			
 			_point.setTo(x, y);
+			
+			CONFIG::developer {
+				if (isNaN(alpha) || alpha < 0) trace("Warning: alpha is negative or NaN detected!");
+				if (isNaN(scaleX) || scaleX < 0) trace("Warning: scaleX is negative or NaN detected!");
+				if (isNaN(scaleY) || scaleY < 0) trace("Warning: scaleY is negative or NaN detected!");
+				if (isNaN(tintAlpha) || tintAlpha < 0) trace("Warning: tintAlpha is negative or NaN detected!");
+			}
 			
 			if (rotation != 0 || alpha < 1 || scaleX != 1 || scaleY != 1 || tintAlpha != 0)
 			{

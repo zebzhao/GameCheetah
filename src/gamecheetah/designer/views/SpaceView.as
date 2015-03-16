@@ -214,19 +214,19 @@ package gamecheetah.designer.views
 		{
 			startMarker.addEventListener(MouseEvent.MOUSE_DOWN, startMarker_onMouseDown);
 			this.addEventListener(Event.ENTER_FRAME, onEnterFrame);
-			Engine.displayObject.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-			Engine.displayObject.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-			Engine.displayObject.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-			Engine.stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
+			Engine.instance.displayObject.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+			Engine.instance.displayObject.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+			Engine.instance.displayObject.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+			Engine.instance.stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
 		}
 		
 		private function removeListeners():void 
 		{
 			startMarker.removeEventListener(MouseEvent.MOUSE_DOWN, startMarker_onMouseDown);
 			this.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
-			Engine.displayObject.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-			Engine.displayObject.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-			Engine.displayObject.removeEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+			Engine.instance.displayObject.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+			Engine.instance.displayObject.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+			Engine.instance.displayObject.removeEventListener(MouseEvent.MOUSE_UP, onMouseUp);
 		}
 		
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

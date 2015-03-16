@@ -97,7 +97,7 @@ package gamecheetah.gameutils
 		}
 		
 		/**
-		 * The absolute mouse x position on the screen (unscaled).
+		 * The absolute mouse x position on the screen.
 		 */
 		public static function get mouseX():int
 		{
@@ -105,7 +105,7 @@ package gamecheetah.gameutils
 		}
 		
 		/**
-		 * The absolute mouse y position on the screen (unscaled).
+		 * The absolute mouse y position on the screen.
 		 */
 		public static function get mouseY():int
 		{

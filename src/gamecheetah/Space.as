@@ -1284,11 +1284,12 @@ package gamecheetah
 			var mouseY:Number = stageY + camera.y;
 			var entities:Vector.<Entity> = queryPoint(mouseX, mouseY);
 			var topmost:Entity, entity:Entity, i:int, alpha:uint;
+			
 			for (i = 0; i < entities.length; i++)
 			{
 				entity = entities[i];
 				
-				if (entity.mouseEnabled && entity.renderable != null && entity.renderable.alpha > 0 && (topmost == null || topmost.depth < entity.depth))
+				if (entity.mouseEnabled && entity.renderable != null && entity.renderable.alpha != 0 && (topmost == null || topmost.depth < entity.depth))
 				{
 					if (mouseAlphaThreshold > 0)
 					{

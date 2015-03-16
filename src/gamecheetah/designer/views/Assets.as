@@ -64,5 +64,25 @@ package gamecheetah.designer.views
 		
 		[Embed(source = "/../lib/Icons/tango-list-remove.png")]
 		public static var ZoomOut:Class;
+		
+		
+		[Embed(source="/../lib/Icons/folder-saved-search.png")]
+		public static var SAVE:Class;
+		
+		[Embed(source="/../lib/Icons/folder.png")]
+		public static var LOAD:Class;
+		
+		[Embed(source="/../lib/Icons/image-x-generic.png")]
+		public static var GRAPHICS:Class;
+		
+		[Embed(source="/../lib/Icons/view-fullscreen.png")]
+		public static var SPACES:Class;
+		
+		[Embed(source="/../lib/Icons/preferences-system.png")]
+		public static var EDIT:Class;
+		
+		[Embed(source="/../lib/Icons/list-add.png")]
+		public static var ADD:Class
+		
 	}
 }

@@ -108,6 +108,14 @@ package gamecheetah.utils
 			_keys.splice(index, 1);
 			_values.splice(index, 1);
 		}
+		
+		public function removeAt(index:int):void 
+		{
+			if (index == -1) throw new GCError("index not valid");
+			
+			_keys.splice(index, 1);
+			_values.splice(index, 1);
+		}
 	}
 
 }

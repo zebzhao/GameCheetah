@@ -27,10 +27,9 @@ package gamecheetah.designer
 	 * @author 		Zeb Zhao {zeb.zhao(at)gamecheetah[dot]net}
 	 * @private
 	 */
-	public final class Designer extends Sprite
+	public final class Designer extends Engine
 	{
 		public static var model:DesignerModel;
-		public static var mainView:MainView;
 		public static var playView:PlayView;
 		
 		public static var context:Dictionary;
@@ -59,20 +58,22 @@ package gamecheetah.designer
 		
 		public function Designer() 
 		{
-			super();
+			trace("Compiling in developer mode.")
+			
+			super(30, false);
 			
 			instance = this;
 			
 			addListeners();
 			
 			// Start the engine paused and in design mode
-			Engine.paused = true;
+			Engine.instance.paused = true;
 			Engine._designMode = true;
 			Input._eventsEnabled = false;
 			
 			model = new DesignerModel();
 			context = new Dictionary();
-			// Set up scroller.
+						// Set up scroller.
 			scroller = new Scroller(0.1, 1.5, null, Scroller.ARROW_KEYS);
 			
 			// Create space for sandbox
@@ -84,11 +85,11 @@ package gamecheetah.designer
 			}
 			
 			// Create main view (top-level display)
-			mainView = new MainView();
 			playView = new PlayView();
-			this.addChild(mainView);
 			
 			model.update("selectedSpace", Engine.space, true);
+			
+			this.swapSpace(new MainConsole());
 		}
 		
 		private function addListeners():void 
@@ -124,13 +125,12 @@ package gamecheetah.designer
 			
 			// Remove old UI
 			instance.addChild(playView);
-			instance.removeChild(mainView);
 			
 			// Create restore point for all Space objects.
 			for each (space in spaces) space._resetInfo = space.export();
 			
 			// Unpause the engine
-			Engine.paused = false;
+			Engine.instance.paused = false;
 			Engine._designMode = false;
 			
 			// Enable key events to be fired
@@ -138,7 +138,6 @@ package gamecheetah.designer
 			
 			// Disable designer stage listeners
 			scroller.disable();
-			MainView.spaceCanvas.disabled = true;
 			
 			// Reset the game state.
 			space = Engine.space;
@@ -174,7 +173,6 @@ package gamecheetah.designer
 			for each (space in spaces) space.invokeCallbacks = false;
 			
 			// Remove old UI
-			instance.addChild(mainView);
 			instance.removeChild(playView);
 			
 			// Remove game UI
@@ -196,7 +194,7 @@ package gamecheetah.designer
 			Input._eventsEnabled = false;
 			
 			// Pause the engine
-			Engine.paused = true;
+			Engine.instance.paused = true;
 			Engine._designMode = true;
 			
 			// Reset all Space objects.
@@ -204,7 +202,6 @@ package gamecheetah.designer
 			
 			// Enable designer stage listeners
 			scroller.enable();
-			MainView.spaceCanvas.disabled = false;
 			
 			// Swap to the default Space object.
 			Engine.swapSpace(Engine.assets.spaces.getAt(0));
@@ -324,14 +321,19 @@ package gamecheetah.designer
 		/**
 		 * Remove selected Space object.
 		 */
-		public static function removeSpace():void 
+		public static function removeSpace(index:int):void 
 		{
-			if (model.selectedSpace == null) return;
+			if (index == -1) return;
 			
-			if (!model.selectedSpace.active)
+			var space:Space = Engine.assets.spaces.getAt(index);
+			if (model.activeSpace != space)
 			{
-				Engine.removeSpace(model.selectedSpace.tag);
-				model.update("selectedSpace", null, true);
+				Engine.removeSpace(space.tag);
+				
+				if (space == model.selectedSpace)
+				{
+					model.update("selectedSpace", null, true);
+				}
 				model.update("spacesList", null, true);
 			}
 			else errorMessage("Selected space is active and cannot be removed.\nClick Edit > Open to change the active space");
@@ -340,14 +342,18 @@ package gamecheetah.designer
 		/**
 		 * Remove selected Graphic object.
 		 */
-		public static function removeGraphic():void 
+		public static function removeGraphic(index:int):void 
 		{
-			if (model.selectedGraphic == null) return;
+			if (index == -1) return;
 			
-			Engine.assets.graphics.remove(model.selectedGraphic.tag);
-			model.selectedGraphic.removeEntities();
+			var graphic:Graphic = Engine.assets.graphics.getAt(index);
+			Engine.assets.graphics.removeAt(index);
+			graphic.removeEntities();
 			
-			model.update("selectedGraphic", null, true);
+			if (model.selectedGraphic == graphic)
+			{
+				model.update("selectedGraphic", null, true);
+			}
 			model.update("graphicsList", null, true);
 		}
 		
