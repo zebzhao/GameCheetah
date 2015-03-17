@@ -8,12 +8,23 @@ package gamecheetah.designer.components
 			_children:Vector.<BaseComponent> = new Vector.<BaseComponent>();
 		
 		private var
-			_visible:Boolean = true,
-			_visibleAlpha:Number=1;
+			_visible:Boolean = true;
 			
 		public var
 			depthOffset:int;
 		
+		internal function unregisterChildren(...children:Array):void 
+		{
+			for each (var child:BaseComponent in children)
+			{
+				if (child == null)
+					throw new Error("Child detected to be null!");
+				else if (child == this)
+					throw new Error("Parent child self-reference detected!");
+					
+				_children.splice(_children.indexOf(child), 1);
+			}
+		}
 		
 		internal function registerChildren(...children:Array):void 
 		{
@@ -50,25 +61,26 @@ package gamecheetah.designer.components
 		
 		public function set visible(value:Boolean):void 
 		{
-			if(_visible) _visibleAlpha = this.renderable.alpha
 			_visible = value;
-			this.renderable.alpha = _visible ? _visibleAlpha : 0;
 			
 			for each (var child:BaseComponent in _children)
 			{
 				child.visible = _visible;
 			}
-			this.stopTween();
 		}
 		
 		public function hide(...rest:Array):void 
 		{
-			this.visible = false;
+			if (this.visible) this.visible = false;
 		}
 		
 		public function show(...rest:Array):void 
 		{
-			this.visible = true;
+			if (!this.visible)
+			{
+				this.visible = true;
+				this.renderable.alpha = 1;
+			}
 		}
 		
 		public function move(x:int, y:int):void 
@@ -108,6 +120,13 @@ package gamecheetah.designer.components
 		{
 			this.mouseEnabled = true;
 			this.renderable.smoothing = true;
+		}
+		
+		override public function onUpdate():void 
+		{
+			if (!_visible) this.renderable.alpha = 0;
+			for each (var child:BaseComponent in _children)
+				child.renderable.alpha = this.renderable.alpha;
 		}
 	}
 

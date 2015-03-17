@@ -14,8 +14,8 @@ package gamecheetah.designer.components
 	
 	public class IconButton extends BaseButton 
 	{
-		private var _hint:Label;
-		private var _frozen:Boolean;
+		protected var _hint:Label;
+		protected var _frozen:Boolean;
 		
 		public function get frozen():Boolean 
 		{
@@ -44,8 +44,9 @@ package gamecheetah.designer.components
 			
 			if (hint)
 			{
+				// Tricky: Hint does not belong directly to IconButton, as it's visible property shouldn't be linked.
 				_hint = new Label(space, hint, this, labelAlign, Style.HEADER_BASE);
-				_hint.hide();
+				_hint.renderable.alpha = 0;
 			}
 			space.add(this);
 		}
@@ -66,6 +67,12 @@ package gamecheetah.designer.components
 			if (_hint) _hint.renderable.alpha = 0;
 		}
 		
+		override public function onMouseDown():void 
+		{
+			super.onMouseDown();
+			if (_hint) this.move(this.origin.x, this.origin.y);
+		}
+		
 		override public function onMouseOver():void 
 		{
 			if (!_frozen)
@@ -82,6 +89,17 @@ package gamecheetah.designer.components
 				super.onMouseOut();
 				if (_hint) _hint.tweenClip(null, { "alpha": 0 } );
 			}
+		}
+		
+		override public function setDepth(value:int):void 
+		{
+			super.setDepth(value);
+			if (_hint) _hint.depth = this.depth + 1;
+		}
+		
+		override public function onUpdate():void 
+		{
+			if (!_frozen) super.onUpdate();
 		}
 	}
 }

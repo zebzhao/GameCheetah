@@ -85,9 +85,21 @@ package gamecheetah.utils
 			_keys[index] = updated;
 		}
 		
+		public function updateKeyAt(index:int, updated:String):void 
+		{
+			if (index == -1) throw new GCError("key doesn't exist");
+			_keys[index] = updated;
+		}
+		
 		public function updateValue(key:String, value:*):void 
 		{
 			var index:int = _keys.indexOf(key);
+			if (index == -1) throw new GCError("key doesn't exist");
+			_values[index] = value;
+		}
+		
+		public function updateValueAt(index:int, value:*):void 
+		{
 			if (index == -1) throw new GCError("key doesn't exist");
 			_values[index] = value;
 		}

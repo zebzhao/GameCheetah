@@ -66,7 +66,7 @@ package gamecheetah.designer.views
 		public static var ZoomOut:Class;
 		
 		
-		[Embed(source="/../lib/Icons/folder-saved-search.png")]
+		[Embed(source="/../lib/Icons/document-save-as.png")]
 		public static var SAVE:Class;
 		
 		[Embed(source="/../lib/Icons/folder.png")]
@@ -75,7 +75,7 @@ package gamecheetah.designer.views
 		[Embed(source="/../lib/Icons/image-x-generic.png")]
 		public static var GRAPHICS:Class;
 		
-		[Embed(source="/../lib/Icons/view-fullscreen.png")]
+		[Embed(source="/../lib/Icons/x-office-drawing.png")]
 		public static var SPACES:Class;
 		
 		[Embed(source="/../lib/Icons/preferences-system.png")]
@@ -84,5 +84,16 @@ package gamecheetah.designer.views
 		[Embed(source="/../lib/Icons/list-add.png")]
 		public static var ADD:Class
 		
+		[Embed(source="/../lib/Icons/image-loading.png")]
+		public static var STATS:Class
+		
+		[Embed(source="/../lib/Icons/media-playback-start.png")]
+		public static var PLAY:Class
+		
+		[Embed(source="/../lib/Icons/media-playback-stop.png")]
+		public static var STOP:Class
+		
+		[Embed(source="/../lib/Icons/emblem-system.png")]
+		public static var SETTINGS:Class
 	}
 }

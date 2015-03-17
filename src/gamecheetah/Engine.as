@@ -762,8 +762,6 @@ package gamecheetah
 			_bitmap = new Bitmap();
 			displayObject.addChild(_bitmap);
 			displayObject.mouseChildren = false;  // Tricky: Catch children mouse events.
-			displayObject.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-			displayObject.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
 			
 			this.addChild(displayObject);
 			
@@ -773,7 +771,10 @@ package gamecheetah
 			this.addEventListener(Event.ENTER_FRAME, _onEnterFrame, false, 1);
 			
 			resizeBuffer(stage.stageWidth, stage.stageHeight);
+			
 			this.stage.addEventListener(Event.RESIZE, onResize);
+			this.stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+			this.stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
 		}
 		
 		/**

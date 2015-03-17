@@ -16,16 +16,19 @@ package gamecheetah.designer.components
 	{
 		//{ ------------------- Private Info -------------------
 		private var _delete:IconButton;
+		private var _editInput:TextInput;
 		private var _parent:List;
-		private var _stamp:ListItemStamp;
-		
-		private var _selected:Boolean;
 		
 		private var
+			_selected:Boolean,
+			_editable:Boolean,
 			_dragging:Boolean, _dragOffset:Point = new Point();
 		
 		[Embed(source = "/../lib/Icons/emblem-unreadable.png")]
-		private static var ICON1:Class;
+		private static var DELETE_SM:Class;
+		
+		[Embed(source="/../lib/Icons/accessories-text-editor-sm.png")]
+		public static var EDIT_SM:Class;
 		
 		//{ ------------------- Public Properties -------------------
 		
@@ -36,53 +39,54 @@ package gamecheetah.designer.components
 		
 		public function get text():String 
 		{
-			return _label.text;
+			return _editable ? _editInput.text : _label.text;
 		}
 		
 		public function set text(value:String):void
 		{
-			_label.text = value;
+			if (_editable) _editInput.text = value;
+			else _label.text = value;
 		}
 		
 		//{ ------------------- Public Methods -------------------
 		
-		public function ListItem(parent:List, space:Space = null, width:int=100, height:int=25, text:String="", handler:Function=null) 
+		public function ListItem(	parent:List, space:Space = null, width:int = 100, height:int = 25,
+									text:String="", handler:Function=null, editable:Boolean=true, deletable:Boolean=true ) 
 		{
+			super(null, width, height, text, handler, new ListItemStamp(width, height));
+			
 			_parent = parent;
-			_text = text;
-			_handler = handler;
+			_editable = editable;
 			
-			_stamp = new ListItemStamp(width, height);
+			if (deletable)
+			{
+				_delete = new IconButton(space, DELETE_SM, onDelete);
+				_delete.location.setTo(5, height / 2 - _delete.renderable.height / 2);
+				_delete.depthOffset = 1;
+				
+				this.registerChildren(_delete);
+			}
 			
-			_delete = new IconButton(space, ICON1, onDelete);
-			_delete.location.setTo(10, height / 2 - _delete.renderable.height / 2);
-			_delete.depthOffset = 1;
-			
-			this.renderable = _stamp;
-			this.setUpState(null, null, handler);
-			this.setOverState(null, null, _stamp.highlight );
-			this.setDownState(null, null, _stamp.unhighlight );
-			this.setOutState(null, _stamp.unhighlight );
-			
-			if (space)
+			if (editable)
+			{
+				_editInput = new TextInput(space, width - 25, 25, onEdit);
+				_editInput.location.setTo(25, 0);
+				_editInput.depthOffset = 2;
+				this.registerChildren(_editInput);
+			}
+			else
 			{
 				_label = new Label(space, _text, this, Label.ALIGN_VCENTER_LEFT, Style.FONT_DARK);
-				_label.offset.setTo(30, 0);  // Make some space for delete icon.
-				space.add(this);
-				
-				this.registerChildren(_label, _delete);
+				_label.offset.setTo(25, 0);  // Make some space for delete icon.
+				this.registerChildren(_label);
 			}
+			
+			if (space) space.add(this);
 			
 			// Capture any mouse release whether on or off the entity.
 			Engine.stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
 			
 			this.setDepth(0);
-		}
-		
-		override public function hide(...rest:Array):void 
-		{
-			super.hide();
-			_delete.visible = false;
 		}
 		
 		public function select():void 
@@ -101,8 +105,7 @@ package gamecheetah.designer.components
 		
 		override public function onUpdate():void 
 		{
-			// Copy tweenable properties
-			_label.renderable.alpha = _delete.renderable.alpha = this.renderable.alpha;
+			super.onUpdate();
 			
 			if (_dragging)
 				this.location.setTo(Input.mouseX - _dragOffset.x, Input.mouseY - _dragOffset.y);
@@ -149,6 +152,11 @@ package gamecheetah.designer.components
 		{
 			_parent.deleteItem(this);
 		}
+		
+		private function onEdit(b:TextInput):void
+		{
+			_parent.editItem(this, b.text);
+		}
 	}
 }
 import flash.display.BitmapData;
@@ -158,11 +166,9 @@ import gamecheetah.designer.components.Style;
 
 class ListItemStamp extends Renderable
 {
-	
 	public function ListItemStamp(width:int, height:int):void 
 	{
 		this.setBuffer(new BitmapData(width, height, true, Style.BASE));
-		this.setTransformAnchorToCenter();
 	}
 	
 	public function select(b:*=null):void 

@@ -14,8 +14,8 @@ package gamecheetah.designer.components
 		//{ ------------------- Private Info -------------------
 		
 		private var	_items:Array,
-					_itemWidth:uint,
-					_itemHeight:uint;
+					_itemWidth:uint, _itemHeight:uint,
+					_editable:Boolean, _deletable:Boolean;
 		
 		private var _visibleItems:uint,
 					_listItems:Array,
@@ -25,7 +25,7 @@ package gamecheetah.designer.components
 		private var _hidden:Boolean;
 		
 		private var
-			_onDelete:Function, _onSwap:Function, _onSelect:Function;
+			_onDelete:Function, _onSwap:Function, _onSelect:Function, _onEdit:Function;
 		
 		//{ ------------------- Public Properties -------------------
 		
@@ -66,15 +66,20 @@ package gamecheetah.designer.components
 		
 		public function List(	space:Space, items:Array = null, visibleItems:uint = 8,
 								itemWidth:uint = 125, itemHeight:uint = 25,
-								onSelect:Function=null, onDelete:Function=null, onSwap:Function=null ) 
+								onSelect:Function = null, onDelete:Function = null, onSwap:Function = null, onEdit:Function = null,
+								editable:Boolean = true, deletable:Boolean = true ) 
 		{
 			_onSelect = onSelect;
 			_onDelete = onDelete;
 			_onSwap = onSwap;
+			_onEdit = onEdit;
 			
 			_items = items;
 			_itemWidth = itemWidth;
 			_itemHeight = itemHeight;
+			
+			_editable = editable;
+			_deletable = deletable;
 			
 			_listItems = [];
 			_visibleItems = visibleItems;
@@ -105,6 +110,11 @@ package gamecheetah.designer.components
 		public function deleteItem(item:ListItem):void 
 		{
 			if (_onDelete) _onDelete(_listItems.indexOf(item) + _slider.value);
+		}
+		
+		public function editItem(item:ListItem, text:String):void 
+		{
+			if (_onEdit) _onEdit(_listItems.indexOf(item) + _slider.value, text);
 		}
 		
 		public function findSwapItem(item:ListItem):void 
@@ -167,6 +177,7 @@ package gamecheetah.designer.components
 				{
 					listItem.mouseEnabled = true;
 					listItem.text = items[_slider.value + i];
+					listItem.visible = true;
 				}
 				else
 				{
@@ -196,20 +207,25 @@ package gamecheetah.designer.components
 				if (i < items.length)
 				{
 					listItem = _listItems[i];
-					listItem.tweenClip( { "alpha": 0 }, { "alpha": 1 }, 0.2, null, i * 0.05);
+					listItem.tweenClip( { "alpha": 0 }, { "alpha": 1 }, 0.3, null, i * 0.1);
 				}
 			}
-			_slider.tweenClip( { "alpha": 0 }, { "alpha": 1 }, (_visibleItems - 1) * 0.1);
 		}
 		
 		private function makeItems():void 
 		{
+			var listItem:ListItem;
+			for each (listItem in _listItems)
+			{
+				this.unregisterChildren(listItem);
+				listItem.space.destroyEntity(listItem);
+			}
+			
 			_listItems.length = 0;
 			
-			var listItem:ListItem;
 			for (var i:uint = 0; i < _visibleItems; i++)
 			{
-				listItem = new ListItem(this, this.space, _itemWidth, _itemHeight, "{Empty}", onSelectItem);
+				listItem = new ListItem(this, this.space, _itemWidth, _itemHeight, "{Empty}", onSelectItem, _editable, _deletable);
 				_listItems.push(listItem); 
 				this.registerChildren(listItem);
 			}

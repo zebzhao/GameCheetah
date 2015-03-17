@@ -15,7 +15,7 @@ package gamecheetah.designer.views
 	{
 		private var
 			_loadBtn:IconButton, _saveBtn:IconButton,
-			_graphicsBtn:IconButton, _spacesBtn:IconButton,
+			_graphicsBtn:IconButton, _spacesBtn:IconButton, _settingsBtn:IconButton,
 			_graphicsList:List, _spacesList:List,
 			_addGraphicBtn:IconButton, _addSpaceBtn:IconButton,
 			_editGraphicBtn:IconButton, _editSpaceBtn:IconButton;
@@ -37,14 +37,15 @@ package gamecheetah.designer.views
 		//}
 		//{ ------------------------------------ Constructor ------------------------------------
 			
-		public function MainConsole():void 
+		public function MainConsole() 
 		{
 			_loadBtn = new IconButton(this, Assets.LOAD, loadBtn_Click, "Load Data", Label.ALIGN_LEFT);
 			_saveBtn = new IconButton(this, Assets.SAVE, saveBtn_Click, "Save Data", Label.ALIGN_LEFT);
 			_graphicsBtn = new IconButton(this, Assets.GRAPHICS, graphicsBtn_Click, "Graphics", Label.ALIGN_RIGHT);
 			_spacesBtn = new IconButton(this, Assets.SPACES, spacesBtn_Click, "Spaces", Label.ALIGN_RIGHT);
-			_graphicsList = new List(this, [], 8, 150, 25, graphicsList_Select, graphicsList_Delete, graphicsList_Swap);
-			_spacesList = new List(this, [], 8, 150, 25, spacesList_Select, spacesList_Delete, spacesList_Swap);
+			_settingsBtn = new IconButton(this, Assets.SETTINGS, settingsBtn_Click, "Settings", Label.ALIGN_RIGHT);
+			_graphicsList = new List(this, [], 8, 150, 25, graphicsList_Select, graphicsList_Delete, graphicsList_Swap, graphicsList_Edit);
+			_spacesList = new List(this, [], 8, 150, 25, spacesList_Select, spacesList_Delete, spacesList_Swap, spacesList_Edit);
 			_addGraphicBtn = new IconButton(this, Assets.ADD, addGraphicBtn_Click, "Add", Label.ALIGN_BELOW);
 			_addSpaceBtn = new IconButton(this, Assets.ADD, addSpaceBtn_Click, "Add", Label.ALIGN_BELOW);
 			_editGraphicBtn = new IconButton(this, Assets.EDIT, editGraphicBtn_Click, "Edit", Label.ALIGN_BELOW);
@@ -71,8 +72,8 @@ package gamecheetah.designer.views
 		
 		override public function onUpdate():void 
 		{
-			_saveBtn.move(Engine.stage.stageWidth - 42, 10);
-			_loadBtn.move(Engine.stage.stageWidth - 42, 52);
+			_saveBtn.move(Engine.stage.stageWidth - 42, 52);
+			_loadBtn.move(Engine.stage.stageWidth - 42, 94);
 			
 			_spacesBtn.move(10, 10);
 			_spacesBtn.setDepth(10);
@@ -85,6 +86,9 @@ package gamecheetah.designer.views
 			_graphicsList.move(52, _graphicsBtn.bottom - 3);
 			_addGraphicBtn.move(_graphicsList.left + 80, _graphicsList.bottom + 5);
 			_editGraphicBtn.move(_graphicsList.left + 122, _graphicsList.bottom + 5);
+			
+			_settingsBtn.move(10, 94);
+			_settingsBtn.setDepth(10);
 		}
 		
 		//}
@@ -92,10 +96,12 @@ package gamecheetah.designer.views
 		
 		private function graphicsList_Select(index:int):void 
 		{
+			Designer.model.update("selectedGraphic", Engine.assets.graphics.getAt(index), true);
 		}
 		
 		private function spacesList_Select(index:int):void 
 		{
+			Designer.model.update("selectedSpace", Engine.assets.spaces.getAt(index), true);
 		}
 		
 		private function spacesList_Swap(indexA:int, indexB:int):void 
@@ -104,9 +110,19 @@ package gamecheetah.designer.views
 			if (success) Designer.model.update("spacesList", null, true);
 		}
 		
+		private function spacesList_Edit(index:int, text:String):void 
+		{
+			var valid:Boolean = Designer.changeSpaceTag(index, text);
+		}
+		
 		private function spacesList_Delete(index:int):void 
 		{
 			Designer.removeSpace(index);
+		}
+		
+		private function graphicsList_Edit(index:int, text:String):void 
+		{
+			var valid:Boolean = Designer.changeGraphicTag(index, text);
 		}
 		
 		private function graphicsList_Swap(indexA:int, indexB:int):void 
@@ -159,6 +175,7 @@ package gamecheetah.designer.views
 				_addSpaceBtn.show();
 				_editSpaceBtn.show();
 				hideGraphicList();
+				hideSettings();
 			}
 			else hideSpaceList();
 		}
@@ -172,8 +189,21 @@ package gamecheetah.designer.views
 				_addGraphicBtn.show();
 				_editGraphicBtn.show();
 				hideSpaceList();
+				hideSettings();
 			}
 			else hideGraphicList();
+		}
+		
+		private function settingsBtn_Click(b:BaseButton):void 
+		{
+			if (!_settingsBtn.frozen)
+			{
+				_settingsBtn.freeze();
+				
+				hideSpaceList();
+				hideGraphicList()
+			}
+			else hideSettings();
 		}
 		
 		private function hideSpaceList():void 
@@ -190,6 +220,11 @@ package gamecheetah.designer.views
 			_graphicsList.hide();
 			_addGraphicBtn.hide();
 			_editGraphicBtn.hide();
+		}
+		
+		private function hideSettings():void 
+		{
+			_settingsBtn.unfreeze();
 		}
 		//}
 	}

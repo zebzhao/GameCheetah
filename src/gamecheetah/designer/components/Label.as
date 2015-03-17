@@ -36,6 +36,7 @@ package gamecheetah.designer.components
 		
 		public function set text(value:String):void 
 		{
+			if (value == null) value = "";
 			this.textClip.text = value;
 		}
 		
@@ -65,12 +66,12 @@ package gamecheetah.designer.components
 		{
 			this.mouseEnabled = false;
 			this.renderable.setTransformAnchorToCenter();
-			// Fade in animation, only if visible is true.
-			if (this.visible) this.tweenClip( { "alpha": 0 }, { "alpha": 1 } );
 		}
 		
 		override public function onUpdate():void 
 		{
+			super.onUpdate();
+			
 			if (_host)
 			{
 				if (_hostAlign == ALIGN_ABOVE)
@@ -83,7 +84,7 @@ package gamecheetah.designer.components
 				}
 				else if (_hostAlign == ALIGN_LEFT)
 				{
-					this.location.setTo(_host.left - this.renderable.width, _host.absoluteCenter.y - this.renderable.height / 2);
+					this.location.setTo(_host.left - this.renderable.width - 5, _host.absoluteCenter.y - this.renderable.height / 2);
 				}
 				else if (_hostAlign == ALIGN_RIGHT)
 				{

@@ -15,18 +15,18 @@ package gamecheetah.designer.components
 		
 		protected var	_text:String,
 						_handler:Function,
-						_label:Label;
-						
-		private var	_stamp:ButtonStamp;
+						_label:Label,
+						_stamp:*;
 		
 		//{ ------------------- Public Methods -------------------
 		
 		public function PushButton(	space:Space = null, width:int = 100, height:int = 25,
-									text:String="", handler:Function=null) 
+									text:String="", handler:Function=null, stamp:*=null) 
 		{
 			_text = text;
 			_handler = handler;
-			_stamp = new ButtonStamp(width, height);
+			_stamp = stamp;
+			if (!_stamp) _stamp = new ButtonStamp(width, height);
 			
 			this.renderable = _stamp;
 			this.setUpState(null, null, _stamp.highlight);

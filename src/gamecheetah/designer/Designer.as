@@ -90,6 +90,7 @@ package gamecheetah.designer
 			model.update("selectedSpace", Engine.space, true);
 			
 			this.swapSpace(new MainConsole());
+			this.swapConsole(new PlayConsole());
 		}
 		
 		private function addListeners():void 
@@ -371,40 +372,40 @@ package gamecheetah.designer
 		/**
 		 * Change of the current Space "tag" property.
 		 */
-		public static function changeSpaceTag(tag:String):Boolean 
+		public static function changeSpaceTag(index:int, tag:String):Boolean 
 		{
-			tag = tag.toLowerCase();
-			
-			if (model.selectedSpace == null || Engine.assets.spaces.contains(tag))
+			if (Engine.assets.spaces.contains(tag))
 				return false;
-			
-			Engine.assets.spaces.updateKey(model.selectedSpace.tag, tag);
+				
+			Engine.assets.spaces.updateKeyAt(index, tag);
+			model.update("spacesList", model.spacesList, true);
 			
 			// Update the starting space "tag".
-			model.selectedSpace._tag = tag;
-			model.update("spacesList", model.spacesList, true);
-			model.update("selectedSpace", model.selectedSpace);
+			var space:Space = Engine.assets.spaces.getAt(index);
+			space._tag = tag;
 			
+			if (space == model.selectedSpace)
+				model.update("selectedSpace", model.selectedSpace);
+				
 			return true;
 		}
 		
 		/**
 		 * Return true if change is successful.
 		 */
-		public static function changeGraphicTag(tag:String):Boolean 
+		public static function changeGraphicTag(index:int, tag:String):Boolean 
 		{
-			tag = tag.toLowerCase();
-			
-			if (model.selectedGraphic == null || Engine.assets.graphics.contains(tag))
+			if (Engine.assets.graphics.contains(tag))
 				return false;
-
+				
 			// Change to new graphic tag.
-			Engine.assets.graphics.updateKey(model.selectedGraphic.tag, tag);
-			model.selectedGraphic._tag = tag;
+			Engine.assets.graphics.updateKeyAt(index, tag);
 			model.update("graphicsList", model.graphicsList, true);
 			
 			// Change all graphic's entities' tags.
-			for each (var entity:Entity in model.selectedGraphic.entities) entity._graphicTag = tag;
+			var graphic:Graphic = Engine.assets.graphics.getAt(index);
+			graphic._tag = tag;
+			for each (var entity:Entity in graphic.entities) entity._graphicTag = tag;
 			
 			return true;
 		}

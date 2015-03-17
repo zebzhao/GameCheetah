@@ -79,12 +79,6 @@ package gamecheetah.designer.components
 		{
 			_handle.setBounds(min, max, handleSpan);
 		}
-		
-		override public function onUpdate():void 
-		{
-			// Copy tweenable properties
-			_handle.renderable.alpha = this.renderable.alpha;
-		}
 	}
 }
 
