@@ -18,6 +18,8 @@ package gamecheetah.designer.components
 			_downTweenTo:Object, _upTweenTo:Object, _overTweenTo:Object,
 			_mouseDown:Function, _mouseUp:Function, _mouseOver:Function, _mouseOut:Function,
 			_downAnimation:String, _upAnimation:String, _overAnimation:String;
+			
+		public var disabled:Boolean;
 		
 		//{ ------------------- Public Methods -------------------
 		
@@ -56,30 +58,42 @@ package gamecheetah.designer.components
 		
 		override public function onMouseDown():void 
 		{
-			if (_downAnimation)		this.clip.play(_downAnimation);
-			if (_downTweenTo) 		this.tweenClip(null, _downTweenTo);
-			if (_mouseDown) 		_mouseDown(this);
+			if (!disabled)
+			{
+				if (_downAnimation)		this.clip.play(_downAnimation);
+				if (_downTweenTo) 		this.tweenClip(null, _downTweenTo);
+				if (_mouseDown) 		_mouseDown(this);
+			}
 		}
 		
 		override public function onMouseUp():void 
 		{
-			if (_upAnimation)		this.clip.play(_upAnimation);
-			if (_upTweenTo) 		this.tweenClip(null, _upTweenTo);
-			if (_mouseUp) 			_mouseUp(this);
+			if (!disabled)
+			{
+				if (_upAnimation)		this.clip.play(_upAnimation);
+				if (_upTweenTo) 		this.tweenClip(null, _upTweenTo);
+				if (_mouseUp) 			_mouseUp(this);
+			}
 		}
 		
 		override public function onMouseOver():void 
 		{
-			if (_overAnimation)		this.clip.play(_overAnimation);
-			if (_overTweenTo) 		this.tweenClip(null, _overTweenTo);
-			if (_mouseOver) 		_mouseOver(this);
+			if (!disabled)
+			{
+				if (_overAnimation)		this.clip.play(_overAnimation);
+				if (_overTweenTo) 		this.tweenClip(null, _overTweenTo);
+				if (_mouseOver) 		_mouseOver(this);
+			}
 		}
 		
 		override public function onMouseOut():void 
 		{
-			if (_upAnimation)		this.clip.play(_upAnimation);
-			if (_upTweenTo) 		this.tweenClip(null, _upTweenTo);
-			if (_mouseOut)			_mouseOut(this);
+			if (!disabled)
+			{
+				if (_upAnimation)		this.clip.play(_upAnimation);
+				if (_upTweenTo) 		this.tweenClip(null, _upTweenTo);
+				if (_mouseOut)			_mouseOut(this);
+			}
 		}	
 	}
 }

@@ -8,7 +8,7 @@ package gamecheetah.designer.components
 			_children:Vector.<BaseComponent> = new Vector.<BaseComponent>();
 		
 		private var
-			_visible:Boolean = true;
+			_visible:Boolean = true, _visibleAlpha:Number=0;
 			
 		public var
 			depthOffset:int;
@@ -61,6 +61,8 @@ package gamecheetah.designer.components
 		
 		public function set visible(value:Boolean):void 
 		{
+			if (_visible && !value) _visibleAlpha = this.renderable.alpha; 
+			else if (!_visible && value) this.renderable.alpha = _visibleAlpha;
 			_visible = value;
 			
 			for each (var child:BaseComponent in _children)
@@ -76,11 +78,7 @@ package gamecheetah.designer.components
 		
 		public function show(...rest:Array):void 
 		{
-			if (!this.visible)
-			{
-				this.visible = true;
-				this.renderable.alpha = 1;
-			}
+			if (!this.visible) this.visible = true;
 		}
 		
 		public function move(x:int, y:int):void 

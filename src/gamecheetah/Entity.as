@@ -368,7 +368,7 @@ package gamecheetah
 			{
 				// Not an elegant solution, but can't see the harm in updating the agent.
 				_agent.moveTo(absoluteLocation.x, absoluteLocation.y);
-				_onScreenStatus = _space != null && _space._screenBounds.intersects(_agent) ? 1 : -1;
+				_onScreenStatus = _space != null && _space.screenBounds.intersects(_agent) ? 1 : -1;
 				return _onScreenStatus == 1 ? true : false;
 			}
 		}

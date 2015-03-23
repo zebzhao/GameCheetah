@@ -75,11 +75,9 @@ package gamecheetah
 		}
 		
 		//} Hidden Properties
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		
 		
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//{ Public Properties
+		//{ ------------------------------------ Property bindings ------------------------------------
 		
 		/**
 		 * Top left position of the render area.
@@ -109,6 +107,12 @@ package gamecheetah
 		private var _mouseFocus:Entity;
 		
 		/**
+		 * Engine object this space belongs to.
+		 */
+		public function get engine():Engine { return _engine };
+		internal var _engine:Engine;
+		
+		/**
 		 * Name or tag of this Space object.
 		 */
 		public function get tag():String { return _tag };
@@ -121,7 +125,7 @@ package gamecheetah
 		hidden var _bounds:Rectangle;
 		
 		/**
-		 * [Debug] Number of pixel-perfect collision checks.
+		 * [Developer] Number of pixel-perfect collision checks.
 		 */
 		public function get totalPixelCollisionChecks():uint
 		{
@@ -210,11 +214,11 @@ package gamecheetah
 		{
 			return _screenBounds;
 		}
-		hidden var _screenBounds:Rectangle = new Rectangle();
+		private var _screenBounds:Rectangle = new Rectangle();
 		
 		
 		//} Public Properties
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//{ ------------------------------------ Private Info ------------------------------------
 		
 		// Quadtree information
 		private var _quadtree:Quadtree;
@@ -254,6 +258,8 @@ package gamecheetah
 			Quadtree.throwExceptions = false;
 		}
 		
+		//}
+		//{ ------------------------------------ Constructor ------------------------------------
 		
 		/**
 		 * A spatial container for a group of Entity objects.
@@ -272,8 +278,8 @@ package gamecheetah
 			reindexQuadtree();
 		}
 		
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//{ Public methods
+		//}
+		//{ ------------------------------------ Public methods ------------------------------------
 		
 		/**
 		 * Check if the mask objects of the two entities collide.
@@ -482,15 +488,13 @@ package gamecheetah
 				{
 					entity.renderable = entity.graphic.newRenderable();
 				}
-				else if (CONFIG::developer && entity.renderable == null)
-					throw new GCError("missing assignment: renderable and/or graphic not assigned to added entity!");
 			}
 		}
 		
 		/**
 		 * Remove an existing entity immediately.
 		 */
-		hidden final function remove(entity:Entity):void 
+		public final function remove(entity:Entity):void 
 		{
 			if (entity == null)
 			{
@@ -722,11 +726,7 @@ package gamecheetah
 		
 		
 		//} Public methods
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
-		
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//{ Overridables
+		//{ ------------------------------------ Behaviour overrides ------------------------------------
 		
 		/**
 		 * Override this. Called every frame.
@@ -769,11 +769,7 @@ package gamecheetah
 		public function onEntityActivate(entity:Entity):void { }
 		
 		//} Overridables
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
-		
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//{ Conditionally Compiled methods
+		//{ ------------------------------------ Conditionally compiled ------------------------------------
 		
 		/**
 		 * Optimize container bounds to the minimal needed by its objects.
@@ -815,18 +811,9 @@ package gamecheetah
 		 * [Developer] Performance metric for quadtree.
 		 */
 		CONFIG::developer
-		public function get _maxBinSize():int 
+		public function get quadtreeStats():Array 
 		{
-			return _quadtree.maxBinSize;
-		}
-		
-		/**
-		 * [Developer] Performance metric for quadtree.
-		 */
-		CONFIG::developer
-		public function get _binDispersity():Number 
-		{
-			return _quadtree.binDispersity;
+			return _quadtree.getStats();
 		}
 		
 		/**
@@ -839,11 +826,7 @@ package gamecheetah
 		}
 		
 		//} Conditionally Compiled methods
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
-		
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//{ Private and internal methods
+		//{ ------------------------------------ Private methods ------------------------------------
 		
 		/**
 		 * Used to activate the space. Called when set to the active space.
@@ -861,18 +844,21 @@ package gamecheetah
 				resetCamera();
 				
 				// Call space callback if enabled.
-				if (invokeCallbacks) onSwapIn();
-				
-				// Set or remove graphical data for entities.
-				var entity:Entity;
-				
-				for each (entity in _entities)
+				if (invokeCallbacks)
 				{
-					activateEntity(entity, false);
-				}
+					onSwapIn();
+					
+					// Set or remove graphical data for entities.
+					var entity:Entity;
+					
+					for each (entity in _entities)
+					{
+						activateEntity(entity, false);
+					}
 				
-				// Call space callback if enabled.
-				if (invokeCallbacks) onEnter();
+					// Call space callback if enabled.
+					onEnter();
+				}
 			}
 		}
 		
@@ -886,14 +872,18 @@ package gamecheetah
 				_active = false;
 				
 				// Call space callbacks if enabled.
-				if (invokeCallbacks) onSwapOut();
-				
-				var entity:Entity;
-				for each (entity in _entities)
-					_deactivateQueue.push(entity, true);
+				if (invokeCallbacks)
+				{
+					onSwapOut();
 					
-				// Call space callbacks if enabled.
-				if (invokeCallbacks) onExit();
+					var entity:Entity;
+					for each (entity in _entities)
+					{
+						this.deactivateEntity(entity, false);
+					}
+						
+					onExit();
+				}
 			}
 		}
 		
@@ -982,23 +972,6 @@ package gamecheetah
 					if (!paused && entity.clip != null) entity.clip.update();
 				}
 				
-				// Calls onMove() for all entities.
-				for each (entity in _entities)
-				{
-					entityX = entity.location.x + entity.origin.x;
-					entityY = entity.location.y + entity.origin.y;
-					
-					entityMoveX = entityX - entity._agent.x;
-					entityMoveY = entityY - entity._agent.y;
-					
-					if (entityMoveX != 0 || entityMoveY != 0)
-					{
-						entity.absoluteLocation.setTo(entityX, entityY);
-						entity._agent.moveTo(entityX, entityY);
-						entity.onMove(entityMoveX, entityMoveY);
-					}
-				}
-				
 				_totalPixelCollisionChecks = 0;
 				
 				if (detectCollisions)
@@ -1044,6 +1017,23 @@ package gamecheetah
 								b.onCollision(a);
 							}
 						}
+					}
+				}
+				
+				// Calls onMove() for all entities.
+				for each (entity in _entities)
+				{
+					entityX = entity.location.x + entity.origin.x;
+					entityY = entity.location.y + entity.origin.y;
+					
+					entityMoveX = entityX - entity._agent.x;
+					entityMoveY = entityY - entity._agent.y;
+					
+					if (entityMoveX != 0 || entityMoveY != 0)
+					{
+						entity.absoluteLocation.setTo(entityX, entityY);
+						entity._agent.moveTo(entityX, entityY);
+						entity.onMove(entityMoveX, entityMoveY);
 					}
 				}
 			}
@@ -1215,8 +1205,12 @@ package gamecheetah
 			{
 				entity.renderable = entity.graphic.newRenderable();
 			}
-			else if (CONFIG::developer && entity.renderable == null)
-				throw new GCError("missing assignment: renderable and/or graphic not assigned to added entity!");
+			
+			CONFIG::developer
+			{
+				if (entity.renderable == null)
+					throw new GCError("missing assignment: renderable and/or graphic not assigned to added entity!");
+			}
 				
 			if (invokeCallbacks && !disableCallbacks)
 			{
@@ -1250,21 +1244,11 @@ package gamecheetah
 				entity.onDeactivate();
 				onEntityDeactivate(entity);
 			}
-			
-			// Delete graphic clip.
-			entity.renderable.dispose();
-			entity.renderable = null;
-			
-			// Tricky: deactivate entity after disposing renderable
 			entity._activated = false;
 		}
 		
-		//} Private and hidden methods
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
-		
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//{ Mouse event listeners
+		//}
+		//{ ------------------------------------ Mouse handlers ------------------------------------
 		
 		hidden function _onMouseDown(stageX:Number, stageY:Number):void 
 		{
@@ -1321,10 +1305,6 @@ package gamecheetah
 			
 			_mouseFocus = topmost;
 		}
-		
-		//} Mouse event listeners
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
+		//}
 	}
-
 }

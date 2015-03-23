@@ -125,12 +125,6 @@ package gamecheetah
 		
 		
 		/**
-		 * The default animation.
-		 */
-		public var defaultAnimation:String;
-		
-		
-		/**
 		 * Stores animation data.
 		 */
 		public function get animations():OrderedDict
@@ -179,7 +173,7 @@ package gamecheetah
 		 */
 		public function Graphic(tag:String=null) 
 		{
-			super(["_master", "_tag", "_frameMasks", "_animations", "defaultAnimation", "rows", "columns", "spritesheet", "_group", "_collideWith", "alwaysUseDefaultMask"]);
+			super(["_master", "_tag", "_frameMasks", "_animations", "rows", "columns", "spritesheet", "_group", "_collideWith", "alwaysUseDefaultMask"]);
 			
 			this._frameImages = [];
 			this._frameMasks = [];
@@ -268,7 +262,13 @@ package gamecheetah
 		private function updateSpritesheet():void
 		{
 			if (_spritesheet == null)
-				return; // Not all the parameters have been set to successfully load spritesheet.
+			{
+				_frameImages.length = 0;
+				_frameMasks.length = 0;
+				_hasSpritesheet = false;
+				_frameRect.setTo(0, 0, 0, 0);
+				return;
+			}
 			
 			var frameWidth:uint = uint(_spritesheet.width / _columns);
 			var frameHeight:uint = uint(_spritesheet.height / _rows);
@@ -313,7 +313,6 @@ package gamecheetah
 			else
 			{
 				var clip:Clip = new Clip(_frameImages, animations);
-				clip.play(defaultAnimation);
 				return clip;
 			}
 		}
@@ -335,7 +334,8 @@ package gamecheetah
 		CONFIG::developer
 		hidden function setClass(klass:Class):void 
 		{
-			if (Entity.prototype.isPrototypeOf(klass.prototype))
+			if (_master is klass) return;
+			if (Entity.prototype.isPrototypeOf(klass.prototype) || klass == Entity)
 			{
 				_master = new klass();
 				_master.graphic = this;
@@ -395,7 +395,6 @@ package gamecheetah
 			{
 				if (entity._space != null) entity.space.destroyEntity(entity);
 			}
-			entities.length = 0;
 		}
 		
 	}

@@ -112,36 +112,6 @@ package gamecheetah.designer
 		}
 		
 		
-		public function get selectedAnimation():Animation
-		{
-			return _selectedAnimation;
-		}
-		public function set selectedAnimation(value:Animation):void
-		{
-			_selectedAnimation = value;
-			if (value != null)
-			{
-				activeClip.play(_selectedAnimation.tag, true);
-				selectedGraphic.defaultAnimation = _selectedAnimation.tag;
-			}
-		}
-		private var _selectedAnimation:Animation;
-		
-		
-		public function get activeClip():Clip
-		{
-			return _activeClip;
-		}
-		public function set activeClip(value:Clip):void
-		{
-			if (value == null) this.update("selectedAnimation", null, true);
-			if (_activeClip != null) _activeClip.dispose();
-			_activeClip = value;
-			if (_selectedAnimation != null) _activeClip.play(_selectedAnimation.tag, true);
-		}
-		private var _activeClip:Clip;
-		
-		
 		public function get selectedGraphic():Graphic 
 		{
 			return _selectedGraphic;
@@ -155,6 +125,8 @@ package gamecheetah.designer
 		private var _selectedGraphic:Graphic;
 		
 		
+		public var activeClip:Clip;
+		public var selectedAnimation:Animation;
 		public var selectedMaskFrame:int;
 		public var selectedSpace:Space;
 		public var selectedEntity:Entity;

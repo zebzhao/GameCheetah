@@ -11,61 +11,6 @@ package gamecheetah.designer.views
 	 */
 	public class Assets
 	{	
-		//[Embed(source = "/../lib/Icons/tango-image-missing.png")]
-		//public static var Pencil:Class;
-		//
-		//[Embed(source = "/../lib/Icons/tango-image-missing.png")]
-		//public static var Eraser:Class;
-		//
-		//[Embed(source = "/../lib/Icons/tango-image-missing.png")]
-		//public static var Clear:Class;
-		//
-		//[Embed(source = "/../lib/Icons/tango-image-missing.png")]
-		//public static var BucketFill:Class;
-		
-		[Embed(source = "/../lib/Icons/tango-input-mouse.png")]
-		public static var MouseEnabled:Class;
-		
-		[Embed(source = "/../lib/Icons/tango-go-home.png")]
-		public static var Mark:Class;
-		
-		[Embed(source = "/../lib/Icons/tango-emblem-symbolic-link.png")]
-		public static var Open:Class;
-		
-		[Embed(source = "/../lib/Icons/tango-document-save.png")]
-		public static var Save:Class;
-		
-		[Embed(source = "/../lib/Icons/tango-folder-saved-search.png")]
-		public static var Load:Class;
-		
-		[Embed(source = "/../lib/Icons/tango-go-previous.png")]
-		public static var Arrow:Class;
-		
-		[Embed(source = "/../lib/Icons/tango-list-add.png")]
-		public static var Add:Class;
-		
-		[Embed(source = "/../lib/Icons/tango-list-remove.png")]
-		public static var Remove:Class;
-		
-		[Embed(source = "/../lib/Icons/arrow-up.png")]
-		public static var Up:Class;
-		
-		[Embed(source = "/../lib/Icons/arrow-down.png")]
-		public static var Down:Class;
-		
-		[Embed(source = "/../lib/Icons/tango-view-fullscreen.png")]
-		public static var AutoScale:Class;
-		
-		[Embed(source = "/../lib/Icons/tango-edit-undo.png")]
-		public static var Undo:Class;
-		
-		[Embed(source = "/../lib/Icons/tango-list-add.png")]
-		public static var ZoomIn:Class;
-		
-		[Embed(source = "/../lib/Icons/tango-list-remove.png")]
-		public static var ZoomOut:Class;
-		
-		
 		[Embed(source="/../lib/Icons/document-save-as.png")]
 		public static var SAVE:Class;
 		
@@ -82,18 +27,66 @@ package gamecheetah.designer.views
 		public static var EDIT:Class;
 		
 		[Embed(source="/../lib/Icons/list-add.png")]
-		public static var ADD:Class
+		public static var ADD:Class;
 		
-		[Embed(source="/../lib/Icons/image-loading.png")]
-		public static var STATS:Class
+		[Embed(source="/../lib/Icons/appointment-new.png")]
+		public static var STATS:Class;
 		
 		[Embed(source="/../lib/Icons/media-playback-start.png")]
-		public static var PLAY:Class
+		public static var PLAY:Class;
 		
 		[Embed(source="/../lib/Icons/media-playback-stop.png")]
-		public static var STOP:Class
+		public static var STOP:Class;
+		
+		[Embed(source="/../lib/Icons/input-gaming.png")]
+		public static var GAME:Class;
 		
 		[Embed(source="/../lib/Icons/emblem-system.png")]
-		public static var SETTINGS:Class
+		public static var SETTINGS:Class;
+		
+		[Embed(source="/../lib/Icons/system-log-out.png")]
+		public static var EXIT:Class;
+		
+		[Embed(source="/../lib/Icons/text-x-script.png")]
+		public static var CLASSES:Class;
+		
+		[Embed(source="/../lib/Icons/video-x-generic.png")]
+		public static var ANIMATIONS:Class;
+		
+		[Embed(source="/../lib/Icons/emblem-readonly.png")]
+		public static var SNAPPING:Class;
+		
+		[Embed(source="/../lib/Icons/emblem-symbolic-link.png")]
+		public static var UNSNAPPING:Class;
+		
+		[Embed(source="/../lib/Icons/go-bottom.png")]
+		public static var OPEN:Class;
+		
+		[Embed(source="/../lib/Icons/image-missing.png")]
+		public static var MISSING:Class;
+		
+		[Embed(source="/../lib/Icons/software-update-available.png")]
+		public static var COLLISIONS:Class;
+		
+		[Embed(source="/../lib/Icons/media-seek-backward.png")]
+		public static var SEEK_BACK:Class;
+		
+		[Embed(source="/../lib/Icons/media-seek-forward.png")]
+		public static var SEEK_FORWARD:Class;
+		
+		[Embed(source="/../lib/Icons/arrow-up.png")]
+		public static var ARROW_UP:Class;
+		
+		[Embed(source="/../lib/Icons/arrow-down.png")]
+		public static var ARROW_DOWN:Class;
+		
+		[Embed(source="/../lib/Icons/view-refresh.png")]
+		public static var LOOP:Class;
+		
+		[Embed(source="/../lib/Icons/folder-saved-search.png")]
+		public static var SPRITESHEET:Class;
+		
+		[Embed(source="/../lib/Icons/user-trash.png")]
+		public static var CLEAR:Class;
 	}
 }

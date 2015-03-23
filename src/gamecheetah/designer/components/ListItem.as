@@ -22,7 +22,8 @@ package gamecheetah.designer.components
 		private var
 			_selected:Boolean,
 			_editable:Boolean,
-			_dragging:Boolean, _dragOffset:Point = new Point();
+			_swappable:Boolean,
+			_dragging:Boolean, _dragOffset:Point = new Point(), _startPos:Point = new Point();
 		
 		[Embed(source = "/../lib/Icons/emblem-unreadable.png")]
 		private static var DELETE_SM:Class;
@@ -51,25 +52,18 @@ package gamecheetah.designer.components
 		//{ ------------------- Public Methods -------------------
 		
 		public function ListItem(	parent:List, space:Space = null, width:int = 100, height:int = 25,
-									text:String="", handler:Function=null, editable:Boolean=true, deletable:Boolean=true ) 
+									text:String = "", placeholder:String = null, handler:Function = null,
+									editable:Boolean=true, deletable:Boolean=true, swappable:Boolean=true ) 
 		{
 			super(null, width, height, text, handler, new ListItemStamp(width, height));
 			
 			_parent = parent;
 			_editable = editable;
-			
-			if (deletable)
-			{
-				_delete = new IconButton(space, DELETE_SM, onDelete);
-				_delete.location.setTo(5, height / 2 - _delete.renderable.height / 2);
-				_delete.depthOffset = 1;
-				
-				this.registerChildren(_delete);
-			}
+			_swappable = swappable;
 			
 			if (editable)
 			{
-				_editInput = new TextInput(space, width - 25, 25, onEdit);
+				_editInput = new TextInput(space, width - 25, 25, onEdit, placeholder);
 				_editInput.location.setTo(25, 0);
 				_editInput.depthOffset = 2;
 				this.registerChildren(_editInput);
@@ -77,26 +71,40 @@ package gamecheetah.designer.components
 			else
 			{
 				_label = new Label(space, _text, this, Label.ALIGN_VCENTER_LEFT, Style.FONT_DARK);
-				_label.offset.setTo(25, 0);  // Make some space for delete icon.
+				_label.offset.setTo(5, 0);
 				this.registerChildren(_label);
+			}
+			
+			if (deletable)
+			{
+				_delete = new IconButton(space, DELETE_SM, onDelete);
+				_delete.location.setTo(5, height / 2 - _delete.renderable.height / 2);
+				_delete.depthOffset = 1;
+				if (_label) _label.offset.setTo(25, 0);  // Make some space for delete icon.
+				this.registerChildren(_delete);
 			}
 			
 			if (space) space.add(this);
 			
-			// Capture any mouse release whether on or off the entity.
-			Engine.stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
+			if (swappable)
+			{
+				// Capture any mouse release whether on or off the entity.
+				Engine.stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
+			}
 			
 			this.setDepth(0);
 		}
 		
 		public function select():void 
 		{
+			if (_selected) return;
 			_stamp.select();
 			_selected = true;
 		}
 		
 		public function unselect():void 
 		{
+			if (!_selected) return;
 			_stamp.unhighlight();
 			_selected = false;
 		}
@@ -108,14 +116,18 @@ package gamecheetah.designer.components
 			super.onUpdate();
 			
 			if (_dragging)
-				this.location.setTo(Input.mouseX - _dragOffset.x, Input.mouseY - _dragOffset.y);
+				this.location.y = Input.mouseY - _dragOffset.y;
 		}
 		
 		override public function onMouseDown():void 
 		{
-			this.setDepth(2);
-			_dragging = true;
-			_dragOffset.setTo(Input.mouseX - this.location.x, Input.mouseY - this.location.y);
+			if (_swappable)
+			{
+				this.setDepth(2);
+				_dragging = true;
+				_dragOffset.y = Input.mouseY - this.location.y;
+				_startPos.y = this.location.y;
+			}
 		}
 		
 		override public function onMouseOver():void 
@@ -134,7 +146,7 @@ package gamecheetah.designer.components
 		
 		private function onStageMouseUp(e:Event):void 
 		{
-			if (_dragging)
+			if (_dragging && (this._startPos.y - this.location.y) > this.renderable.height / 2)
 			{
 				// Successful swap event.
 				_parent.findSwapItem(this);

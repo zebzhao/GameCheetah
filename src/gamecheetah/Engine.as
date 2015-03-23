@@ -48,9 +48,15 @@ package gamecheetah
 		public static function get events():Events { return Events.instance };
 		
 		/**
-		 * Singleton instance of the engine.
+		 * Main instance of the engine.
 		 */
-		public static function get instance():Engine { return _singleton };
+		public static function get main():Engine { return _main };
+		private static var _main:Engine;
+		
+		/**
+		 * All instances of engine.
+		 */
+		private static var _instances:Vector.<Engine> = new Vector.<Engine>();
 		
 		/**
 		 * True if the Engine is currently in "design" mode.
@@ -59,9 +65,9 @@ package gamecheetah
 		hidden static var _designMode:Boolean;
 		
 		/**
-		 * Singleton instance of the engine.
+		 * Clear the buffer with the background color every frame.
 		 */
-		private static var _singleton:Engine;
+		public static var clearBuffer:Boolean = true;
 		
 		// Stage information. (Tricky: cannot be 0, will affect tweens!)
 		private static var _frameRate:uint = 30;
@@ -101,27 +107,24 @@ package gamecheetah
 		/**
 		 * BitmapData canvas for graphics.
 		 */
-		public static function get buffer():BitmapData { return _singleton._buffer };
+		public static function get buffer():BitmapData { return _buffer };
+		private static var _buffer:BitmapData;
 		
 		/**
 		 * Bitmap for the buffer.
 		 */
-		public static function get bitmap():Bitmap { return _singleton._bitmap };
-		
-		/**
-		 * Number of frame elapsed since starting.
-		 */
-		public static function get frameElapsed():uint { return _singleton.frameElapsed; }
+		public static function get bitmap():Bitmap { return _bitmap };
+		private static var _bitmap:Bitmap;
 		
 		/**
 		 * Returns the current active console.
 		 */
-		public static function get console():Space { return _singleton._console; }
+		public static function get console():Space { return _main._console; }
 		
 		/**
-		 * The current space container.
+		 * The current space container for the main Engine.
 		 */
-		public static function get space():Space { return _singleton._space; }
+		public static function get space():Space { return _main._space; }
 		
 		/**
 		 * Prints these variables in the debug watcher. Converts objects to strings using its toString() method.
@@ -141,24 +144,39 @@ package gamecheetah
 		 * Display object of the buffer bitmap.
 		 * BUG: Bitmap mouse events not propagated to top-level sprite object.
 		 */
-		public const displayObject:Sprite = new Sprite();
+		public static const displayObject:Sprite = new Sprite();
 		
 		/**
 		 * Number of frame elapsed since starting.
 		 */
-		public var frameElapsed:uint;
+		public static var frameElapsed:uint;
+		
+		/**
+		 * The current space container.
+		 */
+		public function get space():Space { return _space; }
+		
+		/**
+		 * The current console container.
+		 */
+		public function get console():Space { return _console; }
 		
 		//}
 		//{ ------------------------------------ Private properties ------------------------------------
 		
-		private var _buffer:BitmapData;
-		private var _bitmap:Bitmap;
 		private var _console:Space;
 		private var _space:Space;
 		
 		private static var _creditScreen:ExtraCredits = new ExtraCredits();
 		private static var _delayCallbackList:Vector.<CallbackData> = new Vector.<CallbackData>();
 		private static var _totalCallbacks:uint;
+		
+		//}
+		//{ ------------------------------------ Static Initialize ------------------------------------
+		
+		{
+			registerEntity(Entity, true);
+		}
 		
 		//}
 		//{ ------------------------------------ Constructor ------------------------------------
@@ -170,9 +188,9 @@ package gamecheetah
 		{
 			if (registerAsMain)
 			{
-				if (_singleton == null)
+				if (_main == null)
 				{
-					_singleton = this;
+					_main = this;
 				}
 				else throw new GCError("only one instance of Engine may be created as Main");
 				
@@ -181,10 +199,10 @@ package gamecheetah
 				
 				// Set up stage properties
 				this.addEventListener(Event.ADDED_TO_STAGE, onStageEnter, false, 10);
-				this.addEventListener(Event.ADDED_TO_STAGE, onMainEnter, false, 10);
+				this.addEventListener(Event.ADDED_TO_STAGE, onMainEnter, false, 9);
 			}
-			if (stage != null) onStageAdded(null);
-			else this.addEventListener(Event.ADDED_TO_STAGE, onStageAdded);
+			// Registers the game engine.
+			_instances.push(this);
 		}
 		//}
 		//{ ------------------------------------ Static methods ------------------------------------
@@ -343,7 +361,7 @@ package gamecheetah
 		 */
 		public static function swapConsole(src:*):Boolean 
 		{
-			return _singleton.swapConsole(src);
+			return _main.swapConsole(src);
 		}
 		
 		/**
@@ -353,7 +371,7 @@ package gamecheetah
 		 */
 		public static function swapSpace(src:*):Boolean 
 		{
-			return _singleton.swapSpace(src);
+			return _main.swapSpace(src);
 		}
 
 		/**
@@ -473,13 +491,13 @@ package gamecheetah
 		 */
 		public static function registerEntity(klass:Class, collidable:Boolean=true):void 
 		{
-			if (Entity.prototype.isPrototypeOf(klass.prototype))
+			if (Entity.prototype.isPrototypeOf(klass.prototype) || klass == Entity)
 			{
 				__entityClasses.push(klass);
 				if (collidable)
 				{
 					var str:String = String(klass);
-					if (__collisionClasses.length >= 31) throw new GCError("maximum number of collision classes exceeded! (31 max.)");
+					if (__collisionClasses.length >= 32) throw new GCError("maximum number of collision classes exceeded! (31 max.)");
 					else if (__collisionClasses.indexOf(str) != -1) throw new GCError("naming conflict or collision class already registered!");
 					else __collisionClasses.push(str);
 				}
@@ -598,6 +616,8 @@ package gamecheetah
 			}
 			
 			_space = space;
+			if (_buffer) _space.setScreenSize(_buffer.width, _buffer.height);
+			_space._engine = this;
 			_space._activate();
 			
 			// Fires an notification that the active space has been changed.
@@ -632,7 +652,12 @@ package gamecheetah
 			}
 			
 			_console = console;
-			if (_console != null) _console._activate();
+			if (_console != null)
+			{
+				if (_buffer) _console.setScreenSize(buffer.width, buffer.height);
+				_console._engine = this;
+				_console._activate();
+			}
 			
 			// Fires an notification that the active space has been changed.
 			this.dispatchEvent(new Event(events.E_CONSOLE_CHANGE));
@@ -663,46 +688,16 @@ package gamecheetah
 		
 		/**
 		 * Override this to do custom rendering of the active Space object.
-		 * @param	clear			If true, clears the buffer by painting it the background color.
 		 * @param	renderConsole	If false, console will not be rendered.
 		 * @param	drawMasks		If true, renders the collision masks for debugging.
 		 * 							Using this option can drastically lower performance.
 		 */
-		public function render(clear:Boolean=true, renderConsole:Boolean=true, drawMasks:Boolean=false):void 
+		public function render(renderConsole:Boolean=true, drawMasks:Boolean=false):void 
 		{
-			// Prevents unnecessary updating during drawing.
-			_buffer.lock();
-			// Clear buffer.
-			if (clear) paintBuffer();
 			// Draws required entity objects on screen.
 			if (_space != null) _space.render(drawMasks);
 			// Draw all added consoles.
 			if (renderConsole && _console != null) _console.render(drawMasks);
-			// Lets display object update.
-			_buffer.unlock();
-		}
-		
-		/**
-		 * Clear the buffer with the background color.
-		 */
-		public function paintBuffer():void 
-		{
-			CONFIG::developer
-			{
-				_buffer.fillRect(_buffer.rect, (backgroundColor - 0xFF111111) + (backgroundColor < 0xFF111111 ? 0xFFFFFFFF : 0));
-				
-				// Draw boundaries of quadtree volume if in developer mode.
-				if (_space != null)
-				{
-					var intersection:Rectangle = _space._screenBounds.intersection(_space._bounds);
-					intersection.offset( -_space._screenBounds.x, -_space._screenBounds.y);
-					_buffer.fillRect(intersection, backgroundColor);
-				}
-				
-				return;
-			}
-			// Simply paint entire buffer as the background color.
-			_buffer.fillRect(_buffer.rect, backgroundColor);
 		}
 		
 		//}
@@ -729,7 +724,7 @@ package gamecheetah
 			swapSpace(startingSpace);
 			
 			// Notify internal classes that context file is loaded.
-			_singleton.dispatchEvent(new Event(events.E_LOAD_CONTEXT));
+			_main.dispatchEvent(new Event(events.E_LOAD_CONTEXT));
 		}
 		
 		//}
@@ -755,29 +750,6 @@ package gamecheetah
 		//{ ------------------------------------ Event handlers ------------------------------------
 		
 		/**
-		 * Event handler for when added to the stage.
-		 */
-		private function onStageAdded(e:Event):void 
-		{
-			_bitmap = new Bitmap();
-			displayObject.addChild(_bitmap);
-			displayObject.mouseChildren = false;  // Tricky: Catch children mouse events.
-			
-			this.addChild(displayObject);
-			
-			// Remove event listener
-			this.removeEventListener(Event.ADDED_TO_STAGE, onStageAdded);
-			// Initializes the game engine.
-			this.addEventListener(Event.ENTER_FRAME, _onEnterFrame, false, 1);
-			
-			resizeBuffer(stage.stageWidth, stage.stageHeight);
-			
-			this.stage.addEventListener(Event.RESIZE, onResize);
-			this.stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-			this.stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-		}
-		
-		/**
 		 * Event handler for when Main is added to the stage.
 		 */
 		private function onMainEnter(e:Event):void 
@@ -787,70 +759,6 @@ package gamecheetah
 			}
 			this.onEnter();
 			this.onReset();
-		}
-		
-		/**
-		 * Event handler for per-frame updates.
-		 */
-		private function _onEnterFrame(e:Event):void 
-		{
-			frameElapsed++;
-			
-			render();
-			
-			// Update engine after rendering!
-			if (_space != null) _space._update();
-			// Update consoles
-			if (_console != null) _console._update();
-			// Invoke engine onUpdate() callback
-			if (!paused) _singleton.onUpdate();
-			
-			updateCallbacks();
-		}
-		
-		/**
-		 * Event handler for when stage resizes.
-		 */
-		private function onResize(e:Event):void 
-		{
-			if (!stageSizeFixed) resizeBuffer(stage.stageWidth, stage.stageHeight);
-		}
-		
-		
-		/**
-		 * Event handler for mouse movement.
-		 */
-		private function onMouseDown(e:MouseEvent):void 
-		{
-			if (_space != null && _space.mouseEnabled)
-				_space._onMouseDown(e.localX, e.localY);
-			
-			if (_console != null) _console._onMouseDown(e.localX, e.localY);
-		}
-		
-		/**
-		 * Event handler for mouse movement.
-		 */
-		private function onMouseUp(e:MouseEvent):void 
-		{
-			if (_space != null && _space.mouseEnabled)
-				_space._onMouseUp(e.localX, e.localY);
-			
-			if (_console != null) _console._onMouseUp(e.localX, e.localY);
-		}
-		
-		/**
-		 * Resizes the buffer.
-		 */
-		private function resizeBuffer(width:Number, height:Number):void 
-		{
-			_buffer = new BitmapData(width, height, true);
-			_bitmap.bitmapData = _buffer;
-			
-			if (_space != null)
-				_space._screenBounds.setTo(_space.camera.x, _space.camera.y, width, height);
-			
-			paintBuffer();
 		}
 		
 		//}
@@ -863,18 +771,99 @@ package gamecheetah
 			copyrightMenuItem.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, onCopyrightClick);
 			menu.hideBuiltInItems();
 			menu.customItems = [copyrightMenuItem];
-			_singleton.contextMenu = menu;
+			_main.contextMenu = menu;
 			
 			// Set stage properties.
-			_stage = _singleton.stage;
+			_stage = _main.stage;
 			_stage.frameRate = _frameRate;
 			_stage.align = StageAlign.TOP_LEFT;
 			_stage.quality = StageQuality.HIGH;
 			_stage.scaleMode = StageScaleMode.NO_SCALE;
 			_stage.displayState = StageDisplayState.NORMAL;
 			
+			_bitmap = new Bitmap();
+			displayObject.addChild(_bitmap);
+			displayObject.mouseChildren = false;  // Tricky: Catch children mouse events.
+			_stage.addChild(displayObject);
+			
+			resizeBuffer(_stage.stageWidth, _stage.stageHeight);
+			
+			_stage.addEventListener(Event.RESIZE, onStageResize);
+			_stage.addEventListener(Event.ENTER_FRAME, onStageEnterFrame, false, 1);
+			_stage.addEventListener(MouseEvent.MOUSE_DOWN, onStageMouseDown);
+			_stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
+			
 			// Enables key inputs
 			Input.enabled = true;
+		}
+		
+		/**
+		 * Event handler for per-frame updates.
+		 */
+		private static function onStageEnterFrame(e:Event):void 
+		{
+			// Prevents unnecessary updating during drawing.
+			_buffer.lock();
+			
+			if (clearBuffer) paintBuffer();
+			
+			frameElapsed++;
+			
+			var engine:Engine;
+			for each (engine in _instances)
+			{
+				// Update engine after rendering!
+				if (engine.space != null) engine.space._update();
+				// Update consoles
+				if (engine.console != null) engine.console._update();
+				// Invoke engine onUpdate() callback
+				if (!engine.paused) engine.onUpdate();
+				// Render entities
+				engine.render();
+			}
+			
+			updateCallbacks();
+			
+			// Lets display object update.
+			_buffer.unlock();
+		}
+		
+		/**
+		 * Event handler for mouse movement.
+		 */
+		private static function onStageMouseDown(e:MouseEvent):void 
+		{
+			var engine:Engine;
+			for each (engine in _instances)
+			{
+				if (engine._space != null && engine._space.mouseEnabled)
+					engine._space._onMouseDown(e.localX, e.localY);
+				
+				if (engine._console != null) engine._console._onMouseDown(e.localX, e.localY);
+			}
+		}
+		
+		/**
+		 * Event static handler for mouse movement.
+		 */
+		private static function onStageMouseUp(e:MouseEvent):void 
+		{
+			var engine:Engine;
+			for each (engine in _instances)
+			{
+				if (engine._space != null && engine._space.mouseEnabled)
+					engine._space._onMouseUp(e.localX, e.localY);
+				
+				if (engine._console != null) engine._console._onMouseUp(e.localX, e.localY);
+			}
+		}
+		
+		/**
+		 * Event handler for when stage resizes.
+		 */
+		private static function onStageResize(e:Event):void 
+		{
+			if (!stageSizeFixed) resizeBuffer(stage.stageWidth, stage.stageHeight);
 		}
 		
 		/**
@@ -890,8 +879,49 @@ package gamecheetah
 		 */
 		private static function onSpaceCreate(e:Event):void 
 		{
-			_singleton.removeEventListener(Event.ENTER_FRAME, onSpaceCreate);
-			_singleton.dispatchEvent(new Event(Events.instance.E_SPACE_CREATE));
+			_main.removeEventListener(Event.ENTER_FRAME, onSpaceCreate);
+			_main.dispatchEvent(new Event(Events.instance.E_SPACE_CREATE));
+		}
+		
+		/**
+		 * Resizes the buffer.
+		 */
+		private static function resizeBuffer(width:Number, height:Number):void 
+		{
+			if (_buffer && width == _buffer.width && height == _buffer.height) return;
+			
+			_buffer = new BitmapData(width, height, true);
+			_bitmap.bitmapData = _buffer;
+			
+			for each (var engine:Engine in _instances)
+			{
+				if (engine.space != null) engine.space.setScreenSize(width, height);
+				if (engine.console != null) engine.console.setScreenSize(width, height);
+			}
+			paintBuffer();
+		}
+		
+		/**
+		 * Clear the buffer with the background color.
+		 */
+		public static function paintBuffer():void 
+		{
+			CONFIG::developer
+			{
+				_buffer.fillRect(_buffer.rect, (backgroundColor - 0xFF111111) + (backgroundColor < 0xFF111111 ? 0xFFFFFFFF : 0));
+				
+				// Draw boundaries of quadtree volume if in developer mode.
+				if (_main.space != null)
+				{
+					var intersection:Rectangle = _main.space.screenBounds.intersection(_main.space._bounds);
+					intersection.offset( -_main.space.screenBounds.x, -_main.space.screenBounds.y);
+					_buffer.fillRect(intersection, backgroundColor);
+				}
+				
+				return;
+			}
+			// Simply paint entire buffer as the background color.
+			_buffer.fillRect(_buffer.rect, backgroundColor);
 		}
 		//}
 	}

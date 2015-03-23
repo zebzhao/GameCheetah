@@ -21,7 +21,7 @@ package gamecheetah.designer.components
 		public static var BASE:uint = 0xFFffffff;
 		public static var HIGHLIGHT:uint = 0xFFd1d7fe;
 		public static var SELECTED:uint = 0xFFffefa1;
-		public static var INVALID:uint = 0xFFfffccc;
+		public static var INVALID:uint = 0xFFff5555;
 		
 		public static var SLIDER_HANDLE:uint = 0xFF5e74fc;
 		public static var SLIDER_BG:uint = 0xFFadb8fe;

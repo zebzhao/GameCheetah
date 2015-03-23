@@ -8,7 +8,7 @@ package gamecheetah.designer.components
 {
 	import flash.geom.Point;
 	import flash.text.TextFormat;
-	import gamecheetah.Entity;
+	import flash.text.TextFormatAlign;
 	import gamecheetah.graphics.TextClip;
 	import gamecheetah.Space;
 	
@@ -20,10 +20,11 @@ package gamecheetah.designer.components
 		public static var ALIGN_LEFT:String = "left";
 		public static var ALIGN_RIGHT:String = "right";
 		public static var ALIGN_VCENTER_LEFT:String = "vcenter-left";
+		public static var ALIGN_VABOVE_LEFT:String = "vabove-left";
 		
 		//{ ------------------- Private Info -------------------
 		
-		private var _host:BaseButton, _hostAlign:String;
+		private var _host:BaseComponent, _hostAlign:String;
 		
 		//{ ------------------- Public Properties -------------------
 		
@@ -42,12 +43,14 @@ package gamecheetah.designer.components
 		
 		//{ ------------------- Public Methods -------------------
 		
-		public function Label(space:Space=null, text:String="", host:BaseButton=null, hostAlign:String=null, color:uint=0x000000) 
+		public function Label(space:Space=null, text:String="", host:BaseComponent=null, hostAlign:String=null, color:uint=0x000000) 
 		{
 			_host = host;
 			_hostAlign = hostAlign;
 			
-			this.textClip = new TextClip(text, new TextFormat("Designer Font", Style.FONT_SIZE, color));
+			this.textClip = new TextClip(text, new TextFormat("Designer Font", Style.FONT_SIZE, color,
+				null, null, null, null, null, TextFormatAlign.CENTER));
+				
 			this.depthOffset = 1;
 			
 			if (space) space.add(this);
@@ -93,6 +96,10 @@ package gamecheetah.designer.components
 				else if (_hostAlign == ALIGN_VCENTER_LEFT)
 				{
 					this.location.setTo(_host.left, _host.absoluteCenter.y - this.renderable.height / 2);
+				}
+				else if (_hostAlign == ALIGN_VABOVE_LEFT)
+				{
+					this.location.setTo(_host.left, _host.top-this.renderable.height * 1.05);
 				}
 				else
 				{   // Center by default

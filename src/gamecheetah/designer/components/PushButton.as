@@ -21,7 +21,7 @@ package gamecheetah.designer.components
 		//{ ------------------- Public Methods -------------------
 		
 		public function PushButton(	space:Space = null, width:int = 100, height:int = 25,
-									text:String="", handler:Function=null, stamp:*=null) 
+									text:String="", handler:Function=null, stamp:*=null, labelColor:uint=0xffffff) 
 		{
 			_text = text;
 			_handler = handler;
@@ -36,7 +36,7 @@ package gamecheetah.designer.components
 			
 			if (space)
 			{
-				_label = new Label(space, _text, this, Label.ALIGN_CENTER, Style.FONT_COLOR);
+				_label = new Label(space, _text, this, Label.ALIGN_CENTER, labelColor);
 				space.add(this);
 				
 				this.registerChildren(_label)

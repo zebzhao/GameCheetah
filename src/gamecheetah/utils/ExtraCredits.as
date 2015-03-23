@@ -95,7 +95,7 @@ package gamecheetah.utils
 			"Martin Kallman\ncollision-as3 (c) 2012",
 			"Chevy Ray Johnston\nFlashpunk (c) 2013",
 			"Oyvind Nordhagen\nBindMax (c) 2011",
-			"Zeb Zhao\nGameCheetah 1.0 (c) 2015\nwww.gamecheetah.net"];
+			"Zeb Zhao\nGameCheetah " + Engine.__VERSION + " (c) 2015\nwww.gamecheetah.net"];
 	}
 
 }

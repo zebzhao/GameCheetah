@@ -17,12 +17,30 @@ package gamecheetah.designer.components
 		protected var _hint:Label;
 		protected var _frozen:Boolean;
 		
+		
 		public function get frozen():Boolean 
 		{
 			return _frozen;
 		}
 		
 		public function IconButton(space:Space, asset:*, handler:Function=null, hint:String=null, labelAlign:String=null) 
+		{
+			setIcon(asset);
+			
+			this.setUpState(null, { "scaleX": 1, "scaleY": 1 }, handler);
+			this.setOverState(null, { "scaleX": 1.10, "scaleY": 1.10 } );
+			this.setDownState(null, { "scaleX": 0.95, "scaleY": 0.95 } );
+			
+			if (hint)
+			{
+				// Tricky: Hint does not belong directly to IconButton, as it's visible property shouldn't be linked.
+				_hint = new Label(space, hint, this, labelAlign, Style.HEADER_BASE);
+				_hint.renderable.alpha = 0;
+			}
+			space.add(this);
+		}
+		
+		public function setIcon(asset:*):void 
 		{
 			if (asset is Class)
 			{
@@ -37,18 +55,6 @@ package gamecheetah.designer.components
 			{
 				this.renderable = asset;
 			}
-			
-			this.setUpState(null, { "scaleX": 1, "scaleY": 1 }, handler);
-			this.setOverState(null, { "scaleX": 1.10, "scaleY": 1.10 } );
-			this.setDownState(null, { "scaleX": 0.95, "scaleY": 0.95 } );
-			
-			if (hint)
-			{
-				// Tricky: Hint does not belong directly to IconButton, as it's visible property shouldn't be linked.
-				_hint = new Label(space, hint, this, labelAlign, Style.HEADER_BASE);
-				_hint.renderable.alpha = 0;
-			}
-			space.add(this);
 		}
 		
 		public function freeze():void 
@@ -65,6 +71,18 @@ package gamecheetah.designer.components
 		{
 			_frozen = false;
 			if (_hint) _hint.renderable.alpha = 0;
+		}
+		
+		override public function hide(...rest:Array):void 
+		{
+			super.hide();
+			if (_hint.visible) _hint.visible = false;
+		}
+		
+		override public function show(...rest:Array):void 
+		{
+			super.show();
+			if (!_hint.visible) _hint.visible = true;
 		}
 		
 		override public function onMouseDown():void 

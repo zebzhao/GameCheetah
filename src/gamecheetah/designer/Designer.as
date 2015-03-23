@@ -30,10 +30,19 @@ package gamecheetah.designer
 	public final class Designer extends Engine
 	{
 		public static var model:DesignerModel;
-		public static var playView:PlayView;
 		
 		public static var context:Dictionary;
 		public static var instance:Designer;
+		
+		/**
+		 * Temporary storage for deleted spaces in case they need to be recovered.
+		 */
+		public static var deletedSpaces:Vector.<Space> = new Vector.<Space>();
+		
+		/**
+		 * Temporary storage for deleted graphics in case they need to be recovered.
+		 */
+		public static var deletedGraphics:Vector.<Graphics> = new Vector.<Graphics>();
 		
 		/**
 		 * Stores event identifiers.
@@ -67,7 +76,7 @@ package gamecheetah.designer
 			addListeners();
 			
 			// Start the engine paused and in design mode
-			Engine.instance.paused = true;
+			Engine.main.paused = true;
 			Engine._designMode = true;
 			Input._eventsEnabled = false;
 			
@@ -84,19 +93,15 @@ package gamecheetah.designer
 				Engine.swapSpace(newSpace);
 			}
 			
-			// Create main view (top-level display)
-			playView = new PlayView();
-			
 			model.update("selectedSpace", Engine.space, true);
 			
 			this.swapSpace(new MainConsole());
-			this.swapConsole(new PlayConsole());
 		}
 		
 		private function addListeners():void 
 		{
-			Engine.instance.addEventListener(Engine.events.E_LOAD_CONTEXT, onContextLoadComplete);
-			Engine.instance.addEventListener(Engine.events.E_SPACE_CHANGE, onSpaceChange);
+			Engine.main.addEventListener(Engine.events.E_LOAD_CONTEXT, onContextLoadComplete);
+			Engine.main.addEventListener(Engine.events.E_SPACE_CHANGE, onSpaceChange);
 		}
 		
 		/**
@@ -124,14 +129,11 @@ package gamecheetah.designer
 			var spaces:Array = Engine.assets.spaces.values;
 			for each (space in spaces) space.invokeCallbacks = true;
 			
-			// Remove old UI
-			instance.addChild(playView);
-			
 			// Create restore point for all Space objects.
 			for each (space in spaces) space._resetInfo = space.export();
 			
 			// Unpause the engine
-			Engine.instance.paused = false;
+			Engine.main.paused = false;
 			Engine._designMode = false;
 			
 			// Enable key events to be fired
@@ -143,7 +145,7 @@ package gamecheetah.designer
 			// Reset the game state.
 			space = Engine.space;
 			space.resetCamera();
-			Engine.instance.onReset();
+			Engine.main.onReset();
 			
 			space.onSwapIn();
 			
@@ -173,9 +175,6 @@ package gamecheetah.designer
 			var spaces:Array = Engine.assets.spaces.values;
 			for each (space in spaces) space.invokeCallbacks = false;
 			
-			// Remove old UI
-			instance.removeChild(playView);
-			
 			// Remove game UI
 			Engine.swapConsole(null);
 			
@@ -195,7 +194,7 @@ package gamecheetah.designer
 			Input._eventsEnabled = false;
 			
 			// Pause the engine
-			Engine.instance.paused = true;
+			Engine.main.paused = true;
 			Engine._designMode = true;
 			
 			// Reset all Space objects.
@@ -280,11 +279,23 @@ package gamecheetah.designer
 		}
 		
 		/**
+		 * Make a specific graphic the active graphic.
+		 */
+		public static function selectGraphic(index:int):void 
+		{
+			var graphic:Graphic = index != -1 ? Engine.assets.graphics.getAt(index) : model.selectedGraphic;
+			model.update("selectedGraphic", graphic, true);
+			model.update("animationsList", null, true);
+			model.update("activeClip", graphic.newRenderable() as Clip, true);
+			model.update("selectedAnimation", graphic.animations.length > 0 ? graphic.animations.getAt(0) as Animation : null, true);
+		}
+		
+		/**
 		 * Create a new Graphic object.
 		 */
 		public static function addGraphic():void 
 		{
-			var graphic:Graphic = new Graphic(getUniqueKey("graphic", Engine.assets.graphics));
+			var graphic:Graphic = new Graphic(getUniqueKey("Graphic", Engine.assets.graphics));
 			Engine.assets.graphics.add(graphic.tag, graphic);
 			model.update("graphicsList", null, true);
 		}
@@ -295,19 +306,26 @@ package gamecheetah.designer
 		public static function addAnimation():void 
 		{
 			if (model.selectedGraphic == null || !model.selectedGraphic.hasSpritesheet) return;
-			model.selectedGraphic.addAnimation(getUniqueKey("animation", model.selectedGraphic.animations), new <int> [0], 1, true);
+			model.selectedGraphic.addAnimation(getUniqueKey("Animation", model.selectedGraphic.animations), new <int> [0], 1, true);
 			model.update("activeClip", model.selectedGraphic.newRenderable() as Clip, true);
+			model.update("animationsList", null, true);
 		}
 		
 		/**
 		 * Remove animation data from an existing Graphic.
 		 */
-		public static function removeAnimation():void 
+		public static function removeAnimation(index:int):void 
 		{
-			if (model.selectedAnimation == null) return;
-			model.selectedGraphic.removeAnimation(model.selectedAnimation.tag);
-			model.update("selectedAnimation", null, true);
+			if (index == -1) return;
+			
+			var animation:Animation = model.selectedGraphic.animations.getAt(index);
+			model.selectedGraphic.animations.removeAt(index);
+			
+			if (animation == model.selectedAnimation)
+				model.update("selectedAnimation", null, true);
+				
 			model.update("activeClip", model.selectedGraphic.newRenderable() as Clip, true);
+			model.update("animationsList", null, true);
 		}
 		
 		/**
@@ -331,6 +349,8 @@ package gamecheetah.designer
 			{
 				Engine.removeSpace(space.tag);
 				
+				deletedSpaces.push(space);
+				
 				if (space == model.selectedSpace)
 				{
 					model.update("selectedSpace", null, true);
@@ -348,8 +368,12 @@ package gamecheetah.designer
 			if (index == -1) return;
 			
 			var graphic:Graphic = Engine.assets.graphics.getAt(index);
+			
 			Engine.assets.graphics.removeAt(index);
 			graphic.removeEntities();
+			
+			// Store deleted graphics for restoring.
+			deletedGraphics.push(graphic);
 			
 			if (model.selectedGraphic == graphic)
 			{
@@ -421,19 +445,16 @@ package gamecheetah.designer
 		/**
 		 * Return true if change is successful.
 		 */
-		public static function changeAnimationTag(tag:String):Boolean 
+		public static function changeAnimationTag(index:int, tag:String):Boolean 
 		{
-			tag = tag.toLowerCase();
-			
-			if (model.selectedAnimation == null || model.selectedGraphic.animations.contains(tag))
+			if (model.selectedGraphic.animations.contains(tag))
 				return false;
-
-			// Change to new tag.
-			if (model.selectedGraphic.defaultAnimation == model.selectedAnimation._tag)
-				model.selectedGraphic.defaultAnimation = tag;  // Change default animation tag also.
-				
-			model.selectedGraphic.animations.updateKey(model.selectedAnimation.tag, tag);
-			model.selectedAnimation._tag = tag;
+			
+			var animation:Animation = model.selectedGraphic.animations.getAt(index);
+			model.selectedGraphic.animations.updateKeyAt(index, tag);
+			animation._tag = tag;
+			
+			Designer.model.update("animationsList", null, true);
 			
 			return true;
 		}

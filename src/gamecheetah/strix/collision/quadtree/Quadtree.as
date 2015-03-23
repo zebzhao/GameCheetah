@@ -70,37 +70,12 @@ package gamecheetah.strix.collision.quadtree {
 			}
 			return totalChecks;
 		}
-			
-		/**
-		 * Largest number of entities in any of the quadtree bins.
-		 * Performance metric used to determine how well the quadtree is scaling to spatial distribution of objects.
-		 * Anything over ~20% of total entities is BAD for large number of entities! The higher the entity the count
-		 * the smaller this percentage should be.
-		 */
-		public function get maxBinSize():int 
-		{
-			var maxBinCount:int;
-			var nodeList:Vector.<TreeNode> = new <TreeNode> [rootNode];
-			var node:TreeNode;
-			
-			while (nodeList.length > 0)
-			{
-				node = nodeList.pop();
-				if (node != null)
-				{
-					nodeList = nodeList.concat(node.children);
-					maxBinCount = Math.max(node.objects.length, maxBinCount);
-				}
-			}
-			return maxBinCount;
-		}
 		
 		/**
-		 * Distribution metric (standard-deviation) for entities over quadtree bins.
-		 * Performance metric used to determine how well the quadtree is scaling to spatial distribution of objects.
-		 * Values closest to 0 is good, anything over 1 is BAD!
+		 * Return the max, mean, and std of bin sizes.
+		 * These performance metric are used to determine how well the quadtree is scaling to spatial distribution of objects.
 		 */
-		public function get binDispersity():Number 
+		public function getStats():Array 
 		{
 			var binCounts:Vector.<int> = new Vector.<int>();
 			var nodeList:Vector.<TreeNode> = new <TreeNode> [rootNode];
@@ -115,7 +90,7 @@ package gamecheetah.strix.collision.quadtree {
 					binCounts.push(node.objects.length);
 				}
 			}
-			return Statistics.std(binCounts);
+			return [Statistics.max(binCounts), Statistics.mean(binCounts), Statistics.std(binCounts)];
 		}
             
         public function Quadtree( rect:Rectangle, maxDepth:uint=8  ) {

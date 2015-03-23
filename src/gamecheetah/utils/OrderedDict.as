@@ -47,6 +47,16 @@ package gamecheetah.utils
 			return _keys.length;
 		}
 		
+		public function indexOf(value:*):int 
+		{
+			return _values.indexOf(value);
+		}
+		
+		public function indexOfKey(key:String):int 
+		{
+			return _keys.indexOf(key);
+		}
+		
 		public function get(key:String):* 
 		{
 			return _values[_keys.indexOf(key)];

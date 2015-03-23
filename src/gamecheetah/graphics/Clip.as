@@ -23,19 +23,32 @@ package gamecheetah.graphics
 		public var complete:Boolean = false;
 		
 		/**
+		 * If the current animation is paused.
+		 */
+		public var paused:Boolean = false;
+		
+		/**
 		 * The current playing animation.
 		 */
 		public function get animationName():String { return _animName; }
 		
 		/**
-		* Current animation frame index.
-		*/
+		 * Current animation frame.
+		 */
 		public function get frame():uint { return _frame; }
 		public function set frame(value:uint):void 
 		{
 			value %= _frameImages.length;
 			_frame = value;
 			setBuffer(_frameImages[_frame]);
+		}
+		
+		/**
+		 * Current index of animation.
+		 */
+		public function get index():uint 
+		{
+			return _index;
 		}
 		
 		// Graphic information.
@@ -79,7 +92,7 @@ package gamecheetah.graphics
 		{
 			if (_animData != null)
 			{
-				var timeAdd:Number = _animData.frameRate;
+				var timeAdd:Number = paused ? 0 : _animData.frameRate;
 				_timer += timeAdd;
 				if (_timer >= 1)
 				{

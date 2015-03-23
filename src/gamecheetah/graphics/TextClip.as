@@ -86,11 +86,10 @@ package gamecheetah.graphics
 		public function get text():String { return _field.text; }
 		public function set text(value:String):void
 		{
-			if (_text == value) return;
+			if (_field.text == value) return;
 			_field.text = value;
 			updateTextBuffer();
 		}
-		private var _text:String;
 		
 		/**
 		 * Format of the text.

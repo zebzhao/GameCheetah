@@ -4,6 +4,17 @@ package gamecheetah.strix.utils
 	public class Statistics 
 	{
 		
+		public static function max(values:Vector.<int>):Number 
+		{
+			var max:int = int.MIN_VALUE;
+			var val:int;
+			for each (val in values)
+			{
+				if (val > max) max = val;
+			}
+			return max;
+		}
+		
 		public static function mean(values:Vector.<int>):Number 
 		{
 			var sum:int = 0;

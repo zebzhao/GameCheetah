@@ -18,12 +18,16 @@ package gamecheetah.designer.components
 		private var
 			_group:String,
 			_selected:Boolean;
+			
+		public var togglable:Boolean;
 		
 		public function PillButton(	space:Space = null, width:int = 100, height:int = 25,
-									text:String="", handler:Function=null, group:String="" ) 
+									text:String="", handler:Function=null, group:String="", togglable:Boolean=false ) 
 		{
-			super(space, width, height, text, handler, new PillButtonStamp(width, height));
+			_stamp = new PillButtonStamp(width, height);
+			super(space, width, height, text, handler, _stamp, Style.HEADER_BASE);
 			_group = group;
+			this.togglable = togglable;
 		}
 		
 		public function select():void 
@@ -45,13 +49,19 @@ package gamecheetah.designer.components
 		override public function onMouseDown():void 
 		{
 			super.onMouseDown();
-			this.select();
+			if (togglable && _selected) this.unselect()
+			else this.select();
 		}
 		
 		override public function onMouseOver():void 
 		{
 			// Do not do highlighting if selected.
 			if (!_selected) super.onMouseOver();
+		}
+		
+		override public function onMouseUp():void 
+		{
+			if (!_selected) super.onMouseUp();
 		}
 		
 		override public function onMouseOut():void 
@@ -75,7 +85,6 @@ class PillButtonStamp extends Renderable
 	public function PillButtonStamp(width:int, height:int) 
 	{
 		this.setBuffer(new BitmapData(width, height, true, Style.BASE));
-		this.setTransformAnchorToCenter();
 	}
 	
 	public function select(b:*=null):void 

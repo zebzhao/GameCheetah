@@ -75,6 +75,16 @@ package gamecheetah.designer.components
 			this.setDepth(0);
 		}
 		
+		public function setValue(value:int):void 
+		{
+			_handle.setValue(value);
+		}
+		
+		public function centerValue():void 
+		{
+			_handle.centerValue();
+		}
+		
 		public function setBounds(min:int, max:int, handleSpan:uint):void 
 		{
 			_handle.setBounds(min, max, handleSpan);
@@ -148,9 +158,45 @@ class SliderHandle extends BaseButton
 		// Create slider handle
 		if (_orientation == Slider.VERTICAL) setSize(_parent.width, calculateSize());
 		else setSize(calculateSize(), _parent.height);
-		
 		updatePosition();
 	}
+	
+	public function setValue(value:int):void 
+	{
+		if (_orientation == Slider.VERTICAL) this.location.y = value * (_parent.height / (_max - _min));
+		else this.location.x = value * (_parent.width / (_max - _min));
+		updatePosition();
+	}
+	
+	public function centerValue():void 
+	{
+		setValue((_max + _min) / 2 - _span / 2);
+	}
+	
+	//{ ------------------- Behavior Overrides -------------------
+	
+	override public function onUpdate():void 
+	{
+		if (_dragging)
+		{
+			if (_orientation == Slider.VERTICAL)
+				this.location.setTo(0, Input.mouseY - _dragOffset.y);
+			else
+				this.location.setTo(Input.mouseX - _dragOffset.x, 0);
+			
+			updatePosition();
+			if (_onSlide) _onSlide(_parent);
+		}
+	}
+	
+	override public function onMouseDown():void 
+	{
+		super.onMouseDown();
+		_dragging = true;
+		_dragOffset.setTo(Input.mouseX - this.location.x, Input.mouseY - this.location.y);
+	}
+	
+	//{ ------------------- Private Methods -------------------
 	
 	private function updatePosition():void 
 	{
@@ -167,31 +213,6 @@ class SliderHandle extends BaseButton
 			value = this.location.x / (_parent.width / (_max - _min));
 		}
 	}
-	
-	//{ ------------------- Behavior Overrides -------------------
-	
-	override public function onUpdate():void 
-	{
-		if (_dragging)
-		{
-			if (_orientation == Slider.VERTICAL)
-				this.location.setTo(0, Input.mouseY - _dragOffset.y);
-			else
-				this.location.setTo(Input.mouseX - _dragOffset.x, 0);
-			
-			updatePosition();
-			if (_onSlide) _onSlide(this);
-		}
-	}
-	
-	override public function onMouseDown():void 
-	{
-		super.onMouseDown();
-		_dragging = true;
-		_dragOffset.setTo(Input.mouseX - this.location.x, Input.mouseY - this.location.y);
-	}
-	
-	//{ ------------------- Private Methods -------------------
 	
 	private function calculateSize():int 
 	{
