@@ -8,87 +8,90 @@ package gamecheetah.designer.components
 {
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
+	import flash.display.DisplayObjectContainer;
+	import gamecheetah.designer.views.Assets;
 	import gamecheetah.graphics.Clip;
 	import gamecheetah.Space;
 	import gamecheetah.utils.OrderedDict;
 	
 	public class IconButton extends BaseButton 
 	{
-		protected var _hint:Label;
+		protected var
+			_hintLabel:Label, _hintLabelAlign:String;
+			
+		protected var _icon:Bitmap;
 		protected var _frozen:Boolean;
-		
 		
 		public function get frozen():Boolean 
 		{
 			return _frozen;
 		}
 		
-		public function IconButton(space:Space, asset:*, handler:Function=null, hint:String=null, labelAlign:String=null) 
+		public function get hint():String 
+		{
+			return _hintLabel ? _hintLabel.text : null;
+		}
+		
+		public function set hint(value:String):void 
+		{
+			if (value)
+			{
+				if (!_hintLabel) _hintLabel = new Label(this, value, Style.FONT_HEADER, _hintLabelAlign);
+				_hintLabel.alpha = 0;
+				_hintLabel.text = value;
+			}
+			else if (_hintLabel) this.removeChild(_hintLabel);
+		}
+		
+		public function IconButton(parent:DisplayObjectContainer, asset:*, handler:Function=null, hint:String=null, labelAlign:String=null) 
 		{
 			setIcon(asset);
 			
-			this.setUpState(null, { "scaleX": 1, "scaleY": 1 }, handler);
-			this.setOverState(null, { "scaleX": 1.10, "scaleY": 1.10 } );
-			this.setDownState(null, { "scaleX": 0.95, "scaleY": 0.95 } );
+			_hintLabelAlign = labelAlign;
+			this.setUpState(handler);
+			this.hint = hint;
 			
-			if (hint)
-			{
-				// Tricky: Hint does not belong directly to IconButton, as it's visible property shouldn't be linked.
-				_hint = new Label(space, hint, this, labelAlign, Style.HEADER_BASE);
-				_hint.renderable.alpha = 0;
-			}
-			space.add(this);
+			super(parent, _icon.width, _icon.height);
 		}
 		
-		public function setIcon(asset:*):void 
+		public function setIcon(asset:Class):void 
 		{
-			if (asset is Class)
-			{
-				var iconBmd:BitmapData = (new asset() as Bitmap).bitmapData;
-				this.renderable = new Clip([iconBmd], new OrderedDict());
-			}
-			else if (asset is BitmapData)
-			{
-				this.renderable = new Clip([asset], new OrderedDict());
-			}
-			else if (asset is Clip)
-			{
-				this.renderable = asset;
-			}
+			if (_icon) this.removeChild(_icon);
+			_icon = new asset() as Bitmap;
+			this.addChild(_icon);
+		}
+		
+		public function setBitmapData(asset:BitmapData, width:Number=NaN, height:Number=NaN):void 
+		{
+			if (_icon) this.removeChild(_icon);
+			_icon = new Bitmap(asset, "auto", false);
+			if (width) _icon.width = width;
+			if (height) _icon.height = height;
+			this.addChild(_icon);
 		}
 		
 		public function freeze():void 
 		{
 			_frozen = true;
-			if (_hint)
-			{
-				_hint.stopTween(true);
-				_hint.renderable.alpha = 1;
-			}
+			if (_hintLabel) _hintLabel.alpha = 1;
 		}
 		
 		public function unfreeze():void 
 		{
 			_frozen = false;
-			if (_hint) _hint.renderable.alpha = 0;
+			if (_hintLabel) _hintLabel.alpha = 0;
 		}
 		
 		override public function hide(...rest:Array):void 
 		{
 			super.hide();
-			if (_hint.visible) _hint.visible = false;
+			if (_hintLabel) _hintLabel.visible = false;
 		}
 		
 		override public function show(...rest:Array):void 
 		{
 			super.show();
-			if (!_hint.visible) _hint.visible = true;
-		}
-		
-		override public function onMouseDown():void 
-		{
-			super.onMouseDown();
-			if (_hint) this.move(this.origin.x, this.origin.y);
+			if (_hintLabel) _hintLabel.visible = true;
 		}
 		
 		override public function onMouseOver():void 
@@ -96,7 +99,7 @@ package gamecheetah.designer.components
 			if (!_frozen)
 			{
 				super.onMouseOver();
-				if (_hint) _hint.tweenClip(null, { "alpha": 1 } );
+				if (_hintLabel) _hintLabel.tweenClip(null, { "alpha":1 } );
 			}
 		}
 		
@@ -105,19 +108,8 @@ package gamecheetah.designer.components
 			if (!_frozen)
 			{
 				super.onMouseOut();
-				if (_hint) _hint.tweenClip(null, { "alpha": 0 } );
+				if (_hintLabel) _hintLabel.tweenClip(null, { "alpha":0 } );
 			}
-		}
-		
-		override public function setDepth(value:int):void 
-		{
-			super.setDepth(value);
-			if (_hint) _hint.depth = this.depth + 1;
-		}
-		
-		override public function onUpdate():void 
-		{
-			if (!_frozen) super.onUpdate();
 		}
 	}
 }

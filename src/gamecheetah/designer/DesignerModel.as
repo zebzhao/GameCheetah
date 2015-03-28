@@ -119,16 +119,32 @@ package gamecheetah.designer
 		public function set selectedGraphic(value:Graphic):void 
 		{
 			_selectedGraphic = value;
-			if (value == null) return;
-			this.update("activeClip", _selectedGraphic.newRenderable() as Renderable, true);
 		}
 		private var _selectedGraphic:Graphic;
 		
 		
-		public var activeClip:Clip;
+		public function get selectedSpace():Space 
+		{
+			return _selectedSpace;
+		}
+		public function set selectedSpace(value:Space):void 
+		{
+			_selectedSpace = value;
+		}
+		private var _selectedSpace:Space;
+		
+		
+		public function get activeClip():Clip 
+		{
+			return _selectedGraphic ? _selectedGraphic.master.clip : null;
+		}
+		public function set activeClip(value:Clip):void 
+		{
+		}
+		
+		
 		public var selectedAnimation:Animation;
 		public var selectedMaskFrame:int;
-		public var selectedSpace:Space;
 		public var selectedEntity:Entity;
 		public var errorMessage:String;
 	}

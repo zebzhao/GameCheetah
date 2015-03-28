@@ -1,130 +1,172 @@
 package gamecheetah.designer.components 
 {
-	import gamecheetah.Entity;
+	import flash.display.DisplayObjectContainer;
+	import flash.display.Sprite;
+	import flash.events.Event;
+	import flash.events.MouseEvent;
+	import flash.geom.Point;
+	import gamecheetah.Engine;
 
-	public class BaseComponent extends Entity
+	public class BaseComponent extends Sprite
 	{
 		protected var
-			_children:Vector.<BaseComponent> = new Vector.<BaseComponent>();
+			_width:Number,
+			_height:Number;
 		
-		private var
-			_visible:Boolean = true, _visibleAlpha:Number=0;
-			
-		public var
-			depthOffset:int;
+		//{ ------------------- Constructor -------------------
 		
-		internal function unregisterChildren(...children:Array):void 
+		public function BaseComponent(parent:DisplayObjectContainer, width:Number=0, height:Number=0):void 
 		{
-			for each (var child:BaseComponent in children)
-			{
-				if (child == null)
-					throw new Error("Child detected to be null!");
-				else if (child == this)
-					throw new Error("Parent child self-reference detected!");
-					
-				_children.splice(_children.indexOf(child), 1);
-			}
-		}
-		
-		internal function registerChildren(...children:Array):void 
-		{
-			for each (var child:BaseComponent in children)
-			{
-				if (child == null)
-					throw new Error("Child detected to be null!");
-				else if (child == this)
-					throw new Error("Parent child self-reference detected!");
-					
-				_children.push(child);
-			}
+			_width = width;
+			_height = height;
+			if (parent) parent.addChild(this);
+			this.addEventListener(Event.ADDED_TO_STAGE, _onStageEnter);
+			this.addEventListener(Event.REMOVED_FROM_STAGE, _onStageExit);
 		}
 			
 		//{ ------------------- Public Properties -------------------
 		
-		/**
-		 * Recursively update children depth.
-		 */
-		public function setDepth(value:int):void 
+		public function bringToFront():void 
 		{
-			this.depth = value;
-			
-			for each (var child:BaseComponent in _children)
-			{
-				child.setDepth(this.depth + child.depthOffset);
-			}
-		}
-		
-		public function get visible():Boolean 
-		{
-			return _visible;
-		}
-		
-		public function set visible(value:Boolean):void 
-		{
-			if (_visible && !value) _visibleAlpha = this.renderable.alpha; 
-			else if (!_visible && value) this.renderable.alpha = _visibleAlpha;
-			_visible = value;
-			
-			for each (var child:BaseComponent in _children)
-			{
-				child.visible = _visible;
-			}
+			this.parent.setChildIndex(this, this.parent.numChildren - 1);
 		}
 		
 		public function hide(...rest:Array):void 
 		{
-			if (this.visible) this.visible = false;
+			this.visible = false;
 		}
 		
 		public function show(...rest:Array):void 
 		{
-			if (!this.visible) this.visible = true;
+			this.visible = true;
 		}
 		
 		public function move(x:int, y:int):void 
 		{
-			this.origin.x = x;
-			this.origin.y = y;
-			
-			for each (var child:BaseComponent in _children)
-			{
-				child.move(x + this.location.x, y + this.location.y);
-			}
+			this.x = x;
+			this.y = y;
+		}
+		
+		override public function get width():Number 
+		{
+			return _width;
+		}
+		
+		override public function set width(value:Number):void 
+		{
+			_width = value;
+		}
+		
+		override public function get height():Number 
+		{
+			return _height;
+		}
+		
+		override public function set height(value:Number):void 
+		{
+			_height = value;
 		}
 		
 		public function get left():int
 		{
-			return this.absoluteLocation.x;
+			return this.x;
 		}
 		
 		public function get right():int
 		{
-			return this.renderable.width + this.absoluteLocation.x;
+			return this.width + this.x;
 		}
 		
 		public function get top():int
 		{
-			return this.absoluteLocation.y;
+			return this.y;
 		}
 		
 		public function get bottom():int
 		{
-			return this.renderable.height + this.absoluteLocation.y;
+			return this.height + this.y;
+		}
+		
+		public function get centerX():int
+		{
+			return this.x + this.width / 2;
+		}
+		
+		public function get centerY():int
+		{
+			return this.y + this.height / 2;
+		}
+		
+		public function get halfWidth():int
+		{
+			return this.width / 2;
+		}
+		
+		public function get halfHeight():int
+		{
+			return this.height / 2;
+		}
+		
+		public function tweenClip(from:Object=null, to:Object=null, duration:Number=0.5, ease:Function=null, delayStart:Number=0, transformAnchor:Point=null, onComplete:Function=null, onCompleteParams:Array=null):void 
+		{
+			Engine.cancelTweens(this);
+			Engine.startTween(this, delayStart, duration, from, to, ease, onComplete, onCompleteParams, true);
 		}
 		
 		//{ ------------------- Behaviour Overrides -------------------
 		
-		override public function onActivate():void 
+		public function onActivate():void {}
+		public function onDeactivate():void {}
+		public function onUpdate():void {}
+		public function onMouseUp():void {}
+		public function onMouseDown():void {}
+		public function onMouseOver():void {}
+		public function onMouseOut():void {}
+		public function onRender():void {}
+		
+		private function _onStageEnter(e:Event):void 
 		{
-			this.mouseEnabled = true;
-			this.renderable.smoothing = true;
+			onActivate();
+			this.addEventListener(Event.ENTER_FRAME, _onEnterFrame);
+			this.addEventListener(MouseEvent.MOUSE_UP, _onMouseUp);
+			this.addEventListener(MouseEvent.MOUSE_DOWN, _onMouseDown);
+			this.addEventListener(MouseEvent.MOUSE_OVER, _onMouseOver);
+			this.addEventListener(MouseEvent.MOUSE_OUT, _onMouseOut);
 		}
 		
-		override public function onUpdate():void 
+		private function _onStageExit(e:Event):void 
 		{
-			if (!_visible) this.renderable.alpha = 0;
-			for each (var child:BaseComponent in _children)
-				child.renderable.alpha = this.renderable.alpha;
+			onDeactivate();
+			this.removeEventListener(Event.ENTER_FRAME, _onEnterFrame);
+			this.removeEventListener(MouseEvent.MOUSE_UP, _onMouseUp);
+			this.removeEventListener(MouseEvent.MOUSE_DOWN, _onMouseDown);
+			this.removeEventListener(MouseEvent.MOUSE_OVER, _onMouseOver);
+			this.removeEventListener(MouseEvent.MOUSE_OUT, _onMouseOut);
+		}
+		
+		private function _onEnterFrame(e:Event):void 
+		{
+			onUpdate();
+		}
+		
+		private function _onMouseUp(e:MouseEvent):void 
+		{
+			onMouseUp();
+		}
+		
+		private function _onMouseDown(e:MouseEvent):void 
+		{
+			onMouseDown();
+		}
+		
+		private function _onMouseOver(e:MouseEvent):void 
+		{
+			onMouseOver();
+		}
+		
+		private function _onMouseOut(e:MouseEvent):void 
+		{
+			onMouseOut();
 		}
 	}
 

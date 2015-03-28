@@ -6,6 +6,7 @@
  */
 package gamecheetah.designer.components 
 {
+	import flash.display.DisplayObjectContainer;
 	import flash.utils.Dictionary;
 	import gamecheetah.Space;
 	
@@ -13,19 +14,16 @@ package gamecheetah.designer.components
 	{
 		private static var Groups:Dictionary = new Dictionary();
 		
-		private var _stamp:PillButtonStamp;
-		
 		private var
-			_group:String,
-			_selected:Boolean;
-			
+			_group:String;
+		
+		public var selected:Boolean;
 		public var togglable:Boolean;
 		
-		public function PillButton(	space:Space = null, width:int = 100, height:int = 25,
-									text:String="", handler:Function=null, group:String="", togglable:Boolean=false ) 
+		public function PillButton(	parent:DisplayObjectContainer, width:int = 100, height:int = 25,
+									text:String=null, handler:Function=null, group:String="", togglable:Boolean=false ) 
 		{
-			_stamp = new PillButtonStamp(width, height);
-			super(space, width, height, text, handler, _stamp, Style.HEADER_BASE);
+			super(parent, width, height, text, handler, Style.FONT_HEADER);
 			_group = group;
 			this.togglable = togglable;
 		}
@@ -33,15 +31,13 @@ package gamecheetah.designer.components
 		public function select():void 
 		{
 			if (Groups[_group]) Groups[_group].unselect();
-			_stamp.select();
-			_selected = true;
+			selected = true;
 			Groups[_group] = this;
 		}
 		
 		public function unselect():void 
 		{
-			_stamp.unhighlight();
-			_selected = false;
+			selected = false;
 		}
 		
 		//{ ------------------- Behavior Overrides -------------------
@@ -49,56 +45,15 @@ package gamecheetah.designer.components
 		override public function onMouseDown():void 
 		{
 			super.onMouseDown();
-			if (togglable && _selected) this.unselect()
+			if (togglable && selected) this.unselect()
 			else this.select();
 		}
 		
-		override public function onMouseOver():void 
+		override public function draw():void 
 		{
-			// Do not do highlighting if selected.
-			if (!_selected) super.onMouseOver();
-		}
-		
-		override public function onMouseUp():void 
-		{
-			if (!_selected) super.onMouseUp();
-		}
-		
-		override public function onMouseOut():void 
-		{
-			// Do not do highlighting if selected.
-			if (!_selected) super.onMouseOut();
+			this.backgroundColor = selected ? Style.BUTTON2_HIGHLIGHT : (_highlighted ? Style.BUTTON2_HIGHLIGHT : Style.BUTTON2_BASE);
 		}
 		
 	}
 
-}
-
-import flash.display.BitmapData;
-import flash.geom.Rectangle;
-import gamecheetah.graphics.Renderable;
-import gamecheetah.designer.components.Style;
-
-class PillButtonStamp extends Renderable
-{
-	
-	public function PillButtonStamp(width:int, height:int) 
-	{
-		this.setBuffer(new BitmapData(width, height, true, Style.BASE));
-	}
-	
-	public function select(b:*=null):void 
-	{
-		this.buffer.fillRect(new Rectangle(0, 0, this.width, this.height), Style.SELECTED);
-	}
-	
-	public function highlight(b:*=null):void 
-	{
-		this.buffer.fillRect(new Rectangle(0, 0, this.width, this.height), Style.HIGHLIGHT);
-	}
-	
-	public function unhighlight(b:*=null):void 
-	{
-		this.buffer.fillRect(new Rectangle(0, 0, this.width, this.height), Style.BASE);
-	}
 }

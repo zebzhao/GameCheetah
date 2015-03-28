@@ -6,9 +6,9 @@
  */
 package gamecheetah.designer.components 
 {
-	import gamecheetah.Space;
+	import flash.display.DisplayObjectContainer;
 	
-	public class Slider extends BaseButton 
+	public class Slider extends PushButton 
 	{
 		public static const VERTICAL:String = "vertical";
 		public static const HORIZONTAL:String = "horizontal";
@@ -16,9 +16,6 @@ package gamecheetah.designer.components
 		//{ ------------------- Private Info -------------------
 		
 		private var _handle:SliderHandle;
-		
-		private var
-			_width:int, _height:int;
 			
 		//{ ------------------- Public Properties -------------------
 		
@@ -27,52 +24,28 @@ package gamecheetah.designer.components
 			return _handle.value;
 		}
 		
-		public function get width():int 
+		override public function set width(value:Number):void 
 		{
-			return _width;
-		}
-		
-		public function set width(value:int):void 
-		{
-			if (value == _width) return;
-			_width = value;
-			this.renderable = new BackgroundStamp(_width, _height);
+			super.width = value;
 			_handle.updateSize();
 		}
 		
-		public function get height():int 
+		override public function set height(value:Number):void 
 		{
-			return _height;
-		}
-		
-		public function set height(value:int):void 
-		{
-			if (value == _height) return;
-			_height = value;
-			this.renderable = new BackgroundStamp(_width, _height);
+			super.height = value;
 			_handle.updateSize();
 		}
 		
 		//{ ------------------- Public Methods -------------------
 		
-		public function Slider(	space:Space = null, width:int = 100, height:int = 8,
+		public function Slider(	parent:DisplayObjectContainer, width:int = 100, height:int = 8,
 								orientation:String = HORIZONTAL,
 								min:int = 0, max:int = 100, handleSpan:uint = 1,
 								handler:Function = null) 
 		{
-			_width = width;
-			_height = height;
-			
-			this.renderable = new BackgroundStamp(_width, _height);
-			
 			_handle = new SliderHandle(this, 0, 0, orientation, handler);
 			this.setBounds(min, max, handleSpan);
-			
-			space.add(this);
-			space.add(_handle);
-			
-			this.registerChildren(_handle);
-			this.setDepth(0);
+			super(parent, width, height);
 		}
 		
 		public function setValue(value:int):void 
@@ -89,22 +62,22 @@ package gamecheetah.designer.components
 		{
 			_handle.setBounds(min, max, handleSpan);
 		}
+		
+		override public function draw():void 
+		{
+			this.backgroundColor = Style.SLIDER_DARK;
+		}
 	}
 }
 
-import flash.display.BitmapData;
 import flash.events.Event;
 import flash.events.MouseEvent;
 import flash.geom.Point;
-import flash.geom.Rectangle;
 import gamecheetah.designer.components.*;
 import gamecheetah.Engine;
-import gamecheetah.gameutils.Input;
-import gamecheetah.graphics.Renderable;
 
-class SliderHandle extends BaseButton
+class SliderHandle extends PushButton
 {
-	private var	_stamp:ButtonStamp;
 	private var	_parent:Slider;
 	private var _onSlide:Function;
 	private var _orientation:String;
@@ -121,24 +94,14 @@ class SliderHandle extends BaseButton
 		
 	public function SliderHandle(parent:Slider, width:int, height:int, orientation:String=null, onSlide:Function=null) 
 	{
+		super(parent, width, height);
+		
 		_parent = parent;
 		_orientation = orientation;
 		_onSlide = onSlide;
-		setSize(width, height);
-		this.depthOffset = 2;
 		
 		// Capture any mouse release whether on or off the entity.
 		Engine.stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
-	}
-	
-	public function setSize(width:int, height:int):void 
-	{
-		_stamp = new ButtonStamp(width, height);
-		this.renderable = _stamp;
-		this.setUpState(null, null, _stamp.highlight);
-		this.setOverState(null, null, _stamp.highlight);
-		this.setDownState(null, null, _stamp.unhighlight);
-		this.setOutState(null, _stamp.unhighlight );
 	}
 	
 	public function setBounds(min:int, max:int, handleSpan:uint):void 
@@ -163,8 +126,8 @@ class SliderHandle extends BaseButton
 	
 	public function setValue(value:int):void 
 	{
-		if (_orientation == Slider.VERTICAL) this.location.y = value * (_parent.height / (_max - _min));
-		else this.location.x = value * (_parent.width / (_max - _min));
+		if (_orientation == Slider.VERTICAL) this.y = value * (_parent.height / (_max - _min));
+		else this.x = value * (_parent.width / (_max - _min));
 		updatePosition();
 	}
 	
@@ -180,9 +143,9 @@ class SliderHandle extends BaseButton
 		if (_dragging)
 		{
 			if (_orientation == Slider.VERTICAL)
-				this.location.setTo(0, Input.mouseY - _dragOffset.y);
+				this.move(0, _parent.mouseY - _dragOffset.y);
 			else
-				this.location.setTo(Input.mouseX - _dragOffset.x, 0);
+				this.move(_parent.mouseX - _dragOffset.x, 0);
 			
 			updatePosition();
 			if (_onSlide) _onSlide(_parent);
@@ -193,7 +156,12 @@ class SliderHandle extends BaseButton
 	{
 		super.onMouseDown();
 		_dragging = true;
-		_dragOffset.setTo(Input.mouseX - this.location.x, Input.mouseY - this.location.y);
+		_dragOffset.setTo(_parent.mouseX - this.x, _parent.mouseY - this.y);
+	}
+	
+	override public function draw():void 
+	{
+		this.backgroundColor = _highlighted ? Style.SLIDER_HIGHLIGHT : Style.SLIDER_BASE;
 	}
 	
 	//{ ------------------- Private Methods -------------------
@@ -203,14 +171,14 @@ class SliderHandle extends BaseButton
 		if (_orientation == Slider.VERTICAL)
 		{
 			// Bound slider bar position
-			this.location.y = Math.max(0, Math.min(this.location.y, _parent.height - calculateSize()));
-			value = this.location.y / (_parent.height / (_max - _min));
+			this.y = Math.max(0, Math.min(this.y, _parent.height - calculateSize()));
+			value = this.y / (_parent.height / (_max - _min));
 		}
 		else
 		{
 			// Bound slider bar position
-			this.location.x = Math.max(0, Math.min(this.location.x, _parent.width - calculateSize()));
-			value = this.location.x / (_parent.width / (_max - _min));
+			this.x = Math.max(0, Math.min(this.x, _parent.width - calculateSize()));
+			value = this.x / (_parent.width / (_max - _min));
 		}
 	}
 	
@@ -224,33 +192,5 @@ class SliderHandle extends BaseButton
 	private function onStageMouseUp(e:Event):void 
 	{
 		_dragging = false;
-	}
-}
-
-class BackgroundStamp extends Renderable
-{
-	public function BackgroundStamp(width:int, height:int):void 
-	{
-		if (width == 0 || height == 0) this.setBuffer(Renderable.EMPTY);
-		else this.setBuffer(new BitmapData(width, height, true, Style.SLIDER_BG));
-	}
-}
-
-class ButtonStamp extends Renderable
-{
-	public function ButtonStamp(width:int, height:int):void 
-	{
-		if (width == 0 || height == 0) this.setBuffer(Renderable.EMPTY);
-		else this.setBuffer(new BitmapData(width, height, true, Style.SLIDER_HANDLE));
-	}
-	
-	public function highlight(b:*):void 
-	{
-		this.buffer.fillRect(new Rectangle(0, 0, this.width, this.height), Style.SLIDER_HIGHLIGHT);
-	}
-	
-	public function unhighlight(b:*):void 
-	{
-		this.buffer.fillRect(new Rectangle(0, 0, this.width, this.height), Style.SLIDER_HANDLE);
 	}
 }

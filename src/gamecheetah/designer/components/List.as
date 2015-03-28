@@ -6,8 +6,10 @@
  */
 package gamecheetah.designer.components 
 {
+	import flash.display.DisplayObjectContainer;
 	import gamecheetah.graphics.Renderable;
 	import gamecheetah.Space;
+	import gamecheetah.utils.GCError;
 
 	public class List extends BaseButton
 	{
@@ -22,12 +24,16 @@ package gamecheetah.designer.components
 					_listItems:Array;
 		
 		private var _slider:Slider;
-		private var _hidden:Boolean;
 		
 		private var
 			_onDelete:Function, _onSwap:Function, _onSelect:Function, _onDeselect:Function, _onEdit:Function;
 		
 		//{ ------------------- Public Properties -------------------
+		
+		/**
+		 * If true, hides the scroll bar if not needed.
+		 */
+		public var autoHideScrollbar:Boolean = true;
 		
 		/**
 		 * The placeholder value for TextInput if list items are editable.
@@ -52,13 +58,14 @@ package gamecheetah.designer.components
 		 */
 		public function get items():Array
 		{
-			return _hidden ? [] : _items;
+			return _items;
 		}
 		
 		public function set items(value:Array):void
 		{
 			_items = value;
 			_selected.length = _items.length;
+			for (var i:int = 0; i < _selected.length; i++) _selected[i] = false;
 		}
 		
 		/**
@@ -76,9 +83,25 @@ package gamecheetah.designer.components
 			makeItems();
 		}
 		
-		//{ ------------------- Public Methods -------------------
+		/**
+		 * Gets array of selected/unselected statuses.
+		 */
+		public function get selected():Vector.<Boolean> 
+		{
+			return _selected;
+		}
 		
-		public function List(	space:Space, items:Array = null, visibleItems:uint = 8,
+		/**
+		 * The height of the list.
+		 */
+		override public function get height():Number 
+		{
+			return Math.min(_items.length, _visibleItems) * (_itemHeight + 1);
+		}
+		
+		//{ ------------------- Constructor -------------------
+		
+		public function List(	parent:DisplayObjectContainer, items:Array = null, visibleItems:uint = 8,
 								itemWidth:uint = 125, itemHeight:uint = 25,
 								onSelect:Function = null, onDeselect:Function = null, onDelete:Function = null, onSwap:Function = null, onEdit:Function = null,
 								editable:Boolean = true, deletable:Boolean = true, swappable:Boolean = true ) 
@@ -100,29 +123,25 @@ package gamecheetah.designer.components
 			_listItems = [];
 			_visibleItems = visibleItems;
 			
-			this.renderable = new Renderable();
-			
-			_slider = new Slider(space, 10, calculateSliderHeight(), Slider.VERTICAL);
+			_slider = new Slider(this, 10, this.height, Slider.VERTICAL);
 			_slider.setBounds(0, items.length, _visibleItems);
-			
-			if (space)
-			{
-				space.add(this);
-				this.registerChildren(_slider);
-				this.setDepth(0);
-			}
+			// Reposition slider
+			_slider.move(_itemWidth + 1, 0);
 			
 			makeItems();
+			super(parent);
 		}
 		
-		override public function get bottom():int 
-		{
-			return this.absoluteLocation.y + calculateSliderHeight();
-		}
+		//{ ------------------- Public Methods -------------------
 		
-		override public function get right():int 
+		public function getListItem(index:int, throwError:Boolean=true):ListItem 
 		{
-			return this.absoluteLocation.x + _itemWidth + 10;
+			if (index >= 0 && index < _listItems.length)
+				return _listItems[index] as ListItem;
+			else if (throwError)
+				throw new GCError("list item index out of range");
+			else
+				return null;
 		}
 		
 		public function selectItem(index:int):void 
@@ -134,7 +153,16 @@ package gamecheetah.designer.components
 			}
 			_selected.length = _items.length;
 			
-			if (_selected[index]) return;  // Skip callback if already selected.
+			if (_selected[index])
+			{
+				if (multiselect)
+				{
+					// Deselect selected
+					_selected[index] = false;
+					if (_onDeselect) _onDeselect(this, index);
+				}
+				return;  // Skip callback if already selected.
+			}
 			
 			_selected[index] = true;
 			if (_onSelect) _onSelect(this, index);
@@ -145,17 +173,6 @@ package gamecheetah.designer.components
 			if (!_selected[index]) return;
 			_selected[index] = false;
 			if (_onDeselect) _onDeselect(this, index);
-		}
-		
-		override public function hide(...rest:Array):void 
-		{
-			_hidden = true;
-		}
-		
-		override public function show(...rest:Array):void 
-		{
-			if (!_hidden) return;
-			_hidden = false;
 		}
 		
 		//}
@@ -176,8 +193,7 @@ package gamecheetah.designer.components
 			// Find closest item
 			for each (var item2:ListItem in _listItems)
 			{
-				if (Math.abs(item2.left - item.left) < _itemWidth &&
-					Math.abs(item2.top - item.top) < _itemHeight &&
+				if (Math.abs(item2.top - item.top) < _itemHeight/2 &&
 					item2 != item)
 				{
 					if (_onSwap)
@@ -201,10 +217,7 @@ package gamecheetah.designer.components
 				
 				// Reposition list item if not being dragged.
 				if (!listItem.dragging)
-					listItem.location.setTo(0, i * (_itemHeight + 1));
-					
-				// Reposition slider
-				_slider.location.setTo(_itemWidth + 1, 0);
+					listItem.move(0, i * (_itemHeight + 1));
 				
 				if (i < items.length)
 				{
@@ -221,8 +234,16 @@ package gamecheetah.designer.components
 					listItem.hide();
 				}
 			}
-			_slider.height = calculateSliderHeight();
-			_slider.setBounds(0, items.length, Math.min(items.length, _visibleItems));
+			
+			if (autoHideScrollbar && items.length <= _visibleItems)
+			{
+				_slider.visible = false;
+			}
+			else
+			{
+				_slider.height = this.height;
+				_slider.setBounds(0, items.length, Math.min(items.length, _visibleItems));
+			}
 		}
 		
 		private function onSelectItem(item:ListItem):void 
@@ -237,25 +258,17 @@ package gamecheetah.designer.components
 			var listItem:ListItem;
 			for each (listItem in _listItems)
 			{
-				this.unregisterChildren(listItem);
-				listItem.space.destroyEntity(listItem);
+				this.removeChild(listItem);
 			}
 			
 			_listItems.length = 0;
 			
 			for (var i:uint = 0; i < _visibleItems; i++)
 			{
-				listItem = new ListItem(this, this.space, _itemWidth, _itemHeight, "", placeholder, onSelectItem, _editable, _deletable, _swappable);
+				listItem = new ListItem(this, _itemWidth, _itemHeight, "", placeholder, onSelectItem, _editable, _deletable, _swappable);
 				_listItems.push(listItem); 
-				this.registerChildren(listItem);
 			}
 			onUpdate();
 		}
-		
-		private function calculateSliderHeight():int 
-		{
-			return Math.min(items.length, _visibleItems) * (_itemHeight + 1);
-		}
 	}
-
 }

@@ -6,8 +6,7 @@
  */
 package gamecheetah.designer.components
 {
-	import gamecheetah.Entity;
-	import gamecheetah.Space;
+	import flash.display.DisplayObjectContainer;
 	
 	public class PushButton extends BaseButton 
 	{
@@ -16,63 +15,73 @@ package gamecheetah.designer.components
 		protected var	_text:String,
 						_handler:Function,
 						_label:Label,
-						_stamp:*;
+						_highlighted:Boolean;
+						
+		//{ ------------------- Public properties -------------------
 		
-		//{ ------------------- Public Methods -------------------
+		public function get backgroundColor():uint 
+		{
+			return _backgroundColor;
+		}
 		
-		public function PushButton(	space:Space = null, width:int = 100, height:int = 25,
-									text:String="", handler:Function=null, stamp:*=null, labelColor:uint=0xffffff) 
+		public function set backgroundColor(value:uint):void
+		{
+			_backgroundColor = value;
+			Style.drawBaseRect(this.graphics, 0, 0, _width - 1, _height - 1, _backgroundColor);
+		}
+		
+		private var _backgroundColor:uint;
+		
+		//{ ------------------- Constructor -------------------
+		
+		public function PushButton(	parent:DisplayObjectContainer, width:int = 100, height:int = 25,
+									text:String=null, handler:Function=null, labelColor:uint=0xffffff) 
 		{
 			_text = text;
 			_handler = handler;
-			_stamp = stamp;
-			if (!_stamp) _stamp = new ButtonStamp(width, height);
 			
-			this.renderable = _stamp;
-			this.setUpState(null, null, _stamp.highlight);
-			this.setOverState(null, null, _stamp.highlight );
-			this.setDownState(null, null, _stamp.unhighlight );
-			this.setOutState(null, _stamp.unhighlight );
+			this.setUpState(highlight);
+			this.setOverState(highlight);
+			this.setDownState(unhighlight);
+			this.setOutState(unhighlight);
 			
-			if (space)
-			{
-				_label = new Label(space, _text, this, Label.ALIGN_CENTER, labelColor);
-				space.add(this);
-				
-				this.registerChildren(_label)
-				this.setDepth(0);
-			}
+			if (_text) _label = new Label(this, _text, labelColor, Label.ALIGN_CENTER);
+			
+			super(parent, width, height);
+			
+			draw();
 		}
 		
 		override public function onMouseUp():void 
 		{
 			super.onMouseUp();
 			if (_handler) _handler(this);
-			this.setDepth(0);
 		}
 		
-		//{ ------------------- Private Methods -------------------
-	}
-}
-import flash.display.BitmapData;
-import flash.geom.Rectangle;
-import gamecheetah.graphics.Renderable;
-import gamecheetah.designer.components.*;
-
-class ButtonStamp extends Renderable
-{
-	public function ButtonStamp(width:int, height:int):void 
-	{
-		this.setBuffer(new BitmapData(width, height, true, Style.SLIDER_HANDLE));
-	}
-	
-	public function highlight(b:*):void 
-	{
-		this.buffer.fillRect(new Rectangle(0, 0, this.width, this.height), Style.SLIDER_HIGHLIGHT);
-	}
-	
-	public function unhighlight(b:*):void 
-	{
-		this.buffer.fillRect(new Rectangle(0, 0, this.width, this.height), Style.SLIDER_HANDLE);
+		//{ ------------------- Public Methods -------------------
+		
+		public function setSize(width:int, height:int):void 
+		{
+			_width = width;
+			_height = height;
+			draw();
+		}
+		
+		public function highlight(...rest:Array):void 
+		{
+			_highlighted = true;
+			draw();
+		}
+		
+		public function unhighlight(...rest:Array):void 
+		{
+			_highlighted = false;
+			draw();
+		}
+		
+		public function draw():void 
+		{
+			this.backgroundColor = _highlighted ? Style.BUTTON_HIGHLIGHT : Style.BUTTON_BASE;
+		}
 	}
 }

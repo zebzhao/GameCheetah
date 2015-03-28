@@ -776,7 +776,7 @@ package gamecheetah
 		 * The minimum bounds will not be smaller than stage dimensions.
 		 */
 		CONFIG::developer
-		hidden function _autoSize():void 
+		public function autoSize():void 
 		{
 			var newBounds:Rectangle = new Rectangle(0, 0, Engine.stage.stageWidth, Engine.stage.stageHeight);
 			var xMin:Number, xMax:Number, yMin:Number, yMax:Number;
@@ -802,7 +802,7 @@ package gamecheetah
 		 * [Developer] Convert Quadtree data to string.
 		 */
 		CONFIG::developer
-		public function get _quadtreeData():String 
+		public function get quadtreeData():String 
 		{
 			return _quadtree.print();
 		}
@@ -820,7 +820,7 @@ package gamecheetah
 		 * [Developer] Performance metric for quadtree.
 		 */
 		CONFIG::developer
-		public function get _totalCollisionChecks():uint 
+		public function get totalCollisionChecks():uint 
 		{
 			return _quadtree.totalCollisionChecks;
 		}

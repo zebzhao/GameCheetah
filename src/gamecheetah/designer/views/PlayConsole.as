@@ -6,46 +6,42 @@
  */
 package gamecheetah.designer.views 
 {
+	import flash.display.DisplayObjectContainer;
+	import flash.geom.Rectangle;
+	import flash.text.TextFormatAlign;
 	import gamecheetah.designer.components.*;
 	import gamecheetah.*;
 	import flash.utils.getTimer;
 	import flash.system.System;
 	
-	public class PlayConsole extends Space 
+	public class PlayConsole extends BaseComponent 
 	{
 		private var
 			_playStopBtn:IconToggleButton, _statsBtn:IconButton,
-			_infoLabel:Label,
-			_perfLbl:Label, _renderedLbl:Label,
-			_pxCollisionLbl:Label,
-			_binInfoLbl:Label,
-			_cameraLbl:Label,
-			_statsBg:BaseComponent;
+			_text:Label,
+			_bgRect:Rectangle;
 			
 		private var
 			_framesElapsed:uint,
 			_time:Number = 0,
 			_fps:int;
 			
-		public function PlayConsole() 
+		public function PlayConsole(parent:DisplayObjectContainer) 
 		{
+			_bgRect = new Rectangle();
 			_playStopBtn = new IconToggleButton(this, Assets.GAME, Assets.EXIT, null, "Run!", "Exit", Label.ALIGN_ABOVE);
 			_statsBtn = new IconButton(this, Assets.STATS, statsBtn_Click, "Stats", Label.ALIGN_ABOVE);
-			
-			_renderedLbl = new Label(this, "", null, null, Style.FONT_DARK);
-			_perfLbl = new Label(this, "", null, null, Style.FONT_DARK);
-			_pxCollisionLbl = new Label(this, "", null, null, Style.FONT_DARK);
-			_binInfoLbl = new Label(this, "", null, null, Style.FONT_DARK);
-			_cameraLbl = new Label(this, "", null, null, Style.FONT_DARK);
-			_infoLabel = new Label(this, "", null, null, Style.FONT_DARK);
+			_text = new Label(this, "", Style.FONT_BASE, null, TextFormatAlign.LEFT);
+			super(parent);
 		}
 		
 		//{ ------------------------------------ Behaviour Overrides ------------------------------------
 		
-		override public function onEnter():void 
+		override public function onActivate():void 
 		{
-			this.mouseEnabled = true;
-			statsBtn_Click(null);
+			this.graphics.clear();
+			_bgRect.setEmpty();
+			_text.hide();
 			onUpdate();
 		}
 		
@@ -56,23 +52,24 @@ package gamecheetah.designer.views
 			
 			_statsBtn.move(stageWidth * 0.1 - 16, stageHeight - 42);
 			_playStopBtn.move(stageWidth * 0.9 - 16, stageHeight - 42);
-			_renderedLbl.location.setTo(_statsBtn.left, stageHeight - 190);
-			_perfLbl.location.setTo(_renderedLbl.left, _renderedLbl.bottom);
-			_cameraLbl.location.setTo(_perfLbl.left, _perfLbl.bottom);
-			_pxCollisionLbl.location.setTo(_cameraLbl.left, _cameraLbl.bottom);
-			_binInfoLbl.location.setTo(_pxCollisionLbl.left, _pxCollisionLbl.bottom);
-			_infoLabel.location.setTo(_binInfoLbl.left, _binInfoLbl.bottom);
 			
-			if (_perfLbl.visible)
+			if (_text.visible)
 			{
 				var qtStats:Array = Engine.space.quadtreeStats;
 				
-				_renderedLbl.text = "Rendered: " + Engine.space.screenCount.toString() + " / " +  Engine.space.totalEntities;
-				_perfLbl.text = "MEM: " + Number(System.totalMemory / 1024 / 1024).toFixed(2) + " MB  |  FPS: " + _fps;
-				_cameraLbl.text = "Camera: " + Engine.space.camera.x.toFixed(1) + ", " + Engine.space.camera.y.toFixed(1);;
-				_pxCollisionLbl.text = "Px-C.-Checks: " + Engine.space.totalPixelCollisionChecks + " / " + Engine.space._totalCollisionChecks;
-				_binInfoLbl.text = "Qt-Bins:  Max: " + qtStats[0] + "  |  Mean: " + qtStats[1] + "  |  Std: " + qtStats[2];
-				_infoLabel.text = "Space: " + trimObjectMeta(String(Engine.space)) + "  |  Console: " + trimObjectMeta(String(Engine.console));
+				_text.text = "Space: " + trimObjectMeta(String(Engine.space)) + " \nConsole: " + trimObjectMeta(String(Engine.console));
+				_text.text += "\nCamera: " + int(Engine.space.camera.x) + ", " + int(Engine.space.camera.y);
+				_text.text += "\nRendered: " + Engine.space.screenCount.toString() + " / " +  Engine.space.totalEntities +
+					"\nMEM: " + Number(System.totalMemory / 1024 / 1024).toFixed(2) + " MB\nFPS: " + _fps;
+				_text.text += "\nPixel-CD: " + Engine.space.totalPixelCollisionChecks + " / " + Engine.space.totalCollisionChecks +
+					"\nQt-Bins: Max=" + qtStats[0] + ",  Mean=" + qtStats[1] + ",  Std=" + qtStats[2];
+				_text.move(_statsBtn.left, _statsBtn.top - _text.height - 35);
+				
+				if (_bgRect.width < _text.width || _bgRect.height < _text.height)
+				{
+					_bgRect.setTo(0, 0, _text.width + 5, _text.height + 5);
+					Style.drawBaseRect(this.graphics, _text.x - 5, _text.y - 5, _text.width + 10, _text.height + 10, 0, 0.5, false);
+				}
 			}
 			
 			var currentTime:Number = getTimer();
@@ -89,25 +86,17 @@ package gamecheetah.designer.views
 		
 		private function statsBtn_Click(b:BaseButton):void 
 		{
-			if (_perfLbl.visible)
+			if (_statsBtn.frozen)
 			{
 				_statsBtn.unfreeze();
-				_perfLbl.hide();
-				_renderedLbl.hide();
-				_pxCollisionLbl.hide();
-				_binInfoLbl.hide();
-				_cameraLbl.hide();
-				_infoLabel.hide();
+				this.graphics.clear();
+				_bgRect.setEmpty();
+				_text.hide();
 			}
 			else
 			{
 				_statsBtn.freeze();
-				_perfLbl.show();
-				_renderedLbl.show();
-				_pxCollisionLbl.show();
-				_binInfoLbl.show();
-				_cameraLbl.show();
-				_infoLabel.show();
+				_text.show();
 			}
 		}
 		

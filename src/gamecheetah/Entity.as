@@ -393,7 +393,7 @@ package gamecheetah
 		}
 		
 		/**
-		 * Return the collision mask for the renderable clip.
+		 * [Internal] Return the collision mask for the renderable clip.
 		 * @return	A BitmapData or Rectangle object.
 		 */
 		hidden function _getMask():*

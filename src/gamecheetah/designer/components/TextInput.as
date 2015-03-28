@@ -6,26 +6,34 @@
  */
 package gamecheetah.designer.components 
 {
+	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
 	import flash.events.FocusEvent;
 	import flash.events.MouseEvent;
-	import flash.text.TextField;
-	import flash.text.TextFieldType;
-	import flash.text.TextFormat;
-	import flash.text.AntiAliasType;
+	import flash.text.*;
+	import flash.display.BlendMode;
 	import gamecheetah.designer.Designer;
-	import gamecheetah.Engine;
-	import gamecheetah.Space;
+	import gamecheetah.*
+	import gamecheetah.utils.GCError;
 	
-	public class TextInput extends BaseComponent 
+	public class TextInput extends Label 
 	{
-		private var
-			_onChange:Function;
+		public var
+			onChange:Function;
 			
-		private var _tf:TextField;
-		private var _stamp:BackgroundStamp;
-		private var _placeholder:Label;
-		private var _type:String;
+		protected var
+			_hintLabel:Label;
+			
+		private var
+			_type:String,
+			_placeholder:String;
+		
+		private var
+			_background:Boolean = true,
+			_highlighted:Boolean,
+			_selected:Boolean,
+			_focused:Boolean,
+			_invalid:Boolean;
 		
 		public static const TYPE_STRING:String = "string";
 		public static const TYPE_INT:String = "int";
@@ -37,120 +45,201 @@ package gamecheetah.designer.components
 		public var minimum:Number = -999999999;
 		
 		
-		public function get text():String 
+		override public function set text(value:String):void 
 		{
-			return _tf.text;
-		}
-		
-		public function set text(value:String):void 
-		{
-			_tf.text = value;
+			if (value == _text) return;
+			super.text = value;
 			onTextChange(null);
 		}
 		
-		public function TextInput(space:Space, width:int=100, height:int=25, onChange:Function=null, placeholder:String=null, type:String=TYPE_STRING) 
+		public function get background():Boolean 
 		{
-			_onChange = onChange;
-			_type = type;
-			
-			_tf = new TextField();
-			_tf.width = width - 5;
-			_tf.height = height - 5;
-			_tf.embedFonts = true;
-			_tf.type = TextFieldType.INPUT;
-			_tf.defaultTextFormat = new TextFormat("Designer Font", Style.FONT_SIZE, 0x000000);
-			
-			if (_type == TYPE_INT) _tf.restrict = "0-9\\-";
-			else if (_type == TYPE_UINT) _tf.restrict = "0-9";
-			else if (_type == TYPE_UINT_VECTOR) _tf.restrict = "0-9,";
-			
-			_stamp = new BackgroundStamp(width, height);
-			this.renderable = _stamp;
-			
-			if (placeholder)
-			{
-				_placeholder = new Label(space, placeholder, this, Label.ALIGN_CENTER, 0xCDCDCD);
-				_placeholder.depth = this.depth + 1;
-			}
-			
-			if (space)
-			{
-				space.add(this);
-			}
+			return _background;
 		}
 		
-		override public function hide(...rest:Array):void 
+		public function set background(value:Boolean):void 
 		{
-			super.hide();
-			if (_placeholder && _placeholder.visible) _placeholder.hide();
+			_background = value;
+			draw();
 		}
 		
-		override public function show(...rest:Array):void 
+		public function get type():String 
 		{
-			super.show();
-			if (_placeholder && !_placeholder.visible) _placeholder.show();
+			return _type;
+		}
+		
+		public function set type(value:String):void 
+		{
+			_type = value;
+			
+			if (_type == TYPE_INT) _field.restrict = "0-9\\-";
+			else if (_type == TYPE_UINT) _field.restrict = "0-9";
+			else if (_type == TYPE_UINT_VECTOR) _field.restrict = "0-9,";
+			else if (_type != TYPE_STRING) throw new GCError("unrecognized input type option");
+		}
+		
+		public function setHint(hint:String, align:String=null):void 
+		{
+			if (hint)
+			{
+				if (!_hintLabel) _hintLabel = new Label(this, hint, Style.FONT_BASE, align);
+				_hintLabel.text = hint;
+				_hintLabel.padding = 15;
+				Style.drawBaseRect(_hintLabel.graphics, -5, 0, _hintLabel.width + 10, this.height, Style.HINT_BASE, Style.HINT_ALPHA, false); 
+			}
+			else if (_hintLabel) this.removeChild(_hintLabel);
+			
+			draw();
+		}
+		
+		public function get placeholder():String 
+		{
+			return _placeholder;
+		}
+		
+		public function set placeholder(value:String):void 
+		{
+			_placeholder = value;
+			checkEmpty();
+		}
+		
+		override public function set width(value:Number):void
+		{
+			super.width = value;
+			_field.width = value - 5;
+		}
+		
+		override public function set height(value:Number):void
+		{
+			super.height = value;
+			_field.height = value;
+		}
+		
+		public function TextInput(parent:DisplayObjectContainer, width:int=100, height:int=25, onChange:Function=null, placeholder:String=null, type:String=TYPE_STRING) 
+		{
+			super(parent, "", Style.FONT_DARK);
+			
+			_field.autoSize = TextFieldAutoSize.NONE;
+			_field.type = TextFieldType.INPUT;
+			_field.selectable = true;
+			_field.multiline = false;
+			_field.defaultTextFormat = new TextFormat("Designer Font", Style.FONT_SIZE, Style.FONT_DARK,
+				null, null, null, null, null, TextFormatAlign.LEFT, 5);
+			_field.setTextFormat(_field.defaultTextFormat);
+			
+			this.placeholder = placeholder;
+			this.type = type;
+			this.text = "";
+			this.width = width;
+			this.height = height;
+			
+			checkEmpty();
+			
+			this.onChange = onChange;
 		}
 		
 		override public function onActivate():void 
 		{
-			Engine.stage.addChild(_tf);
-			_tf.addEventListener(FocusEvent.FOCUS_IN, onFocusIn);
-			_tf.addEventListener(FocusEvent.FOCUS_OUT, onFocusOut);
-			_tf.addEventListener(Event.CHANGE, onTextChange);
+			_field.addEventListener(FocusEvent.FOCUS_IN, onFocusIn);
+			_field.addEventListener(FocusEvent.FOCUS_OUT, onFocusOut);
+			_field.addEventListener(Event.CHANGE, onTextChange);
 		}
 		
 		override public function onDeactivate():void 
 		{
-			super.onDeactivate();
 			// Remove text field display object.
-			_tf.removeEventListener(FocusEvent.FOCUS_IN, onFocusIn);
-			_tf.removeEventListener(FocusEvent.FOCUS_OUT, onFocusOut);
-			_tf.removeEventListener(Event.CHANGE, onTextChange);
-			Engine.stage.removeChild(_tf);
+			_field.removeEventListener(FocusEvent.FOCUS_IN, onFocusIn);
+			_field.removeEventListener(FocusEvent.FOCUS_OUT, onFocusOut);
+			_field.removeEventListener(Event.CHANGE, onTextChange);
 		}
 		
-		override public function onUpdate():void 
+		override public function onMouseOver():void 
 		{
-			super.onUpdate();
-			_tf.x = this.absoluteLocation.x + 3;
-			_tf.y = this.absoluteCenter.y -_tf.textHeight / 2 - 3;
-			_tf.alpha = this.renderable.alpha;
-			_tf.visible = this.visible;
+			highlight();
+		}
+		
+		override public function onMouseOut():void 
+		{
+			unhighlight();
+		}	
+		
+		public function highlight(...rest:Array):void 
+		{
+			_highlighted = true;
+			draw();
+		}
+		
+		public function unhighlight(...rest:Array):void 
+		{
+			_highlighted = false;
+			draw();
+		}
+		
+		public function draw():void 
+		{
+			if (_background) 
+			{
+				var bgColor:uint = _focused ? (_invalid ? Style.BUTTON2_INVALID : Style.BUTTON2_SELECTED) :
+												(_selected ? Style.BUTTON2_SELECTED : (_highlighted ?
+													Style.BUTTON2_HIGHLIGHT :
+													Style.BUTTON2_BASE));
+				Style.drawBaseRect(this.graphics, 0, 0, _width - 1, _height - 1, bgColor);
+			}
+			else this.graphics.clear();
+			
+			if (_hintLabel)
+			{
+				_hintLabel.visible = _focused;
+			}
+			
+			_field.textColor = _focused ? Style.FONT_DARK : Style.FONT_LIGHT;
+		}
+		
+		public function select():void 
+		{
+			if (_selected) return;
+			_selected = true;
+			draw();
+		}
+		
+		public function unselect():void 
+		{
+			if (!_selected) return;
+			_selected = false;
+			draw();
 		}
 		
 		private function onFocusIn(e:Event):void 
 		{
-			this.value = parseText(text);
-			if (this.value == null) _stamp.invalid();
-			else _stamp.highlight();
+			_focused = true;
+			_field.text = text;
+			draw();
 		}
 		
 		private function onFocusOut(e:Event):void 
 		{
-			if (this.value == null)
-			{
-				_stamp.invalid();
-				this.text = "";
-			}
-			else _stamp.unhighlight();
+			checkEmpty();
+			_focused = false;
+			draw();
 		}
 		
 		private function onTextChange(e:Event):void 
 		{
 			this.value = parseText(text);
 			
-			if (this.value == null) _stamp.invalid();
-			else
-			{
-				if (Engine.stage.focus == _tf) _stamp.highlight();
-				else _stamp.unhighlight();
-				if (_onChange) _onChange(this);
-			}
+			_invalid = this.value == null;
+			_focused = Engine.stage.focus == _field;
 			
-			if (_placeholder)
+			if (!_invalid && onChange) onChange(this);
+			
+			draw();
+		}
+		
+		private function checkEmpty():void 
+		{
+			if (this.text == "" && placeholder)
 			{
-				if (text && text.length > 0) _placeholder.depth = this.depth - 1;
-				else _placeholder.depth = this.depth + 1;
+				_field.text = placeholder;
 			}
 		}
 		
@@ -188,36 +277,5 @@ package gamecheetah.designer.components
 			var parsed:Number = Number(input);
 			return !isNaN(parsed) && maximum >= parsed && parsed >= minimum;
 		}
-	}
-}
-import flash.display.BitmapData;
-import gamecheetah.graphics.Renderable;
-import gamecheetah.designer.components.Style;
-import flash.geom.Rectangle;
-
-class BackgroundStamp extends Renderable
-{
-	private var _rect:Rectangle;
-	
-	public function BackgroundStamp(width:int, height:int):void 
-	{
-		_rect = new Rectangle(1, 1, width - 2, height - 2);
-		this.setBuffer(new BitmapData(width, height, true, Style.HIGHLIGHT));
-		this.buffer.fillRect(_rect, Style.BASE);
-	}
-	
-	public function invalid(b:*=null):void 
-	{
-		this.buffer.fillRect(_rect, Style.INVALID);
-	}
-	
-	public function highlight(b:*=null):void 
-	{
-		this.buffer.fillRect(_rect, Style.SELECTED);
-	}
-	
-	public function unhighlight(b:*=null):void 
-	{
-		this.buffer.fillRect(_rect, Style.BASE);
 	}
 }

@@ -176,6 +176,7 @@ package gamecheetah
 		
 		{
 			registerEntity(Entity, true);
+			registerSpace(Space);
 		}
 		
 		//}
@@ -511,7 +512,7 @@ package gamecheetah
 		 */
 		public static function registerSpace(klass:Class):void 
 		{
-			if (Space.prototype.isPrototypeOf(klass.prototype))
+			if (Space.prototype.isPrototypeOf(klass.prototype) ||  klass == Space)
 			{
 				__spaceClasses.push(klass);
 			}
@@ -755,7 +756,7 @@ package gamecheetah
 		private function onMainEnter(e:Event):void 
 		{
 			CONFIG::developer {
-				this.addChild(new Designer());
+				var designer:Designer = new Designer(this.parent);
 			}
 			this.onEnter();
 			this.onReset();

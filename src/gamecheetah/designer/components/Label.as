@@ -6,106 +6,119 @@
  */
 package gamecheetah.designer.components 
 {
+	import flash.display.DisplayObjectContainer;
 	import flash.geom.Point;
+	import flash.text.TextField;
+	import flash.text.TextFieldAutoSize;
 	import flash.text.TextFormat;
 	import flash.text.TextFormatAlign;
 	import gamecheetah.graphics.TextClip;
 	import gamecheetah.Space;
 	
-	public class Label extends BaseButton 
+	public class Label extends BaseComponent 
 	{
 		public static var ALIGN_CENTER:String = "center";
 		public static var ALIGN_ABOVE:String = "above";
 		public static var ALIGN_BELOW:String = "below";
 		public static var ALIGN_LEFT:String = "left";
 		public static var ALIGN_RIGHT:String = "right";
-		public static var ALIGN_VCENTER_LEFT:String = "vcenter-left";
-		public static var ALIGN_VABOVE_LEFT:String = "vabove-left";
+		public static var ALIGN_INNER_LEFT:String = "vcenter-left";
+		public static var ALIGN_ABOVE_LEFT:String = "vabove-left";
+		public static var ALIGN_FREE:String = "free";
 		
 		//{ ------------------- Private Info -------------------
 		
-		private var _host:BaseComponent, _hostAlign:String;
+		private var
+			_host:BaseComponent, _align:String;
+			
+		protected var _field:TextField;
 		
 		//{ ------------------- Public Properties -------------------
 		
 		public const offset:Point = new Point();
+		public var padding:int = 5;
 		
 		public function get text():String 
 		{
-			return this.textClip.text;
+			return _text;
 		}
 		
 		public function set text(value:String):void 
 		{
-			if (value == null) value = "";
-			this.textClip.text = value;
+			_text = _field.text = value;
+			if (_field.autoSize != TextFieldAutoSize.NONE)
+			{
+				_width = _field.width;
+				_height = _field.height;
+			}
 		}
+		
+		public function get field():TextField 
+		{
+			return _field;
+		}
+		
+		protected var _text:String;
 		
 		//{ ------------------- Public Methods -------------------
 		
-		public function Label(space:Space=null, text:String="", host:BaseComponent=null, hostAlign:String=null, color:uint=0x000000) 
+		public function Label(host:BaseComponent=null, text:String="", color:uint=0x000000, align:String=null, textAlign:String=null) 
 		{
 			_host = host;
-			_hostAlign = hostAlign;
+			_align = align;
 			
-			this.textClip = new TextClip(text, new TextFormat("Designer Font", Style.FONT_SIZE, color,
-				null, null, null, null, null, TextFormatAlign.CENTER));
-				
-			this.depthOffset = 1;
+			_field = new TextField();
+			_field.wordWrap = false;
+			_field.multiline = true;
+			_field.selectable = false;
+			_field.textColor = 0xffffffff;
+			_field.autoSize = TextFieldAutoSize.LEFT;
+			_field.embedFonts = true;
+			_field.text = text;
+			_field.defaultTextFormat = new TextFormat("Designer Font", Style.FONT_SIZE, color,
+				null, null, null, null, null, textAlign || TextFormatAlign.CENTER);
+			_field.setTextFormat(_field.defaultTextFormat);
 			
-			if (space) space.add(this);
-		}
-		
-		/**
-		 * Labels cannot be moved. Must be attached to components instead.
-		 */
-		override public function move(x:int, y:int):void 
-		{
+			this.addChild(_field);
+			super(host, _field.width, _field.height);
 		}
 		
 		//{ ------------------- Behavior Overrides -------------------
 		
-		override public function onActivate():void 
-		{
-			this.mouseEnabled = false;
-			this.renderable.setTransformAnchorToCenter();
-		}
-		
 		override public function onUpdate():void 
 		{
-			super.onUpdate();
-			
 			if (_host)
 			{
-				if (_hostAlign == ALIGN_ABOVE)
+				if (_align == ALIGN_ABOVE)
 				{
-					this.location.setTo(_host.absoluteCenter.x-this.renderable.width / 2, _host.top-this.renderable.height * 1.05);
+					this.move(_host.halfWidth - this.halfWidth, -this.height - padding);
 				}
-				else if (_hostAlign == ALIGN_BELOW)
+				else if (_align == ALIGN_BELOW)
 				{
-					this.location.setTo(_host.absoluteCenter.x-this.renderable.width / 2, _host.bottom);
+					this.move(_host.halfWidth - this.halfWidth, _host.height + padding);
 				}
-				else if (_hostAlign == ALIGN_LEFT)
+				else if (_align == ALIGN_LEFT)
 				{
-					this.location.setTo(_host.left - this.renderable.width - 5, _host.absoluteCenter.y - this.renderable.height / 2);
+					this.move(-this.width - padding, _host.halfHeight - this.halfHeight);
 				}
-				else if (_hostAlign == ALIGN_RIGHT)
+				else if (_align == ALIGN_RIGHT)
 				{
-					this.location.setTo(_host.right, _host.absoluteCenter.y - this.renderable.height / 2);
+					this.move(_host.width + padding, _host.halfHeight - this.halfHeight);
 				}
-				else if (_hostAlign == ALIGN_VCENTER_LEFT)
+				else if (_align == ALIGN_INNER_LEFT)
 				{
-					this.location.setTo(_host.left, _host.absoluteCenter.y - this.renderable.height / 2);
+					this.move(0, _host.halfHeight - this.halfHeight);
 				}
-				else if (_hostAlign == ALIGN_VABOVE_LEFT)
+				else if (_align == ALIGN_ABOVE_LEFT)
 				{
-					this.location.setTo(_host.left, _host.top-this.renderable.height * 1.05);
+					this.move(0, -this.height - padding);
 				}
-				else
+				else if (_align == ALIGN_CENTER)
 				{   // Center by default
-					this.location.setTo(_host.absoluteCenter.x - this.renderable.width / 2, _host.absoluteCenter.y - this.renderable.height / 2);
+					this.move(_host.halfWidth - this.halfWidth, _host.halfHeight - this.halfHeight);
 				}
-				this.location.offset(offset.x, offset.y);
+				_field.x = offset.x;
+				_field.y = offset.y;
 			}
 		}
 	}

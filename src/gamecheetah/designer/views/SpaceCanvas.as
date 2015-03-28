@@ -6,17 +6,14 @@
  */
 package gamecheetah.designer.views 
 {
-	import flash.display.Bitmap;
-	import flash.display.DisplayObjectContainer;
-	import flash.display.Shape;
-	import flash.display.Sprite;
+	import flash.display.*;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import gamecheetah.*;
+	import gamecheetah.designer.components.*;
 	import gamecheetah.designer.Designer;
-	import gamecheetah.designer.views.components.*;
 	import gamecheetah.namespaces.*;
 	
 	use namespace hidden;
@@ -24,17 +21,15 @@ package gamecheetah.designer.views
 	/**
 	 * Wraps the active Space object to provide a convenient interface for the Designer class.
 	 * @author 		Zeb Zhao {zeb.zhao(at)gamecheetah[dot]net}. Game Cheetah (c) 2015. 
-	 * @version		1.0
 	 * @private
 	 */
 	CONFIG::developer
-	public final class SpaceView extends InterfaceGroup
+	public final class SpaceCanvas extends BaseComponent
 	{
 		
 		private static const GRID_COLOR:uint = 0xAAAAAA;
 		
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//{ Public properties
+		//{ ------------------------------------ Property bindings ------------------------------------
 		
 		/**
 		 * The active space object.
@@ -114,16 +109,15 @@ package gamecheetah.designer.views
 		public function set disabled(value:Boolean):void 
 		{
 			if (value == _disabled) return;
-			
 			_disabled = value;
-			if (_disabled) removeListeners();
-			else addListeners();
+			
+			if (_disabled) onDeactivate();
+			else onActivate();
 		}
 		private var _disabled:Boolean;
 		
-		//} Public properties
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
+		//{ ------------------------------------ Private variables ------------------------------------
+
 		private var _dirty:Boolean;
 		private var _lastRenderedRect:Rectangle;
 		
@@ -134,20 +128,35 @@ package gamecheetah.designer.views
 		private var
 			overlay:Sprite,
 			selection:Shape,
-			startMarker:IconPushButton,
-			leftArrow:IconPushButton,
-			rightArrow:IconPushButton,
-			upArrow:IconPushButton,
-			downArrow:IconPushButton,
-			upleftArrow:IconPushButton,
-			uprightArrow:IconPushButton,
-			downleftArrow:IconPushButton,
-			downrightArrow:IconPushButton;
+			startMarker:IconButton,
+			leftArrow:IconButton,
+			rightArrow:IconButton,
+			upArrow:IconButton,
+			downArrow:IconButton;
 		
+		//{ ------------------------------------ Constructor ------------------------------------
 		
-		public function SpaceView(parent:DisplayObjectContainer) 
+		public function SpaceCanvas(parent:DisplayObjectContainer) 
 		{
 			this._lastRenderedRect = new Rectangle();
+			
+			leftArrow = new IconButton(this, Assets.EXPAND_LEFT, Arrow_onClick, "Expand\nLeft", Label.ALIGN_RIGHT);
+			rightArrow = new IconButton(this, Assets.EXPAND_RIGHT, Arrow_onClick, "Expand\nRight", Label.ALIGN_LEFT);
+			upArrow = new IconButton(this, Assets.EXPAND_UP, Arrow_onClick, "Expand\nUp", Label.ALIGN_BELOW);
+			downArrow = new IconButton(this, Assets.EXPAND_DOWN, Arrow_onClick, "Expand\nDown", Label.ALIGN_ABOVE);
+			startMarker = new IconButton(this, Assets.HOME, null, "Start\nLocation", Label.ALIGN_ABOVE);
+			overlay = new Sprite();
+			selection = new Shape();
+			
+			leftArrow.visible = rightArrow.visible = upArrow.visible = downArrow.visible = false;
+			overlay.alpha = 0.5;
+			
+			this.addChild(overlay);
+			this.addChild(selection);
+			
+			Designer.model.bind("selectedEntity", this, true);
+			Designer.model.bind("activeSpace", this, true);
+			
 			super(parent, 0, 0);
 		}
 		
@@ -159,115 +168,25 @@ package gamecheetah.designer.views
 			_dirty = true;
 		}
 		
-		override protected function build():void 
-		{
-			leftArrow = new IconPushButton(this, 0, 0, "", new Assets.Arrow, Arrow_onClick);
-			rightArrow = new IconPushButton(this, 0, 0, "", new Assets.Arrow, Arrow_onClick);
-			upArrow = new IconPushButton(this, 0, 0, "", new Assets.Arrow, Arrow_onClick);
-			downArrow = new IconPushButton(this, 0, 0, "", new Assets.Arrow, Arrow_onClick);
-			upleftArrow = new IconPushButton(this, 0, 0, "", createBitmap(Assets.Arrow, true), Arrow_onClick);
-			uprightArrow = new IconPushButton(this, 0, 0, "", createBitmap(Assets.Arrow, true), Arrow_onClick);
-			downleftArrow = new IconPushButton(this, 0, 0, "", createBitmap(Assets.Arrow, true), Arrow_onClick);
-			downrightArrow = new IconPushButton(this, 0, 0, "", createBitmap(Assets.Arrow, true), Arrow_onClick);
-			startMarker = new IconPushButton(this, 0, 0, "", new Assets.Mark);
-			overlay = new Sprite();
-			selection = new Shape();
-		}
-		
-		override protected function initialize():void 
-		{
-			Designer.model.bind("selectedEntity", this, true);
-			Designer.model.bind("activeSpace", this, true);
-			
-			startMarker.backgroundVisible = false;
-			leftArrow.rotation = 0;
-			rightArrow.rotation = 180;
-			upArrow.rotation = 90;
-			downArrow.rotation = -90;
-			upleftArrow.rotation = 45;
-			uprightArrow.rotation = 135;
-			downleftArrow.rotation = -45;
-			downrightArrow.rotation = -135;
-			
-			startMarker.setSize(24, 24);
-			leftArrow.setSize(24, 24);
-			rightArrow.setSize(24, 24);
-			upArrow.setSize(24, 24);
-			downArrow.setSize(24, 24);
-			upleftArrow.setSize(24, 24);
-			uprightArrow.setSize(24, 24);
-			downleftArrow.setSize(24, 24);
-			downrightArrow.setSize(24, 24);
-			
-			leftArrow.visible = rightArrow.visible = upArrow.visible = downArrow.visible = false;
-			upleftArrow.visible = uprightArrow.visible = downleftArrow.visible = downrightArrow.visible = false;
-			
-			leftArrow.backgroundVisible = rightArrow.backgroundVisible = upArrow.backgroundVisible = downArrow.backgroundVisible = false;
-			upleftArrow.backgroundVisible = uprightArrow.backgroundVisible = downleftArrow.backgroundVisible = downrightArrow.backgroundVisible = false;
-			
-			overlay.alpha = 0.5;
-			this.addChild(overlay);
-			this.addChild(selection);
-		}
-		
-		override protected function addListeners():void 
+		override public function onActivate():void 
 		{
 			startMarker.addEventListener(MouseEvent.MOUSE_DOWN, startMarker_onMouseDown);
-			this.addEventListener(Event.ENTER_FRAME, onEnterFrame);
-			Engine.instance.displayObject.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-			Engine.instance.displayObject.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-			Engine.instance.displayObject.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-			Engine.instance.stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
+			Engine.displayObject.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+			Engine.displayObject.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+			Engine.displayObject.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+			Engine.stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
 		}
 		
-		private function removeListeners():void 
+		override public function onDeactivate():void 
 		{
 			startMarker.removeEventListener(MouseEvent.MOUSE_DOWN, startMarker_onMouseDown);
-			this.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
-			Engine.instance.displayObject.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-			Engine.instance.displayObject.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-			Engine.instance.displayObject.removeEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+			Engine.displayObject.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+			Engine.displayObject.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+			Engine.displayObject.removeEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+			Engine.stage.removeEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
 		}
 		
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//{ Input event listeners
-		
-		/**
-		 * Mouse click event handler for Arrow buttons
-		 */
-		private function Arrow_onClick(e:Event):void
-		{
-			if (e.target == leftArrow)
-				activeSpace.expand(-100, 0);
-			
-			else if (e.target == rightArrow)
-				activeSpace.expand(100, 0);
-			
-			else if (e.target == upArrow)
-				activeSpace.expand(0, -100);
-			
-			else if (e.target == downArrow)
-				activeSpace.expand(0, 100);
-			
-			else if (e.target == upleftArrow)
-				activeSpace.expand(-100, -100);
-				
-			else if (e.target == uprightArrow)
-				activeSpace.expand(100, -100);
-				
-			else if (e.target == downleftArrow)
-				activeSpace.expand(-100, 100);
-				
-			else if (e.target == downrightArrow)
-				activeSpace.expand(100, 100);
-				
-			Designer.updateScrollBounds();
-		}
-		
-		/**
-		 * Called every frame.
-		 */
-		private function onEnterFrame(e:Event):void 
+		override public function onUpdate():void 
 		{
 			if (_activeSpace == null) return;
 			
@@ -278,18 +197,16 @@ package gamecheetah.designer.views
 				startMarker.y = _activeSpace.startLocation.y - _activeSpace.camera.y - startMarker.height / 2;
 			}
 			
-			if (!_lastRenderedRect.equals(_activeSpace._screenBounds))
+			if (!_lastRenderedRect.equals(_activeSpace.screenBounds))
 			{
 				if (!_dirty)
 				{
 					leftArrow.visible = rightArrow.visible = upArrow.visible = downArrow.visible = false
-					upleftArrow.visible = uprightArrow.visible = downleftArrow.visible = downrightArrow.visible = false;
-					
 					overlay.graphics.clear();
 				}
 				
 				// Update last position, so display objects are only redrawn after screen moves or resizes.
-				_lastRenderedRect.copyFrom(_activeSpace._screenBounds);
+				_lastRenderedRect.copyFrom(_activeSpace.screenBounds);
 				_dirty = true;
 				
 				drawSelectionRectangle();
@@ -297,11 +214,32 @@ package gamecheetah.designer.views
 			else if (_dirty)
 			{
 				_dirty = false;
-				
 				drawGrid();
 				drawArrows();
 				drawSelectionRectangle();
 			}
+		}
+		
+		//{ ------------------------------------ Event handlers ------------------------------------
+		
+		/**
+		 * Mouse click event handler for Arrow buttons
+		 */
+		private function Arrow_onClick(b:BaseButton):void
+		{
+			if (b == leftArrow)
+				activeSpace.expand(-100, 0);
+			
+			else if (b == rightArrow)
+				activeSpace.expand(100, 0);
+			
+			else if (b == upArrow)
+				activeSpace.expand(0, -100);
+			
+			else if (b == downArrow)
+				activeSpace.expand(0, 100);
+				
+			Designer.updateScrollBounds();
 		}
 		
 		private function startMarker_onMouseDown(e:MouseEvent):void 
@@ -414,9 +352,8 @@ package gamecheetah.designer.views
 			}	
 		}
 		
-		//} Input event listeners
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
+		//{ ------------------------------------ Private function ------------------------------------
+
 		private function createBitmap(klass:Class, smoothing:Boolean):Bitmap 
 		{
 			var result:Bitmap = new klass();
@@ -444,8 +381,8 @@ package gamecheetah.designer.views
 		 */
 		private function drawGrid():void 
 		{
-			var region:Rectangle = _activeSpace.bounds.intersection(_activeSpace._screenBounds);
-			region.offset( -_activeSpace._screenBounds.x, -_activeSpace._screenBounds.y);
+			var region:Rectangle = _activeSpace.bounds.intersection(_activeSpace.screenBounds);
+			region.offset( -_activeSpace.screenBounds.x, -_activeSpace.screenBounds.y);
 			
 			overlay.graphics.clear();
 			overlay.graphics.lineStyle(0, GRID_COLOR);
@@ -492,8 +429,8 @@ package gamecheetah.designer.views
 		 */
 		private function drawArrows():void 
 		{
-			var region:Rectangle = _activeSpace.bounds.intersection(_activeSpace._screenBounds);
-			region.offset( -_activeSpace._screenBounds.x, -_activeSpace._screenBounds.y);
+			var region:Rectangle = _activeSpace.bounds.intersection(_activeSpace.screenBounds);
+			region.offset( -_activeSpace.screenBounds.x, -_activeSpace.screenBounds.y);
 			
 			// Space boundaries that are currently visible on the screen.
 			var leftBorderVisible:Boolean = region.left >= 1;
@@ -505,27 +442,11 @@ package gamecheetah.designer.views
 			rightArrow.visible = rightBorderVisible;
 			upArrow.visible = topBorderVisible;
 			downArrow.visible = bottomBorderVisible;
-			upleftArrow.visible = topBorderVisible && leftBorderVisible;
-			uprightArrow.visible = topBorderVisible && rightBorderVisible;
-			downleftArrow.visible = bottomBorderVisible && leftBorderVisible;
-			downrightArrow.visible = bottomBorderVisible && rightBorderVisible;
 			
-			leftArrow.x = region.left - leftArrow.width / 2;
-			leftArrow.y = region.y + region.height / 2;
-			rightArrow.x = region.right + rightArrow.width / 2;
-			rightArrow.y = region.y + region.height / 2;
-			upArrow.x = region.x + region.width / 2;
-			upArrow.y = region.top - upArrow.height / 2;
-			downArrow.x = region.x + region.width / 2;
-			downArrow.y = region.bottom + downArrow.height / 2;
-			upleftArrow.x = region.left;
-			upleftArrow.y = region.top - leftArrow.height * 0.667;
-			uprightArrow.x = region.right + leftArrow.height * 0.667;
-			uprightArrow.y = region.top;
-			downleftArrow.x = region.left - leftArrow.height * 0.667;
-			downleftArrow.y = region.bottom;
-			downrightArrow.x = region.right;
-			downrightArrow.y = region.bottom + leftArrow.height * 0.667;
+			leftArrow.move(region.left - 16, region.y + region.height / 2);
+			rightArrow.move(region.right - 16, region.y + region.height / 2);
+			upArrow.move(region.x + region.width / 2, region.top - 16);
+			downArrow.move(region.x + region.width / 2, region.bottom - 16);
 		}
 	}
 

@@ -15,6 +15,7 @@ package gamecheetah.designer
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 	import gamecheetah.*;
+	import gamecheetah.designer.components.BaseButton;
 	import gamecheetah.designer.views.*;
 	import gamecheetah.gameutils.*;
 	import gamecheetah.graphics.*;
@@ -27,8 +28,9 @@ package gamecheetah.designer
 	 * @author 		Zeb Zhao {zeb.zhao(at)gamecheetah[dot]net}
 	 * @private
 	 */
-	public final class Designer extends Engine
+	public final class Designer extends BaseButton
 	{
+		public static var main:MainConsole;
 		public static var model:DesignerModel;
 		
 		public static var context:Dictionary;
@@ -42,7 +44,7 @@ package gamecheetah.designer
 		/**
 		 * Temporary storage for deleted graphics in case they need to be recovered.
 		 */
-		public static var deletedGraphics:Vector.<Graphics> = new Vector.<Graphics>();
+		public static var deletedGraphics:Vector.<Graphic> = new Vector.<Graphic>();
 		
 		/**
 		 * Stores event identifiers.
@@ -65,11 +67,9 @@ package gamecheetah.designer
 		public static var engineIsPlaying:Boolean;
 		
 		
-		public function Designer() 
-		{
+		public function Designer(parent:DisplayObjectContainer) 
+		{	
 			trace("Compiling in developer mode.")
-			
-			super(30, false);
 			
 			instance = this;
 			
@@ -93,9 +93,9 @@ package gamecheetah.designer
 				Engine.swapSpace(newSpace);
 			}
 			
-			model.update("selectedSpace", Engine.space, true);
+			main = new MainConsole(this);
 			
-			this.swapSpace(new MainConsole());
+			super(parent);
 		}
 		
 		private function addListeners():void 
@@ -226,6 +226,8 @@ package gamecheetah.designer
 		 */
 		public static function castSpaceAs(klass:Class):void 
 		{
+			if (!klass || !model.selectedSpace) return;
+			
 			var newObj:Space = Space.convertClass(model.selectedSpace, klass);
 			
 			if (model.selectedSpace == Engine.space)
@@ -272,10 +274,11 @@ package gamecheetah.designer
 		/**
 		 * Add an entity to the current space.
 		 */
-		public static function addEntity(x:int, y:int):void 
+		public static function addEntity(cx:int, cy:int):void 
 		{
 			if (model.selectedGraphic == null) return;
-			Engine.space.createEntity(model.selectedGraphic.tag, new Point(x, y), false);
+			var entity:Entity = Engine.space.createEntity(model.selectedGraphic.tag, null, false);
+			entity.setCenter(cx, cy);
 		}
 		
 		/**
@@ -286,7 +289,6 @@ package gamecheetah.designer
 			var graphic:Graphic = index != -1 ? Engine.assets.graphics.getAt(index) : model.selectedGraphic;
 			model.update("selectedGraphic", graphic, true);
 			model.update("animationsList", null, true);
-			model.update("activeClip", graphic.newRenderable() as Clip, true);
 			model.update("selectedAnimation", graphic.animations.length > 0 ? graphic.animations.getAt(0) as Animation : null, true);
 		}
 		
@@ -481,7 +483,7 @@ package gamecheetah.designer
 		{
 			// Updates the scroll bounds in case active space size has changed.
 			scroller.scrollBounds = Engine.space.bounds.clone();
-			scroller.scrollBounds.offset( -Engine.stage.stageWidth / 2, -Engine.stage.stageHeight / 2);
+			scroller.scrollBounds.offset( -Engine.buffer.width / 2, -Engine.buffer.height / 2);
 			scroller.setTo(scroller.point.x, scroller.point.y);
 			model.update("activeSpace", model.activeSpace, true);
 		}

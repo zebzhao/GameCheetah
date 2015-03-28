@@ -6,7 +6,7 @@
  */
 package gamecheetah.designer.components 
 {
-	import gamecheetah.Entity;
+	import flash.display.DisplayObjectContainer;
 	import gamecheetah.graphics.Clip;
 	import gamecheetah.utils.OrderedDict;
 
@@ -14,86 +14,57 @@ package gamecheetah.designer.components
 	{
 		//{ ------------------- Private Info -------------------
 		
-		private var
-			_downTweenTo:Object, _upTweenTo:Object, _overTweenTo:Object,
-			_mouseDown:Function, _mouseUp:Function, _mouseOver:Function, _mouseOut:Function,
-			_downAnimation:String, _upAnimation:String, _overAnimation:String;
+		public var
+			mouseDown:Function, mouseUp:Function, mouseOver:Function, mouseOut:Function;
 			
-		public var disabled:Boolean;
+		
+		public function BaseButton(parent:DisplayObjectContainer, width:Number=0, height:Number=0) 
+		{
+			super(parent, width, height);
+		}
 		
 		//{ ------------------- Public Methods -------------------
 		
-		public function BaseButton(frameImages:Array=null, animations:OrderedDict=null) 
+		public function setDownState(handler:Function=null):void 
 		{
-			if (frameImages && animations) this.renderable = new Clip(frameImages, animations);
+			mouseDown = handler;
 		}
 		
-		public function setDownState(animation:String=null, tweenTo:Object=null, handler:Function=null):void 
+		public function setUpState(handler:Function=null):void 
 		{
-			_downAnimation = animation;
-			_downTweenTo = tweenTo;
-			_mouseDown = handler;
+			mouseUp = handler;
 		}
 		
-		public function setUpState(animation:String=null, tweenTo:Object=null, handler:Function=null):void 
+		public function setOverState(handler:Function=null):void 
 		{
-			_upAnimation = animation;
-			_upTweenTo = tweenTo;
-			_mouseUp = handler;
+			mouseOver = handler;
 		}
 		
-		public function setOverState(animation:String=null, tweenTo:Object=null, handler:Function=null):void 
+		public function setOutState(handler:Function=null):void 
 		{
-			_overAnimation = animation;
-			_overTweenTo = tweenTo;
-			_mouseOver = handler;
-		}
-		
-		public function setOutState(animation:String=null, handler:Function=null):void 
-		{
-			_mouseOut = handler;
+			mouseOut = handler;
 		}
 		
 		//{ ------------------- Behaviour Overrides -------------------
 		
 		override public function onMouseDown():void 
 		{
-			if (!disabled)
-			{
-				if (_downAnimation)		this.clip.play(_downAnimation);
-				if (_downTweenTo) 		this.tweenClip(null, _downTweenTo);
-				if (_mouseDown) 		_mouseDown(this);
-			}
+			if (mouseDown) 		mouseDown(this);
 		}
 		
 		override public function onMouseUp():void 
 		{
-			if (!disabled)
-			{
-				if (_upAnimation)		this.clip.play(_upAnimation);
-				if (_upTweenTo) 		this.tweenClip(null, _upTweenTo);
-				if (_mouseUp) 			_mouseUp(this);
-			}
+			if (mouseUp) 			mouseUp(this);
 		}
 		
 		override public function onMouseOver():void 
 		{
-			if (!disabled)
-			{
-				if (_overAnimation)		this.clip.play(_overAnimation);
-				if (_overTweenTo) 		this.tweenClip(null, _overTweenTo);
-				if (_mouseOver) 		_mouseOver(this);
-			}
+			if (mouseOver) 		mouseOver(this);
 		}
 		
 		override public function onMouseOut():void 
 		{
-			if (!disabled)
-			{
-				if (_upAnimation)		this.clip.play(_upAnimation);
-				if (_upTweenTo) 		this.tweenClip(null, _upTweenTo);
-				if (_mouseOut)			_mouseOut(this);
-			}
-		}	
+			if (mouseOut)			mouseOut(this);
+		}
 	}
 }

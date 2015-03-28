@@ -38,6 +38,9 @@ package gamecheetah.designer.views
 		[Embed(source="/../lib/Icons/media-playback-stop.png")]
 		public static var STOP:Class;
 		
+		[Embed(source="/../lib/Icons/media-playback-pause.png")]
+		public static var PAUSE:Class;
+		
 		[Embed(source="/../lib/Icons/input-gaming.png")]
 		public static var GAME:Class;
 		
@@ -49,6 +52,12 @@ package gamecheetah.designer.views
 		
 		[Embed(source="/../lib/Icons/text-x-script.png")]
 		public static var CLASSES:Class;
+		
+		[Embed(source="/../lib/Icons/input-mouse.png")]
+		public static var MOUSE:Class;
+		
+		[Embed(source="/../lib/Icons/view-fullscreen.png")]
+		public static var AUTOSIZE:Class;
 		
 		[Embed(source="/../lib/Icons/video-x-generic.png")]
 		public static var ANIMATIONS:Class;
@@ -80,13 +89,40 @@ package gamecheetah.designer.views
 		[Embed(source="/../lib/Icons/arrow-down.png")]
 		public static var ARROW_DOWN:Class;
 		
+		[Embed(source="/../lib/Icons/go-up.png")]
+		public static var EXPAND_UP:Class;
+		
+		[Embed(source="/../lib/Icons/go-down.png")]
+		public static var EXPAND_DOWN:Class;
+		
+		[Embed(source="/../lib/Icons/go-previous.png")]
+		public static var EXPAND_LEFT:Class;
+		
+		[Embed(source="/../lib/Icons/go-next.png")]
+		public static var EXPAND_RIGHT:Class;
+		
+		[Embed(source="/../lib/Icons/go-home-sm.png")]
+		public static var HOME:Class;
+		
+		[Embed(source = "/../lib/Icons/x-office-drawing-template.png")]
+		public static var SPACE_DIM:Class;
+		
+		[Embed(source="/../lib/Icons/go-home.png")]
+		public static var START_LOCATION:Class;
+		
 		[Embed(source="/../lib/Icons/view-refresh.png")]
 		public static var LOOP:Class;
 		
 		[Embed(source="/../lib/Icons/folder-saved-search.png")]
 		public static var SPRITESHEET:Class;
 		
-		[Embed(source="/../lib/Icons/user-trash.png")]
-		public static var CLEAR:Class;
+		[Embed(source="/../lib/Icons/preferences-desktop-locale.png")]
+		public static var MASKS:Class;
+		
+		[Embed(source="/../lib/Icons/system-search.png")]
+		public static var ZOOM:Class;
+		
+		[Embed(source="/../lib/Icons/applications-office.png")]
+		public static var TOOLS:Class;
 	}
 }

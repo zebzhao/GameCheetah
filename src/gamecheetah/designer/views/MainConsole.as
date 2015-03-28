@@ -6,16 +6,24 @@
  */
 package gamecheetah.designer.views 
 {
+	import flash.display.DisplayObjectContainer;
+	import flash.events.Event;
+	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import gamecheetah.designer.components.*;
 	import gamecheetah.*;
 	import gamecheetah.designer.Designer;
+	import gamecheetah.namespaces.hidden;
 	
-	public class MainConsole extends Space 
+	use namespace hidden;
+	
+	public class MainConsole extends BaseComponent 
 	{
 		private var
 			_graphicConsole:GraphicConsole,
-			_playConsole:PlayConsole;
+			_spaceConsole:SpaceConsole,
+			_playConsole:PlayConsole,
+			_spaceCanvas:SpaceCanvas;
 			
 		private var
 			_loadBtn:IconButton, _saveBtn:IconButton,
@@ -40,18 +48,52 @@ package gamecheetah.designer.views
 			_graphicsList.items = value;
 		}
 		
+		public function get activeSpace():Space { return null; }
+		public function set activeSpace(value:Space):void 
+		{
+			var spaceContext:Object = Designer.getDesignerContextSetting("SPACE::" + Engine.space.tag);
+			if (spaceContext)
+			{
+				_spaceCanvas.gridW = spaceContext["gridW"];
+				_spaceCanvas.gridH = spaceContext["gridH"];
+				_spaceCanvas.gridSnapping = spaceContext["gridSnapping"];
+				_gridWidthInput.text = _spaceCanvas.gridW.toString();
+				_gridHeightInput.text = _spaceCanvas.gridH.toString();
+				_snapToGridBtn.selected = _spaceCanvas.gridSnapping;
+			}
+		}
+		
+		public function get selectedGraphic():Graphic { return null; }
+		public function set selectedGraphic(value:Graphic):void 
+		{
+			if (value && value._frameImages.length > 0)
+			{
+				_newEntityBtn.setIcon(Assets.ADD);
+				_newEntityBtn.hint = "New Entity";
+			}
+			else
+			{
+				_newEntityBtn.setIcon(Assets.MISSING);
+				_newEntityBtn.hint = "Disabled";
+			}
+		}
+		
 		//}
 		//{ ------------------------------------ Constructor ------------------------------------
 			
-		public function MainConsole() 
+		public function MainConsole(parent:DisplayObjectContainer) 
 		{
-			_graphicConsole = new GraphicConsole(this);
-			_playConsole = new PlayConsole();
+			_graphicConsole = new GraphicConsole(null, this);
+			_spaceConsole = new SpaceConsole(null, this);
+			_playConsole = new PlayConsole(parent);
+			_spaceCanvas = new SpaceCanvas(this);
 			
-			_gridWidthInput = new TextInput(this, 150, 25, gridWidthInput_Change, "Grid Width", TextInput.TYPE_UINT);
+			_gridWidthInput = new TextInput(this, 100, 25, gridWidthInput_Change, "Grid Width", TextInput.TYPE_UINT);
 			_gridWidthInput.minimum = 1;
-			_gridHeightInput = new TextInput(this, 150, 25, gridHeightInput_Change, "Grid Height", TextInput.TYPE_UINT);
+			_gridWidthInput.setHint("Grid Width", Label.ALIGN_LEFT);
+			_gridHeightInput = new TextInput(this, 100, 25, gridHeightInput_Change, "Grid Height", TextInput.TYPE_UINT);
 			_gridHeightInput.minimum = 1;
+			_gridHeightInput.setHint("Grid Height", Label.ALIGN_LEFT);
 			_snapToGridBtn = new IconToggleButton(this, Assets.UNSNAPPING, Assets.SNAPPING, snapToGridBtn_Click, "Snap", "Un-Snap", Label.ALIGN_RIGHT);
 			
 			_loadBtn = new IconButton(this, Assets.LOAD, loadBtn_Click, "Load Data", Label.ALIGN_ABOVE);
@@ -74,28 +116,27 @@ package gamecheetah.designer.views
 			// Bind to properties
 			Designer.model.bind("spacesList", this, true);
 			Designer.model.bind("graphicsList", this, true);
+			Designer.model.bind("activeSpace", this, true);
+			Designer.model.bind("selectedGraphic", this, true);
+			
+			super(parent);
 		}
 		
 		//}
 		//{ ------------------------------------ Behaviour Overrides ------------------------------------
 		
-		override public function onSwapIn():void 
+		override public function onActivate():void 
 		{
-			this.engine.swapConsole(_playConsole);
-		}
-		
-		override public function onSwapOut():void 
-		{
-			this.engine.swapConsole(null);
-		}
-		
-		override public function onEnter():void 
-		{
-			this.mouseEnabled = true;
+			this.parent.addChild(_playConsole);
 			hideGraphicList();
 			hideSpaceList();
 			hideSettings();
 			onUpdate();
+		}
+		
+		override public function onDeactivate():void 
+		{
+			this.parent.removeChild(_playConsole);
 		}
 		
 		override public function onUpdate():void 
@@ -107,30 +148,26 @@ package gamecheetah.designer.views
 			_loadBtn.move(stageWidth * 0.633 - 16, stageHeight - 42);
 			
 			_spacesBtn.move(stageWidth * 0.1 - 16, 10);
-			_spacesBtn.setDepth(10);
-			_spacesList.move(_spacesBtn.left, _spacesBtn.bottom + 25);
+			_spacesList.move(_spacesBtn.left, _spacesBtn.bottom + 30);
 			_addSpaceBtn.move(_spacesList.left, _spacesList.bottom + 5);
 			_openSpaceBtn.move(_spacesList.left + 42, _spacesList.bottom + 5);
 			_editSpaceBtn.move(_spacesList.left + 84, _spacesList.bottom + 5);
 			
 			_graphicsBtn.move(stageWidth * 0.367 - 16, 10);
-			_graphicsBtn.setDepth(10);
-			_graphicsList.move(_graphicsBtn.left, _graphicsBtn.bottom + 25);
+			_graphicsList.move(_graphicsBtn.left, _graphicsBtn.bottom + 30);
 			_addGraphicBtn.move(_graphicsList.left, _graphicsList.bottom + 5);
 			_editGraphicBtn.move(_graphicsList.left + 42, _graphicsList.bottom + 5);
 			
 			_settingsBtn.move(stageWidth * 0.633 - 16, 10);
-			_settingsBtn.setDepth(10);
-			_gridWidthInput.move(_settingsBtn.left, _settingsBtn.bottom + 25);
+			_gridWidthInput.move(_settingsBtn.left, _settingsBtn.bottom + 30);
 			_gridHeightInput.move(_gridWidthInput.left, _gridWidthInput.bottom + 5);
 			_snapToGridBtn.move(_gridHeightInput.left, _gridHeightInput.bottom + 5);
 			
 			_newEntityBtn.move(stageWidth * 0.9 - 16, 10);
-			_newEntityBtn.setDepth(10);
 		}
 		
 		//}
-		//{ ------------------------------------ Event handlers ------------------------------------
+		//{ ------------------------------------ Component event handlers ------------------------------------
 		
 		private function graphicsList_Select(list:List, index:int):void 
 		{
@@ -191,27 +228,38 @@ package gamecheetah.designer.views
 		
 		private function editSpaceBtn_Click(b:BaseButton):void 
 		{
-			
+			if (Designer.model.selectedSpace)
+			{
+				this.parent.addChild(_spaceConsole);
+				this.parent.removeChild(this);
+			}
 		}
 		
 		private function editGraphicBtn_Click(b:BaseButton):void 
 		{
-			this.engine.swapSpace(_graphicConsole);
+			if (Designer.model.selectedGraphic)
+			{
+				this.parent.addChild(_graphicConsole);
+				this.parent.removeChild(this);
+			}
 		}
 		
 		private function gridHeightInput_Change(b:BaseComponent):void 
 		{
-			//Designer.updateDesignerContext(getDesignerContext());
+			_spaceCanvas.gridH = _gridHeightInput.value;
+			Designer.updateDesignerContext(getDesignerContext());
 		}
 		
 		private function gridWidthInput_Change(b:BaseComponent):void 
 		{
-			//Designer.updateDesignerContext(getDesignerContext());
+			_spaceCanvas.gridW = _gridWidthInput.value;
+			Designer.updateDesignerContext(getDesignerContext());
 		}
 		
 		private function snapToGridBtn_Click(b:IconToggleButton):void 
 		{
-			//Designer.updateDesignerContext(getDesignerContext());
+			_spaceCanvas.gridSnapping = _snapToGridBtn.selected;
+			Designer.updateDesignerContext(getDesignerContext());
 		}
 		
 		private function loadBtn_Click(b:BaseButton):void 
@@ -255,7 +303,8 @@ package gamecheetah.designer.views
 		
 		private function newEntityBtn_Click(b:BaseButton):void 
 		{
-			
+			// Create new entity at the center of screen.
+			Designer.addEntity(Engine.space.camera.x + Engine.buffer.width / 2, Engine.space.camera.y + Engine.buffer.height / 2);
 		}
 		
 		private function settingsBtn_Click(b:BaseButton):void 
@@ -303,7 +352,7 @@ package gamecheetah.designer.views
 		private function getDesignerContext():Object 
 		{
 			var result:Object = {};
-			//result["SPACE::" + Engine.space.tag] = { "gridW": MainView.spaceCanvas.gridW, "gridH": MainView.spaceCanvas.gridH, "gridSnapping": MainView.spaceCanvas.gridSnapping };
+			result["SPACE::" + Engine.space.tag] = { "gridW": _spaceCanvas.gridW, "gridH": _spaceCanvas.gridH, "gridSnapping": _spaceCanvas.gridSnapping };
 			return result;
 		}
 	}

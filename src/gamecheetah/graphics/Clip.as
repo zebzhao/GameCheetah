@@ -20,7 +20,7 @@ package gamecheetah.graphics
 		/**
 		 * If the animation has stopped.
 		 */
-		public var complete:Boolean = false;
+		public var completed:Boolean = false;
 		
 		/**
 		 * If the current animation is paused.
@@ -46,13 +46,24 @@ package gamecheetah.graphics
 		/**
 		 * Current index of animation.
 		 */
-		public function get index():uint 
+		public function get index():int 
 		{
 			return _index;
 		}
+		public function set index(value:int):void 
+		{
+			// Deal with out-of-bound values.
+			if (_animData == null) return;
+			else if (_animData.frames.length == 0) _index = 0;
+			else if (value < 0) _index = 0;
+			else if (value >= _animData.frames.length) _index = _animData.frames.length - 1;
+			else _index = value;
+			completed = _index == _animData.frames.length - 1;
+			this.frame = _animData.frames[_index];
+		}
 		
 		// Graphic information.
-		private var _index:uint;
+		private var _index:int;
 		private var _timer:Number;
 		private var _frame:int;
 		private var _animData:Animation;
@@ -105,16 +116,16 @@ package gamecheetah.graphics
 						if (_index >= _animData.frames.length)
 						{
 							
-							if (!_animData.looping)
+							if (_animData.looping)
 							{
-								_index = _animData.frames.length - 1;
-								complete = true;
-								break;
+								_index = 0;
+								completed = false;
 							}
 							else
 							{
-								_index = 0;
-								complete = false;
+								_index = _animData.frames.length - 1;
+								completed = true;
+								break;
 							}
 						}
 					}
@@ -141,7 +152,7 @@ package gamecheetah.graphics
 			
 			_index = index;
 			_timer = 0;
-			complete = false;
+			completed = false;
 			
 			return true;
 		}

@@ -6,11 +6,11 @@
  */
 package gamecheetah.designer.components
 {
+	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import gamecheetah.*;
-	import gamecheetah.gameutils.Input;
 	
 	public class ListItem extends PushButton 
 	{
@@ -23,6 +23,7 @@ package gamecheetah.designer.components
 			_selected:Boolean,
 			_editable:Boolean,
 			_swappable:Boolean,
+			_deletable:Boolean,
 			_dragging:Boolean, _dragOffset:Point = new Point(), _startPos:Point = new Point();
 		
 		[Embed(source = "/../lib/Icons/emblem-unreadable.png")]
@@ -38,6 +39,11 @@ package gamecheetah.designer.components
 			return _dragging;
 		}
 		
+		public function get editInput():TextInput 
+		{
+			return _editInput;
+		}
+		
 		public function get text():String 
 		{
 			return _editable ? _editInput.text : _label.text;
@@ -49,113 +55,167 @@ package gamecheetah.designer.components
 			else _label.text = value;
 		}
 		
-		//{ ------------------- Public Methods -------------------
-		
-		public function ListItem(	parent:List, space:Space = null, width:int = 100, height:int = 25,
-									text:String = "", placeholder:String = null, handler:Function = null,
-									editable:Boolean=true, deletable:Boolean=true, swappable:Boolean=true ) 
+		public function get placeholder():String 
 		{
-			super(null, width, height, text, handler, new ListItemStamp(width, height));
+			return _editable ? _editInput.placeholder : null;
+		}
+		
+		public function set placeholder(value:String):void
+		{
+			if (_editable && value != null)
+				_editInput.placeholder = value;
+		}
+		
+		public function get type():String 
+		{
+			return _editable ? _editInput.type : null;
+		}
+		
+		public function set type(value:String):void
+		{
+			if (_editable) _editInput.type = value;
+		}
+		
+		public function get editable():Boolean 
+		{
+			return _editable;
+		}
+		
+		public function set editable(value:Boolean):void 
+		{
+			_editable = value;
 			
-			_parent = parent;
-			_editable = editable;
-			_swappable = swappable;
+			if (_label) this.removeChild(_label);
+			if (_editInput) this.removeChild(_label);
 			
-			if (editable)
+			if (_editable)
 			{
-				_editInput = new TextInput(space, width - 25, 25, onEdit, placeholder);
-				_editInput.location.setTo(25, 0);
-				_editInput.depthOffset = 2;
-				this.registerChildren(_editInput);
+				_editInput = new TextInput(this, width, 25, onEdit);
+				_editInput.background = false;
+				_editInput.move(5, 0);
+				_label = null;
 			}
 			else
 			{
-				_label = new Label(space, _text, this, Label.ALIGN_VCENTER_LEFT, Style.FONT_DARK);
+				_label = new Label(this, _text, Style.FONT_DARK, Label.ALIGN_INNER_LEFT);
 				_label.offset.setTo(5, 0);
-				this.registerChildren(_label);
+				_editInput = null;
 			}
+		}
+		
+		public function get swappable():Boolean 
+		{
+			return _swappable;
+		}
+		
+		public function set swappable(value:Boolean):void 
+		{
+			if (_swappable == value) return;
+			_swappable = value;
 			
-			if (deletable)
-			{
-				_delete = new IconButton(space, DELETE_SM, onDelete);
-				_delete.location.setTo(5, height / 2 - _delete.renderable.height / 2);
-				_delete.depthOffset = 1;
-				if (_label) _label.offset.setTo(25, 0);  // Make some space for delete icon.
-				this.registerChildren(_delete);
-			}
-			
-			if (space) space.add(this);
-			
-			if (swappable)
+			if (_swappable)
 			{
 				// Capture any mouse release whether on or off the entity.
 				Engine.stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
 			}
+			else Engine.stage.removeEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
+		}
+		
+		public function get deletable():Boolean 
+		{
+			return _deletable;
+		}
+		
+		public function set deletable(value:Boolean):void 
+		{
+			_deletable = value;
 			
-			this.setDepth(0);
+			if (_delete) this.removeChild(_delete);
+			
+			if (_deletable)
+			{
+				_delete = new IconButton(this, DELETE_SM, onDelete);
+				_delete.move(5, this.halfHeight - _delete.halfHeight);
+				
+				if (_label) _label.offset.setTo(25, 0);  // Make some space for delete icon.
+				if (_editInput)
+				{
+					_editInput.move(25, 0);
+					_editInput.width -= 25;
+				}
+			}
+			else _delete = null;
+		}
+		
+		//{ ------------------- Public Methods -------------------
+		
+		public function ListItem(	parent:List, width:int = 100, height:int = 25,
+									text:String = "", placeholder:String = null, handler:Function = null,
+									editable:Boolean=true, deletable:Boolean=true, swappable:Boolean=true ) 
+		{
+			super(parent, width, height, text, handler);
+			
+			_parent = parent;
+			
+			this.editable = editable;
+			this.deletable = deletable;
+			this.swappable = swappable;
+			this.placeholder = placeholder;
 		}
 		
 		public function select():void 
 		{
 			if (_selected) return;
-			_stamp.select();
 			_selected = true;
+			if (_editInput) _editInput.select();
+			draw();
 		}
 		
 		public function unselect():void 
 		{
 			if (!_selected) return;
-			_stamp.unhighlight();
 			_selected = false;
+			if (_editInput) _editInput.unselect();
+			draw();
 		}
 		
 		//{ ------------------- Behavior Overrides -------------------
 		
 		override public function onUpdate():void 
 		{
-			super.onUpdate();
-			
 			if (_dragging)
-				this.location.y = Input.mouseY - _dragOffset.y;
+				this.y = _parent.mouseY - _dragOffset.y;
 		}
 		
 		override public function onMouseDown():void 
 		{
 			if (_swappable)
 			{
-				this.setDepth(2);
 				_dragging = true;
-				_dragOffset.y = Input.mouseY - this.location.y;
-				_startPos.y = this.location.y;
+				_dragOffset.y = _parent.mouseY - this.y;
+				_startPos.y = this.y;
+				this.bringToFront();
 			}
 		}
 		
-		override public function onMouseOver():void 
+		override public function draw():void 
 		{
-			// Do not do highlighting if selected.
-			if (!_selected) super.onMouseOver();
-		}
-		
-		override public function onMouseOut():void 
-		{
-			// Do not do highlighting if selected.
-			if (!_selected) super.onMouseOut();
+			this.backgroundColor = _selected ? Style.BUTTON_SELECTED : (_highlighted ? Style.BUTTON2_HIGHLIGHT : Style.BUTTON2_BASE);
 		}
 		
 		//{ ------------------- Private Methods -------------------
 		
 		private function onStageMouseUp(e:Event):void 
 		{
-			if (_dragging && (this._startPos.y - this.location.y) > this.renderable.height / 2)
+			if (_dragging && Math.abs(this._startPos.y - this.y) > this.halfHeight)
 			{
 				// Successful swap event.
 				_parent.findSwapItem(this);
 			}
-			this.setDepth(0);
 			_dragging = false;
 		}
 		
-		private function checkListItem(target:Entity):Boolean 
+		private function checkListItem(target:Sprite):Boolean 
 		{
 			return target is ListItem;
 		}
@@ -169,32 +229,5 @@ package gamecheetah.designer.components
 		{
 			_parent.editItem(this, b.text);
 		}
-	}
-}
-import flash.display.BitmapData;
-import flash.geom.Rectangle;
-import gamecheetah.graphics.Renderable;
-import gamecheetah.designer.components.Style;
-
-class ListItemStamp extends Renderable
-{
-	public function ListItemStamp(width:int, height:int):void 
-	{
-		this.setBuffer(new BitmapData(width, height, true, Style.BASE));
-	}
-	
-	public function select(b:*=null):void 
-	{
-		this.buffer.fillRect(new Rectangle(0, 0, this.width, this.height), Style.SELECTED);
-	}
-	
-	public function highlight(b:*=null):void 
-	{
-		this.buffer.fillRect(new Rectangle(0, 0, this.width, this.height), Style.HIGHLIGHT);
-	}
-	
-	public function unhighlight(b:*=null):void 
-	{
-		this.buffer.fillRect(new Rectangle(0, 0, this.width, this.height), Style.BASE);
 	}
 }

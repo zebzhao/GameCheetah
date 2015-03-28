@@ -7,6 +7,7 @@
 package gamecheetah.designer.components 
 {
 	import flash.display.Bitmap;
+	import flash.display.DisplayObjectContainer;
 	import gamecheetah.graphics.Clip;
 	import gamecheetah.Space;
 	import gamecheetah.utils.OrderedDict;
@@ -16,7 +17,8 @@ package gamecheetah.designer.components
 		private var
 			_selected:Boolean,
 			_labelAlign:String,
-			_offHint:String, _onHint:String;
+			_offHint:String, _onHint:String,
+			_offState:Class, _onState:Class;
 		
 		public function get selected():Boolean 
 		{
@@ -26,31 +28,29 @@ package gamecheetah.designer.components
 		public function set selected(value:Boolean):void 
 		{
 			_selected = value;
-			this.clip.frame = _selected ? 1 : 0;
+			this.setIcon(_selected ? _onState : _offState);
 			
-			if (!_hint)
+			if (!_hintLabel)
 			{
-				_hint = new Label(space, _selected ? _onHint : _offHint, this, _labelAlign, Style.HEADER_BASE);
-				_hint.hide();
+				_hintLabel = new Label(this, _selected ? _onHint : _offHint, Style.FONT_HEADER, _labelAlign);
+				_hintLabel.hide();
 			}
-			else _hint.text = _selected ? _onHint : _offHint;
+			else _hintLabel.text = _selected ? _onHint : _offHint;
 		}
 		
-		public function IconToggleButton(	space:Space, offState:Class, onState:Class,
+		public function IconToggleButton(	parent:DisplayObjectContainer, offState:Class, onState:Class,
 											handler:Function = null,
 											offHint:String=null, onHint:String=null, labelAlign:String=null ) 
 		{
 			_offHint = offHint;
 			_onHint = onHint;
 			_labelAlign = labelAlign;
+			_offState = offState;
+			_onState = onState;
 			
-			var frameBmds:Array = [(new offState() as Bitmap).bitmapData, (new onState() as Bitmap).bitmapData];
-			super(space, new Clip(frameBmds, new OrderedDict()), handler, _offHint, labelAlign);
+			this.setUpState(handler);
 			
-			// TODO: Graphical glitch with label alignment. Temporary solution.
-			this.setUpState(null, null, handler);
-			this.setOverState();
-			this.setDownState();
+			super(parent, _offState, handler, _offHint, labelAlign);
 		}
 		
 		override public function onMouseDown():void 
