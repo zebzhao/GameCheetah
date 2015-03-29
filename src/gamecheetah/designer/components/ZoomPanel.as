@@ -8,9 +8,10 @@ package gamecheetah.designer.components
 {
 	import flash.display.Bitmap;
 	import flash.display.DisplayObjectContainer;
+	import flash.geom.Point;
 	import gamecheetah.Entity;
 
-	public class ZoomPanel extends BaseComponent 
+	public class ZoomPanel extends BaseButton 
 	{
 		private var
 			_hSlider:Slider, _vSlider:Slider,
@@ -55,6 +56,11 @@ package gamecheetah.designer.components
 			updateContent();
 		}
 		
+		public function get contentOffset():Point 
+		{
+			return new Point( -_stamp.scrollX + _stamp.offsetX, -_stamp.scrollY + _stamp.offsetY);
+		}
+		
 		public function centerContent():void 
 		{
 			_hSlider.centerValue();
@@ -68,6 +74,8 @@ package gamecheetah.designer.components
 				_content.clip.update();
 				_stamp.draw(_content, drawMask);
 			}
+			else _stamp.clear();
+			
 			_hSlider.move(0, _height + 1);
 			_vSlider.move(_width + 1, 0);
 		}
@@ -103,6 +111,10 @@ use namespace hidden;
 
 class BackgroundStamp extends Renderable
 {
+	private static var _rect:Rectangle = new Rectangle();
+	private static var _point:Point = new Point();
+	private static var _zero:Point = new Point();
+	
 	public var scrollX:int, scrollY:int;
 	public var offsetX:int, offsetY:int;
 	
@@ -112,26 +124,50 @@ class BackgroundStamp extends Renderable
 		else this.setBuffer(new BitmapData(width, height, true, 0));
 	}
 	
-	public function draw(entity:Entity, drawMask:Boolean=false):void 
+	public function clear():void 
 	{
 		// Clear buffer
-		this.buffer.fillRect(this.buffer.rect, 0);
-		// Draw clip
-		entity.clip.render(_buffer, -scrollX + offsetX, -scrollY + offsetY);
+		this._buffer.fillRect(this._buffer.rect, 0);
+	}
+	
+	public function draw(entity:Entity, drawMask:Boolean=false):void 
+	{
+		clear();
+		
+		// Draw clip. Tricky: Render without transformAnchor or else scroll coordinates need to be offset!
+		_point.setTo(-scrollX + offsetX, -scrollY + offsetY);
+		Renderable.draw(
+			entity.clip.buffer, this.buffer, _point,
+			entity.clip.rotation, _zero,
+			entity.clip.alpha, entity.clip.scaleX, entity.clip.scaleY,
+			entity.clip.tint, entity.clip.tintAlpha, false, entity.clip.clipping);
 		
 		if (drawMask)
 		{
 			// Get collision masks for the entity
-			var mask:* = entity._getMask();
+			var mask:* = entity._getMask(false, true);
 			var bmd:BitmapData = mask as BitmapData;
+			var pt:Point = mask as Point;
 			
 			// Tricky: Transformed rectangle masks are returned as bitmaps.
 			if (mask is Rectangle)
 			{
-				var rect:Rectangle = new Rectangle();
-				rect.copyFrom(mask);
-				rect.offset(-scrollX + offsetX, -scrollY + offsetY);
-				this.buffer.fillRect(rect, 0x90ff0000);
+				_rect.copyFrom(mask);
+				_rect.offset( -scrollX + offsetX, -scrollY + offsetY);
+				
+				if (_rect.width >= 1 && _rect.height >= 1)
+					this.buffer.copyPixels(
+						new BitmapData(_rect.width, _rect.height, true, 0x90ff0000),
+						new Rectangle(0, 0, _rect.width, _rect.height), _rect.topLeft, null, null, true);
+			}
+			else if (pt != null)
+			{
+				_rect.setTo(pt.x - 2, pt.y - 2, 4, 4);
+				_rect.offset(-scrollX + offsetX, -scrollY + offsetY);
+				
+				this.buffer.copyPixels(
+					new BitmapData(_rect.width, _rect.height, true, 0x90ff0000),
+					new Rectangle(0, 0, _rect.width, _rect.height), _rect.topLeft, null, null, true);
 			}
 			else if (bmd != null) this.buffer.copyPixels(bmd, bmd.rect, new Point( -scrollX + offsetX, -scrollY + offsetY), null, null, true);
 		}

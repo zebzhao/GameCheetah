@@ -27,6 +27,7 @@ package gamecheetah.designer.components
 		
 		public function set selected(value:Boolean):void 
 		{
+			if (_selected == value) return;
 			_selected = value;
 			this.setIcon(_selected ? _onState : _offState);
 			

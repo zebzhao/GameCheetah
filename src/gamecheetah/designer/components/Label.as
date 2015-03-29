@@ -22,8 +22,9 @@ package gamecheetah.designer.components
 		public static var ALIGN_BELOW:String = "below";
 		public static var ALIGN_LEFT:String = "left";
 		public static var ALIGN_RIGHT:String = "right";
-		public static var ALIGN_INNER_LEFT:String = "vcenter-left";
-		public static var ALIGN_ABOVE_LEFT:String = "vabove-left";
+		public static var ALIGN_INNER_LEFT:String = "inner-left";
+		public static var ALIGN_ABOVE_LEFT:String = "above-left";
+		public static var ALIGN_INNER_TOP_LEFT:String = "inner-bottom-left";
 		public static var ALIGN_FREE:String = "free";
 		
 		//{ ------------------- Private Info -------------------
@@ -37,6 +38,7 @@ package gamecheetah.designer.components
 		
 		public const offset:Point = new Point();
 		public var padding:int = 5;
+		public var innerPadding:int = 5;
 		
 		public function get text():String 
 		{
@@ -107,11 +109,15 @@ package gamecheetah.designer.components
 				}
 				else if (_align == ALIGN_INNER_LEFT)
 				{
-					this.move(0, _host.halfHeight - this.halfHeight);
+					this.move(innerPadding, _host.halfHeight - this.halfHeight);
 				}
 				else if (_align == ALIGN_ABOVE_LEFT)
 				{
-					this.move(0, -this.height - padding);
+					this.move(innerPadding, -this.height - padding);
+				}
+				else if (_align == ALIGN_INNER_TOP_LEFT)
+				{
+					this.move(innerPadding, innerPadding);
 				}
 				else if (_align == ALIGN_CENTER)
 				{   // Center by default

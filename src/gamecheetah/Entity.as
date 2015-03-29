@@ -22,20 +22,12 @@ package gamecheetah
 	 * @author 		Zeb Zhao {zeb.zhao(at)gamecheetah[dot]net}
 	 */
 	public class Entity extends Restorable 
-	{
-		private static var _matrix:Matrix = new Matrix();
-		private static const RAD_PER_DEG:Number = Math.PI / 180;
-		
+	{	
 		/**
 		 * Instantiated when parent space set to active.
 		 */
 		public final function get renderable():Renderable
 		{
-			/*CONFIG::developer
-			{
-				// NOT FOR RELEASE: Helps developer debug the engine's internal issues.
-				if (!_activated) throw new GCError("attempt to access inactivated entity detected! (DEBUG)")
-			}*/
 			return _renderable;
 		}
 		public final function set renderable(value:Renderable):void 
@@ -329,7 +321,7 @@ package gamecheetah
 			//super(_properties.concat(["_graphicTag", "tag", "depth", "location"]));
 			super(["_graphicTag", "tag", "depth", "location"]);
 			
-			_transformData = new TransformData(0, 1, 1, new Point(), null);
+			_transformData = new TransformData(0, 1, 1, new Point());
 			this._agent = new Agent(0, 1, 0, 0, 0);
 		}
 		
@@ -394,64 +386,42 @@ package gamecheetah
 		
 		/**
 		 * [Internal] Return the collision mask for the renderable clip.
+		 * @param	useTransformAnchor		If false, disables the use of the transformAnchor. For easier coordinates in ZoomPanel.
+		 * @param	disableCache			If true, forces to recalculate/render the scaled collision mask.
 		 * @return	A BitmapData or Rectangle object.
 		 */
-		hidden function _getMask():*
+		hidden function _getMask(useTransformAnchor:Boolean=true, disableCache:Boolean=false):*
 		{
 			if (_graphic && _graphic._frameMasks.length > 0)
 			{
 				var clip:Clip = _renderable as Clip;
+				var frame:uint = _graphic.alwaysUseDefaultMask ? 0 : clip.frame;
 				var result:*;
 				
 				if (clip != null)
 				{
-					result = _graphic._frameMasks[_graphic.alwaysUseDefaultMask ? 0 : clip.frame];
+					result = _graphic._frameMasks[frame];
 				}
 				else result = _graphic._frameMasks[0];
+				
 				
 				if (result == null || !applyTransformToMask || _renderable.rotation == 0 && _renderable.scaleX == 1 && _renderable.scaleY == 1)
 				{
 					// Return unmodified mask. (no rotation/scaling)
 					return result;
 				}
-				else if (_transformData.equals(_renderable.rotation, _renderable.scaleX, _renderable.scaleY, _renderable.transformAnchor))
-				{
-					// Return already transformed mask. (same as previous)
-					return _transformData.data;
-				}
 				else
 				{
-					// Dispose previously stored transformed collision bitmap.
-					if (_transformData.data != null) _transformData.data.dispose();
+					var transformAnchor:Point = useTransformAnchor ? _renderable.transformAnchor : new Point();
+					// Return transformed mask, and cache a copy of the transformed for future use.
+					if (disableCache || !_transformData.equals(_renderable.rotation, _renderable.scaleX, _renderable.scaleY, transformAnchor))
+						_transformData.setTo(_renderable.rotation, _renderable.scaleX, _renderable.scaleY, transformAnchor);
 					
-					// Apply rotation and transform to mask.
-					var newBmd:BitmapData = new BitmapData(_renderable.width, _renderable.height, true, 0);
-					_transformData.setTo(_renderable.rotation, _renderable.scaleX, _renderable.scaleY, _renderable.transformAnchor, newBmd);
+					// Return already transformed mask. (same as previous)
+					var preTransformed:* = _transformData.getData(frame);
+					if (!preTransformed) preTransformed = _transformData.addData(frame, result, _graphic.frameRect);
 					
-					// Reset transformation matrix.
-					_matrix.identity();
-					_matrix.translate(-_transformData.tAx, -_transformData.tAy);
-					
-					// Apply scale and rotation to the matrix.
-					_matrix.scale(_transformData.scaleX, _transformData.scaleY);
-					_matrix.rotate(_transformData.rotation * RAD_PER_DEG);
-					
-					_matrix.translate(_transformData.tAx, _transformData.tAy);
-					
-					// Tricky: Must convert rotated rectangle to bitmap unless figure out reliable way to test for collision with bitmap.
-					var rect:Rectangle = result as Rectangle;
-					var bmd:BitmapData = result as BitmapData;
-					
-					if (rect != null)
-					{
-						bmd = new BitmapData(_graphic.frameRect.width, _graphic.frameRect.height, true, 0);
-						bmd.fillRect(rect, 0x90ff0000);
-						newBmd.draw(bmd, _matrix);
-						bmd.dispose();
-					}
-					else newBmd.draw(bmd, _matrix);
-					
-					return newBmd;
+					return preTransformed;
 				}
 			}
 		}
@@ -514,34 +484,102 @@ package gamecheetah
 
 }
 import flash.display.BitmapData;
+import flash.display.Shape;
+import flash.geom.Matrix;
 import flash.geom.Point;
+import flash.geom.Rectangle;
+import flash.utils.Dictionary;
 
 class TransformData
 {
+	private static const RAD_PER_DEG:Number = Math.PI / 180;
+	
+	public var shape:Shape;
+	public var matrix:Matrix;
 	public var scaleX:Number;
 	public var scaleY:Number;
 	public var rotation:Number;
 	public var tAx:Number;
 	public var tAy:Number;
-	public var data:BitmapData;
+	public var data:Dictionary;
 	
-	public function TransformData(rotation:Number, scaleX:Number, scaleY:Number, transformAnchor:Point, data:BitmapData) 
+	public function TransformData(rotation:Number, scaleX:Number, scaleY:Number, transformAnchor:Point) 
 	{
-		setTo(rotation, scaleX, scaleY, transformAnchor, data);
+		shape = new Shape();
+		data = new Dictionary();
+		matrix = new Matrix();
+		setTo(rotation, scaleX, scaleY, transformAnchor);
 	}
 	
-	public function setTo(rotation:Number, scaleX:Number, scaleY:Number, transformAnchor:Point, data:BitmapData):void
+	public function addData(frame:int, datum:*, frameRect:Rectangle):* 
+	{
+		// Dispose previously stored transformed collision bitmap.
+		if (this.data[frame] && this.data[frame] is BitmapData) (this.data[frame] as BitmapData).dispose();
+		
+		// Tricky: Must convert rotated rectangle to bitmap unless figure out reliable way to test for collision with bitmap.
+		var rect:Rectangle = datum as Rectangle;
+		var bmd:BitmapData = datum as BitmapData;
+		var pt:Point = datum as Point;
+		
+		if (pt != null)
+		{
+			var newPt:Point = matrix.transformPoint(pt);
+			this.data[frame] = newPt;
+			return newPt;
+		}
+		else
+		{
+			// Apply rotation and transform to mask.
+			var newBmd:BitmapData = new BitmapData(frameRect.width * scaleX, frameRect.height * scaleY, true, 0);
+			this.data[frame] = newBmd;
+			
+			if (rect != null)
+			{
+				shape.graphics.clear();
+				shape.graphics.beginFill(0xff0000, 0.5);
+				shape.graphics.drawRect(rect.x, rect.y, rect.width, rect.height);
+				newBmd.draw(shape, matrix);
+			}
+			else if (bmd != null) newBmd.draw(bmd, matrix);
+			
+			return newBmd;
+		}
+	}
+	
+	public function getData(frame:int):* 
+	{
+		return data[frame];
+	}
+	
+	public function setTo(rotation:Number, scaleX:Number, scaleY:Number, transformAnchor:Point):void
 	{
 		this.rotation = rotation;
 		this.scaleX = scaleX;
 		this.scaleY = scaleY;
 		this.tAx = transformAnchor.x;
 		this.tAy = transformAnchor.y;
-		this.data = data;
+		
+		// Reset transformation matrix.
+		matrix.identity();
+		matrix.translate(-tAx, -tAy);
+		// Apply scale and rotation to the matrix.
+		matrix.scale(scaleX, scaleY);
+		matrix.rotate(rotation * RAD_PER_DEG);
+		matrix.translate(tAx, tAy);
+		
+		// Clean up dictionary cache
+		var key:String, bmd:BitmapData;
+		for (key in data)
+		{
+			bmd = data[key] as BitmapData
+			if (bmd != null) bmd.dispose();
+			data[key] = null;
+		}
 	}
 	
 	public function equals(rotation:Number, scaleX:Number, scaleY:Number, transformAnchor:Point):Boolean 
 	{
-		return this.rotation == rotation && this.scaleX == scaleX && tAx == transformAnchor.x && transformAnchor.y == tAy && this.scaleY == scaleY;
+		return this.rotation == rotation && this.scaleX == scaleX &&
+			tAx == transformAnchor.x && transformAnchor.y == tAy && this.scaleY == scaleY;
 	}
 }

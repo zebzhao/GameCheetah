@@ -26,16 +26,21 @@ package gamecheetah.designer.views
 		private var
 			_main:MainConsole;
 			
+		private var _zoomFactor:Number = 1;
+		private var _mousePos:Point = new Point();
+			
 		private var
-			_zoomFactor:Number = 1;
+			_drawRect:Boolean,
+			_drawBitmap:Boolean,
+			_eraseBitmap:Boolean;
 			
 		private var
 			_backBtn:IconButton, _classesBtn:IconButton, _animationsBtn:IconButton, _collisionsBtn:IconButton,
 			_classesList:List, _animationsList:List, _collisionsList:List,
 			_masksList:List, _viewList:List, _spriteSheetList:List, _toolsList:List,
 			_addAnimationBtn:IconButton, _rateUpBtn:IconButton, _rateDownBtn:IconButton,
-			_playBtn:IconButton, _prevFrameBtn:IconButton, _nextFrameBtn:IconButton, _loopBtn:IconButton,
-			_entityContainer:ZoomPanel,
+			_playBtn:IconToggleButton, _prevFrameBtn:IconButton, _nextFrameBtn:IconButton, _loopBtn:IconButton,
+			_entityContainer:ZoomPanel, _zoomFactorLbl:Label,
 			_spriteSheetBtn:IconButton, _maskBtn:IconButton, _viewBtn:IconButton, _toolsBtn:IconButton,
 			_frameSlider:Slider,
 			_frameInput:TextInput, _rateInput:TextInput,
@@ -57,19 +62,9 @@ package gamecheetah.designer.views
 					_collisionsList.selectItem(i);
 					
 			// Set spritesheet options
-			if (value.hasSpritesheet)
-			{
-				_rowsInput.text = value.rows.toString();
-				_columnsInput.text = value.columns.toString();
-				
-				_rowsInput.show();
-				_columnsInput.show();
-			}
-			else
-			{
-				_rowsInput.hide();
-				_columnsInput.hide();
-			}
+			if (!value.hasSpritesheet) _entityContainer.content = null;
+			_rowsInput.text = value.rows.toString();
+			_columnsInput.text = value.columns.toString();
 		}
 		
 		public function get animationsList():Array { return null };
@@ -116,10 +111,14 @@ package gamecheetah.designer.views
 			_main = main;
 			
 			_entityContainer = new ZoomPanel(this, null, 250, Math.min(Engine.buffer.height - 300, 250));
+			_entityContainer.mouseDown = entityContainer_MouseDown;
+			_entityContainer.mouseUp = entityContainer_MouseUp;
+			_zoomFactorLbl = new Label(_entityContainer, "1x", Style.FONT_HEADER, Label.ALIGN_INNER_TOP_LEFT);
+			_zoomFactorLbl.alpha = 0;
 			
 			_prevFrameBtn = new IconButton(this, Assets.SEEK_BACK, prevFrameBtn_Click, "Next Frame", Label.ALIGN_ABOVE);
 			_nextFrameBtn = new IconButton(this, Assets.SEEK_FORWARD, nextFrameBtn_Click, "Prev Frame", Label.ALIGN_ABOVE);
-			_playBtn = new IconButton(this, Assets.PLAY, playBtn_Click, "Play", Label.ALIGN_ABOVE);
+			_playBtn = new IconToggleButton(this, Assets.PAUSE, Assets.PLAY, playBtn_Click, "Pause", "Play", Label.ALIGN_ABOVE);
 			_loopBtn = new IconButton(this, Assets.LOOP, loopBtn_Click, "Loop", Label.ALIGN_ABOVE);
 			_rateUpBtn = new IconButton(this, Assets.ARROW_UP, rateUpBtn_Click, "", Label.ALIGN_RIGHT);
 			_rateDownBtn = new IconButton(this, Assets.ARROW_DOWN, rateDownBtn_Click, "", Label.ALIGN_RIGHT);
@@ -127,7 +126,7 @@ package gamecheetah.designer.views
 			_frameSlider = new Slider(this, 250, 8, Slider.HORIZONTAL, 0, 0, 1, frameSlider_Slide);
 			_frameInput = new TextInput(this, 195, 25, frameInput_Change, "Frame Sequence", TextInput.TYPE_UINT_VECTOR);
 			_frameInput.setHint("Animation Sequence", Label.ALIGN_BELOW);
-			_rateInput = new TextInput(this, 50, 25, rateInput_Change, "Rate", TextInput.TYPE_UINT_VECTOR);
+			_rateInput = new TextInput(this, 50, 25, rateInput_Change, "Rate", TextInput.TYPE_UINT);
 			_rateInput.setHint("Playback Rate", Label.ALIGN_BELOW);
 			_rateInput.minimum = 0;  _rateInput.maximum = 100;
 			
@@ -140,11 +139,13 @@ package gamecheetah.designer.views
 			_animationsList = new List(this, [], 8, 150, 25, animationsList_Select, null, animationsList_Delete, animationsList_Swap, animations_Edit, true, true, true);
 			_collisionsList = new List(this, Engine.__collisionClasses, 8, 150, 25, collisionsList_Select, collisionsList_Deselect, null, null, null, false, false, false);
 			_collisionsList.multiselect = true;
-			_masksList = new List(this, ["None", "Point", "Rect", "Bitmap"], 4, 100, 25, maskList_Select, null, null, null, null, false, false, false);
+			_masksList = new List(this, ["None", "Point", "Rectangle", "Bitmap"], 4, 100, 25, masksList_Select, null, null, null, null, false, false, false);
 			_viewList = new List(this, ["Show Mask", "Zoom In", "Zoom Out"], 3, 100, 25, viewList_Select, null, null, null, null, false, false, false);
 			_viewList.multiselect = true;
+			_viewList.selectItem(0);
 			_spriteSheetList = new List(this, ["Browse...", "Discard", "", ""], 4, 100, 25, spriteSheetList_Select, null, null, null, null, false, false, false);
-			_toolsList = new List(this, ["Load...", "Draw", "Erase", "Clear"], 4, 100, 25, toolsList_Select, null, null, null, null, false, false, false);
+			_toolsList = new List(this, ["Single Mask", "Load...", "Draw", "Erase", "Fill", "Clear"], 6, 100, 25, toolsList_Select, null, null, null, null, false, false, false);
+			_toolsList.multiselect = true;
 			
 			_spriteSheetList.getListItem(2).editable = true;
 			_spriteSheetList.getListItem(3).editable = true;
@@ -180,7 +181,6 @@ package gamecheetah.designer.views
 		
 		override public function onActivate():void 
 		{
-			this.mouseEnabled = true;
 			hideAllDropDowns();
 			onUpdate();
 		}
@@ -204,7 +204,6 @@ package gamecheetah.designer.views
 			
 			_frameInput.move(_entityContainer.left, _entityContainer.bottom + 100);
 			_frameSlider.move(_frameInput.left, _frameInput.top - 15);
-			if (Designer.model.activeClip) _frameSlider.setValue(Designer.model.activeClip.index);
 			_rateInput.move(_frameInput.right + 5, _frameInput.top);
 			_rateUpBtn.move(_rateInput.right + 1, _rateInput.top);
 			_rateDownBtn.move(_rateInput.right + 1, _rateInput.top + 12);
@@ -228,6 +227,55 @@ package gamecheetah.designer.views
 			_masksList.move(_maskBtn.left, _maskBtn.bottom + 10);
 			_viewList.move(_viewBtn.left, _viewBtn.bottom + 10);
 			_toolsList.move(_toolsBtn.left, _toolsBtn.bottom + 10);
+			
+			if (Designer.model.activeClip)
+			{
+				// Update frame slider position
+				var activeClip:Clip = Designer.model.activeClip;
+				_frameSlider.setValue(activeClip.index);
+				
+				// Update playback button
+				_playBtn.selected = activeClip.paused || activeClip.completed;
+				
+				// Update mask selection
+				var selectedGraphic:Graphic = Designer.model.selectedGraphic;
+				var frameMask:* = Designer.getUnscaledCollisionMask();
+				
+				if (frameMask is BitmapData)
+					_masksList.selectItem(3, false);
+				else if (frameMask is Rectangle)
+					_masksList.selectItem(2, false);
+				else if (frameMask is Point)
+					_masksList.selectItem(1, false);
+				else if (frameMask == null)
+					_masksList.selectItem(0, false);
+				else
+					throw new DesignerError("unrecognized frame mask found!");
+					
+				var currentPos:Point = new Point(
+					int((_entityContainer.mouseX - _entityContainer.contentOffset.x) / _entityContainer.contentScale),
+					int((_entityContainer.mouseY - _entityContainer.contentOffset.y) / _entityContainer.contentScale));
+				
+				// Draw collision mask
+				if (_drawRect)
+				{
+					var rect:Rectangle = new Rectangle(
+						Math.min(currentPos.x, _mousePos.x), Math.min(currentPos.y, _mousePos.y),
+						Math.abs(currentPos.x - _mousePos.x), Math.abs(currentPos.y - _mousePos.y));
+					
+					Designer.setCollisionMask(rect.intersection(selectedGraphic.frameRect));
+				}
+				else if (_drawBitmap)
+				{
+					drawLine(frameMask as BitmapData, int(_mousePos.x), int(_mousePos.y), int(currentPos.x), int(currentPos.y), 0x90ff0000);
+					_mousePos.copyFrom(currentPos);
+				}
+				else if (_eraseBitmap)
+				{
+					drawLine(frameMask as BitmapData, int(_mousePos.x), int(_mousePos.y), int(currentPos.x), int(currentPos.y), 0);
+					_mousePos.copyFrom(currentPos);
+				}
+			}
 		}
 		
 		//}
@@ -235,13 +283,85 @@ package gamecheetah.designer.views
 		
 		private function toolsList_Select(l:List, index:int):void 
 		{
+			l.deselectItem(1);
+			l.deselectItem(2);
+			l.deselectItem(3);
+			l.deselectItem(4);
+			l.deselectItem(5);
 			
+			if (index == 0)
+			{
+				Designer.model.selectedGraphic.alwaysUseDefaultMask = l.selected[index];
+			}
+			else if (index == 1)
+			{
+				// Load collision bitmap object from  file.
+				Designer.loadMaskImage();
+			}
+			else if (index == 5)
+			{
+				// Clear collision bitmap object.
+				var bmd:BitmapData = Designer.getUnscaledCollisionMask() as BitmapData;
+				bmd.fillRect(bmd.rect, 0);
+			}
+			else
+			{
+				l.selectItem(index, false);
+			}
+			
+			// Pause playback
+			Designer.model.activeClip.paused = true;
+		}
+		
+		private function entityContainer_MouseUp(p:ZoomPanel):void 
+		{
+			_drawRect = false;
+			_drawBitmap = false;
+			_eraseBitmap = false;
+		}
+		
+		private function entityContainer_MouseDown(p:ZoomPanel):void 
+		{
+			_drawRect = false;
+			_drawBitmap = false;
+			_eraseBitmap = false;
+			
+			// Start draw mode.
+			_mousePos.setTo(int((p.mouseX - p.contentOffset.x) / p.contentScale), int((p.mouseY - p.contentOffset.y) / p.contentScale));
+				
+			if (_masksList.selectedIndex == 1)
+			{
+				Designer.setCollisionMask(new Point(_mousePos.x, _mousePos.y));
+			}
+			else if (_masksList.selectedIndex == 2)
+			{
+				_drawRect = true;
+			}
+			else if (_masksList.selectedIndex == 3)
+			{
+				if (_toolsList.selected[2])
+				{
+					_drawBitmap = true;
+				}
+				else if (_toolsList.selected[3])
+				{
+					_eraseBitmap = true;
+				}
+				else if (_toolsList.selected[4])
+				{
+					(Designer.getUnscaledCollisionMask() as BitmapData).floodFill(_mousePos.x, _mousePos.y, 0x90ff0000);
+				}
+			}
 		}
 		
 		private function spriteSheetList_Select(l:List, index:int):void 
 		{
 			l.deselectItem(index);
-			if (index == 0) Designer.loadImage();
+			if (index == 0)
+			{
+				Designer.loadImage();
+				Designer.selectGraphic(-1);
+			}
 			else if (index == 1)
 			{
 				Designer.model.selectedGraphic.spritesheet = null;
@@ -255,20 +375,25 @@ package gamecheetah.designer.views
 			{
 				_entityContainer.drawMask = l.selected[index];
 			}
-			else if (index == 1)
+			else
 			{
-				l.deselectItem(index);
-				_zoomFactor *= 2;
+				if (index == 1)
+				{
+					// Zoom in 2x
+					l.deselectItem(index);
+					_zoomFactor *= 2;
+				}
+				else if (index == 2)
+				{
+					// Zoom out 0.5x
+					l.deselectItem(index);
+					if (_zoomFactor > 1) _zoomFactor /= 2;
+				}
+				_zoomFactor = int(_zoomFactor);
+				_entityContainer.contentScale = _zoomFactor;
+				_zoomFactorLbl.text = _zoomFactor.toString() + "x";
+				_zoomFactorLbl.tweenClip( { "alpha": 1 }, { "alpha": 0 }, 1, null, 1);
 			}
-			else if (index == 2)
-			{
-				l.deselectItem(index);
-				if (_zoomFactor > 1) _zoomFactor /= 2;
-			}
-			_zoomFactor = int(_zoomFactor);
-			
-			Designer.model.activeClip.scaleX = _zoomFactor;
-			Designer.model.activeClip.scaleY = _zoomFactor;
 		}
 		
 		private function nextFrameBtn_Click(b:BaseButton):void 
@@ -285,13 +410,13 @@ package gamecheetah.designer.views
 		
 		private function rateDownBtn_Click(b:BaseButton):void 
 		{
-			if (_rateInput.value > 0 )
+			if (_rateInput.value > 0)
 				_rateInput.text = String(int(Math.max(0, _rateInput.value - 5)));
 		}
 		
 		private function rateUpBtn_Click(b:BaseButton):void 
 		{
-			if (_rateInput.value < 100 )
+			if (_rateInput.value < 100)
 				_rateInput.text = String(int(Math.max(0, _rateInput.value + 5)));
 		}
 		
@@ -309,10 +434,16 @@ package gamecheetah.designer.views
 			else _loopBtn.unfreeze();
 		}
 		
-		private function playBtn_Click(b:BaseButton):void 
+		private function playBtn_Click(b:IconToggleButton):void 
 		{
-			if (Designer.model.selectedAnimation && Designer.model.activeClip)
+			if (!b.selected)
 			{
+				// Pause playback
+				Designer.model.activeClip.paused = true;
+			}
+			else if (Designer.model.selectedAnimation && Designer.model.activeClip)
+			{
+				// Resume playback from current frame
 				Designer.model.activeClip.paused = false;
 				Designer.model.activeClip.play(Designer.model.selectedAnimation.tag, Designer.model.activeClip.completed);
 			}
@@ -374,34 +505,6 @@ package gamecheetah.designer.views
 			Designer.model.update("selectedAnimation", Designer.model.selectedGraphic.animations.getAt(index) as Animation, true);
 		}
 		
-		private function maskList_Select(list:List, index:int):void 
-		{
-			var selectedGraphic:Graphic = Designer.model.selectedGraphic;
-			var selectedFrame:int = Designer.model.activeClip.index;
-			
-			// Some sanity checks!
-			if (selectedGraphic.frameCount >= selectedFrame || selectedFrame < 0)
-				throw new DesignerError("index error: trying to set a mask frame out of bounds!");
-			
-			// Update collision masks for the selected Graphic object.
-			if (index == 0)
-			{
-				selectedGraphic._frameMasks[selectedFrame] = null;
-			}
-			else if (index == 1)
-			{
-				selectedGraphic._frameMasks[selectedFrame] = new Point(selectedGraphic.frameRect.width / 2, selectedGraphic.frameRect.height / 2);
-			}
-			else if (index == 2)
-			{
-				selectedGraphic._frameMasks[selectedFrame] = new Rectangle();
-			}
-			else if (index == 3)
-			{
-				selectedGraphic._frameMasks[selectedFrame] = new BitmapData(selectedGraphic.frameRect.width, selectedGraphic.frameRect.height, true, 0);
-			}
-		}
-		
 		private function spriteSheetBtn_Click(b:IconButton):void 
 		{
 			if (!b.frozen)
@@ -428,6 +531,9 @@ package gamecheetah.designer.views
 		{
 			if (!b.frozen)
 			{
+				// Show extra options when in edit Bitmap mode
+				_toolsList.visibleItems = _masksList.selectedIndex == 3 ? 6 : 1;
+				
 				hideAllDropDowns();
 				b.freeze();
 				_toolsList.show();
@@ -481,6 +587,28 @@ package gamecheetah.designer.views
 			else hideAllDropDowns();
 		}
 		
+		private function masksList_Select(list:List, index:int):void 
+		{
+			// Update collision masks for the selected Graphic object.
+			if (index == 0)
+			{
+				Designer.setCollisionMask(null);
+			}
+			else if (index == 1)
+			{
+				Designer.setCollisionMask(new Point());
+			}
+			else if (index == 2)
+			{
+				Designer.setCollisionMask(new Rectangle());
+			}
+			else if (index == 3)
+			{
+				Designer.setCollisionMask(
+					new BitmapData(Designer.model.selectedGraphic.frameRect.width, Designer.model.selectedGraphic.frameRect.height, true, 0));
+			}
+		}
+		
 		private function collisionsList_Select(list:List, index:int):void 
 		{
 			var className:String = String(list.items[index]);
@@ -522,6 +650,8 @@ package gamecheetah.designer.views
 			this.parent.removeChild(this);
 		}
 		
+		//{ ------------------------------------ Private methods ------------------------------------
+		
 		private function hideCollisionsList():void 
 		{
 			_collisionsBtn.unfreeze();
@@ -547,6 +677,47 @@ package gamecheetah.designer.views
 			hideAnimationsList();
 			hideCollisionsList();
 			hideButtonRow1();
+		}
+		
+		/**
+		 * Extremely Fast Line Algorithm written by Po-Han Lin
+		 * Taken from: http://www.simppa.fi/blog/extremely-fast-line-algorithm-as3-optimized/
+		 */
+		public static function drawLine(bitmapData:BitmapData, x:int, y:int, x2:int, y2:int, color:uint):void
+		{
+			var shortLen:int = y2 - y;
+			var longLen:int = x2 - x;
+			if ((shortLen ^ (shortLen >> 31)) - (shortLen >> 31) > (longLen ^ (longLen >> 31)) - (longLen >> 31))
+			{
+				shortLen ^= longLen;
+				longLen ^= shortLen;
+				shortLen ^= longLen;
+				
+				var yLonger:Boolean = true;
+			}
+			else
+			{
+				yLonger = false;
+			}
+			
+			var inc:int = longLen < 0 ? -1 : 1;
+			
+			var multDiff:Number = longLen == 0 ? shortLen : shortLen / longLen;
+			
+			if (yLonger)
+			{
+				for (var i:int = 0; i != longLen; i += inc)
+				{
+					bitmapData.setPixel32(x + i * multDiff, y + i, color);
+				}
+			}
+			else
+			{
+				for (i = 0; i != longLen; i += inc)
+				{
+					bitmapData.setPixel32(x + i, y + i * multDiff, color);
+				}
+			}
 		}
 	}
 

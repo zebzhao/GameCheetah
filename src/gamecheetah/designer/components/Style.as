@@ -20,7 +20,7 @@ package gamecheetah.designer.components
 		public static var FONT_BASE:uint = 0xffffff;
 		public static var FONT_HEADER:uint = 0x535EA7;
 		public static var FONT_DARK:uint = 0x323232;
-		public static var FONT_LIGHT:uint = 0xbbbbbb;
+		public static var FONT_LIGHT:uint = 0xababab;
 		
 		public static var ROUND_RADIUS:uint = 6;
 		public static var LINE_LIGHT:uint = 0xababab;

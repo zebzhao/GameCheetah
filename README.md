@@ -13,21 +13,28 @@ GameCheetah is a AS3 SWC library created for the purpose of optimizing workflow 
 ##Changes:
 	
 ###v1.2
-- may break some v1.1 code
 - improved UI to be more user-friendly
+- rewrite of Designer package
 - allowed upper-case to be used for tag names
+
+- may break some v1.1 code
 - removed TextStyle class
+- exposed \<Space\>.remove() method
+- renamed \<Clip\>.complete to \<Clip\>.completed
 - replaced MinimalComps components with custom components
 - new Renderable.setTransformAnchorToCenter() method
-- rewrite of Designer package
+
 - modifications and clean-up to Engine class
 - allow multiple Engines to be spun off
 - each Space now has an "engine" property
-- tweaks and glitch fixes to Space class (callback ordering)
-- tweaks and glitch fixes to Engine class (event listeners)
-- exposed <Space>.remove() method
-- renamed <Clip>.complete to <Clip>.completed
+- tweaks and bug fixes to Space class (callback ordering)
+- tweaks and bug fixes to Engine class (event listeners)
+- tweaks and bug fixes to Entity class (scaling collision bitmap)
+
 - renamed Engine.instance to Engine.main
+- added ability to render point masks
+- fixed bug allowing for Point collision object to be applied with transformations
+- rewrote caching algorithm for transformed collision mask objects (Entity class)
 
 ###v1.1
 - fixed home icon dragging unresponsiveness

@@ -397,7 +397,6 @@ package gamecheetah
 			// Render entities in order.
 			renderList.sort(compare);
 			
-			var mask:*, bmd:BitmapData;
 			for each (entity in renderList)
 			{
 				entity._onScreenStatus = 1;
@@ -411,17 +410,26 @@ package gamecheetah
 			{
 				if (drawMasks)
 				{
+					var mask:*, bmd:BitmapData, pt:Point;
+					
 					for each (entity in renderList)
 					{
 						if (entity.renderable == null) return;
 						
 						mask = entity._getMask();
 						bmd = mask as BitmapData;
+						pt = mask as Point;
 						
 						// Tricky: Transformed rectangle masks are returned as bitmaps.
 						if (mask is Rectangle)
 						{
 							_rect.copyFrom(mask);
+							_rect.offset(entity._agent.x - cameraX, entity._agent.y - cameraY);
+							Engine.buffer.fillRect(_rect, 0x90ff0000);
+						}
+						else if (pt != null)
+						{
+							_rect.setTo(pt.x - 2, pt.y - 2, 4, 4);
 							_rect.offset(entity._agent.x - cameraX, entity._agent.y - cameraY);
 							Engine.buffer.fillRect(_rect, 0x90ff0000);
 						}

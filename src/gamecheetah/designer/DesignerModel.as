@@ -37,7 +37,6 @@ package gamecheetah.designer
 			this.define("selectedGraphic");
 			this.define("selectedEntity");
 			this.define("selectedAnimation");
-			this.define("selectedMaskFrame");
 			this.define("activeClip");
 			this.define("activeSpace");
 			this.define("errorMessage");
@@ -144,7 +143,6 @@ package gamecheetah.designer
 		
 		
 		public var selectedAnimation:Animation;
-		public var selectedMaskFrame:int;
 		public var selectedEntity:Entity;
 		public var errorMessage:String;
 	}

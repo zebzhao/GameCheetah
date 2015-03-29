@@ -144,7 +144,7 @@ package gamecheetah.designer.components
 				return null;
 		}
 		
-		public function selectItem(index:int):void 
+		public function selectItem(index:int, invokeCallback:Boolean=true):void 
 		{
 			if (!multiselect)
 			{
@@ -159,13 +159,13 @@ package gamecheetah.designer.components
 				{
 					// Deselect selected
 					_selected[index] = false;
-					if (_onDeselect) _onDeselect(this, index);
+					if (_onDeselect && invokeCallback) _onDeselect(this, index);
 				}
 				return;  // Skip callback if already selected.
 			}
 			
 			_selected[index] = true;
-			if (_onSelect) _onSelect(this, index);
+			if (_onSelect && invokeCallback) _onSelect(this, index);
 		}
 		
 		public function deselectItem(index:int):void 

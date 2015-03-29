@@ -92,13 +92,11 @@ package gamecheetah.designer.components
 			{
 				_editInput = new TextInput(this, width, 25, onEdit);
 				_editInput.background = false;
-				_editInput.move(5, 0);
 				_label = null;
 			}
 			else
 			{
 				_label = new Label(this, _text, Style.FONT_DARK, Label.ALIGN_INNER_LEFT);
-				_label.offset.setTo(5, 0);
 				_editInput = null;
 			}
 		}

@@ -88,6 +88,34 @@ package gamecheetah.designer.views
 			Designer.model.bind("selectedSpace", this, true);
 		}
 		
+		override public function onActivate():void 
+		{
+			hideBounds();
+			hideClassesList();
+			hideStartLocationList();
+		}
+		
+		override public function onUpdate():void 
+		{
+			var stageWidth:int = Engine.buffer.width;
+			var stageHeight:int = Engine.buffer.height;
+			
+			_classesBtn.move(stageWidth * 0.1 - 16, 10);
+			_boundsBtn.move(stageWidth * 0.367 - 16, 10);
+			_startLocationBtn.move(stageWidth * 0.633 - 16, 10);
+			_backBtn.move(stageWidth * 0.9 - 16, 10);
+			_autoSizeBtn.move(stageWidth * 0.367 - 16, stageHeight - 42);
+			_mouseEnabledBtn.move(stageWidth * 0.633 - 16, stageHeight - 42);
+			
+			_classesList.move(_classesBtn.left, _classesBtn.bottom + 30);
+			_startLocationList.move(_startLocationBtn.left, _startLocationBtn.bottom + 30);
+			
+			_xInput.move(_boundsBtn.left, _boundsBtn.bottom + 30);
+			_yInput.move(_xInput.left, _xInput.bottom + 1);
+			_widthInput.move(_yInput.left, _yInput.bottom + 5);
+			_heightInput.move(_widthInput.left, _widthInput.bottom + 1);
+		}
+		
 		private function classesBtn_Click(b:BaseButton):void 
 		{
 			if (!_classesBtn.frozen)
@@ -125,34 +153,6 @@ package gamecheetah.designer.views
 				hideClassesList();
 			}
 			else hideBounds();
-		}
-		
-		override public function onActivate():void 
-		{
-			hideBounds();
-			hideClassesList();
-			hideStartLocationList();
-		}
-		
-		override public function onUpdate():void 
-		{
-			var stageWidth:int = Engine.buffer.width;
-			var stageHeight:int = Engine.buffer.height;
-			
-			_classesBtn.move(stageWidth * 0.1 - 16, 10);
-			_boundsBtn.move(stageWidth * 0.367 - 16, 10);
-			_startLocationBtn.move(stageWidth * 0.633 - 16, 10);
-			_backBtn.move(stageWidth * 0.9 - 16, 10);
-			_autoSizeBtn.move(stageWidth * 0.1 - 16, stageHeight - 42);
-			_mouseEnabledBtn.move(stageWidth * 0.367 - 16, stageHeight - 42);
-			
-			_classesList.move(_classesBtn.left, _classesBtn.bottom + 30);
-			_startLocationList.move(_startLocationBtn.left, _startLocationBtn.bottom + 30);
-			
-			_xInput.move(_boundsBtn.left, _boundsBtn.bottom + 30);
-			_yInput.move(_xInput.left, _xInput.bottom + 1);
-			_widthInput.move(_yInput.left, _yInput.bottom + 5);
-			_heightInput.move(_widthInput.left, _widthInput.bottom + 1);
 		}
 		
 		private function syInput_Change(t:TextInput):void 
@@ -222,7 +222,6 @@ package gamecheetah.designer.views
 		private function startLocationList_Select(list:List, index:int):void 
 		{
 			list.deselectItem(index);
-			if (index == 0) Designer.model.selectedSpace.resetCamera();
 		}
 		
 		private function hideClassesList():void 

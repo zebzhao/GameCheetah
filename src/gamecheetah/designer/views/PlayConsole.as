@@ -11,11 +11,15 @@ package gamecheetah.designer.views
 	import flash.text.TextFormatAlign;
 	import gamecheetah.designer.components.*;
 	import gamecheetah.*;
+	import gamecheetah.designer.Designer;
 	import flash.utils.getTimer;
 	import flash.system.System;
 	
 	public class PlayConsole extends BaseComponent 
 	{
+		private var
+			_main:MainConsole;
+			
 		private var
 			_playStopBtn:IconToggleButton, _statsBtn:IconButton,
 			_text:Label,
@@ -26,10 +30,11 @@ package gamecheetah.designer.views
 			_time:Number = 0,
 			_fps:int;
 			
-		public function PlayConsole(parent:DisplayObjectContainer) 
+		public function PlayConsole(parent:DisplayObjectContainer, main:MainConsole) 
 		{
+			_main = main;
 			_bgRect = new Rectangle();
-			_playStopBtn = new IconToggleButton(this, Assets.GAME, Assets.EXIT, null, "Run!", "Exit", Label.ALIGN_ABOVE);
+			_playStopBtn = new IconToggleButton(this, Assets.GAME, Assets.EXIT, playStopBtn_Click, "Run!", "Exit", Label.ALIGN_ABOVE);
 			_statsBtn = new IconButton(this, Assets.STATS, statsBtn_Click, "Stats", Label.ALIGN_ABOVE);
 			_text = new Label(this, "", Style.FONT_BASE, null, TextFormatAlign.LEFT);
 			super(parent);
@@ -39,6 +44,7 @@ package gamecheetah.designer.views
 		
 		override public function onActivate():void 
 		{
+			_statsBtn.unfreeze();
 			this.graphics.clear();
 			_bgRect.setEmpty();
 			_text.hide();
@@ -62,7 +68,7 @@ package gamecheetah.designer.views
 				_text.text += "\nRendered: " + Engine.space.screenCount.toString() + " / " +  Engine.space.totalEntities +
 					"\nMEM: " + Number(System.totalMemory / 1024 / 1024).toFixed(2) + " MB\nFPS: " + _fps;
 				_text.text += "\nPixel-CD: " + Engine.space.totalPixelCollisionChecks + " / " + Engine.space.totalCollisionChecks +
-					"\nQt-Bins: Max=" + qtStats[0] + ",  Mean=" + qtStats[1] + ",  Std=" + qtStats[2];
+					"\nQt-Bins: Max=" + int(qtStats[0]) + ",  Mean=" + int(qtStats[1]) + ",  Std=" + int(qtStats[2]);
 				_text.move(_statsBtn.left, _statsBtn.top - _text.height - 35);
 				
 				if (_bgRect.width < _text.width || _bgRect.height < _text.height)
@@ -84,6 +90,22 @@ package gamecheetah.designer.views
 			else _framesElapsed ++;
 		}
 		
+		//{ ------------------------------------ Component event handlers ------------------------------------
+		
+		private function playStopBtn_Click(b:IconToggleButton):void 
+		{
+			if (b.selected)
+			{
+				Designer.play();
+				_main.removeConsoles();
+			}
+			else
+			{
+				Designer.stop();
+				this.parent.addChild(_main);
+			}
+		}
+		
 		private function statsBtn_Click(b:BaseButton):void 
 		{
 			if (_statsBtn.frozen)
@@ -97,6 +119,7 @@ package gamecheetah.designer.views
 			{
 				_statsBtn.freeze();
 				_text.show();
+				this.bringToFront();
 			}
 		}
 		

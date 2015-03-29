@@ -19,9 +19,9 @@ package gamecheetah.designer.components
 		{
 			_width = width;
 			_height = height;
-			if (parent) parent.addChild(this);
 			this.addEventListener(Event.ADDED_TO_STAGE, _onStageEnter);
 			this.addEventListener(Event.REMOVED_FROM_STAGE, _onStageExit);
+			if (parent) parent.addChild(this);
 		}
 			
 		//{ ------------------- Public Properties -------------------

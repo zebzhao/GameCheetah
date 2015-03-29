@@ -191,7 +191,7 @@ package gamecheetah.graphics
 				{
 					var buffer:BitmapData = new BitmapData(_buffer.width, _buffer.height, true, 0);
 					buffer.copyPixels(_buffer, clipping != null ? clipping : _buffer.rect, new Point, alphaMask, null, true);
-					Renderable.draw(buffer, target, _point, rotation, transformAnchor, alpha, scaleX, scaleY, tint, tintAlpha, smoothing, clipping);
+					Renderable.draw(_buffer, target, _point, rotation, transformAnchor, alpha, scaleX, scaleY, tint, tintAlpha, smoothing, clipping);
 				}
 			}
 			else target.copyPixels(_buffer, clipping != null ? clipping : _buffer.rect, _point, alphaMask, null, true);

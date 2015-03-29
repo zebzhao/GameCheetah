@@ -85,7 +85,7 @@ package gamecheetah.designer.views
 		{
 			_graphicConsole = new GraphicConsole(null, this);
 			_spaceConsole = new SpaceConsole(null, this);
-			_playConsole = new PlayConsole(parent);
+			_playConsole = new PlayConsole(parent, this);
 			_spaceCanvas = new SpaceCanvas(this);
 			
 			_gridWidthInput = new TextInput(this, 100, 25, gridWidthInput_Change, "Grid Width", TextInput.TYPE_UINT);
@@ -122,6 +122,13 @@ package gamecheetah.designer.views
 			super(parent);
 		}
 		
+		public function removeConsoles():void 
+		{
+			if (this.parent) this.parent.removeChild(this);
+			if (_spaceConsole.parent) _spaceConsole.parent.removeChild(_spaceConsole);
+			if (_graphicConsole.parent) _graphicConsole.parent.removeChild(_graphicConsole);
+		}
+		
 		//}
 		//{ ------------------------------------ Behaviour Overrides ------------------------------------
 		
@@ -132,11 +139,6 @@ package gamecheetah.designer.views
 			hideSpaceList();
 			hideSettings();
 			onUpdate();
-		}
-		
-		override public function onDeactivate():void 
-		{
-			this.parent.removeChild(_playConsole);
 		}
 		
 		override public function onUpdate():void 

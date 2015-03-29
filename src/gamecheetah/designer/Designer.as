@@ -32,9 +32,7 @@ package gamecheetah.designer
 	{
 		public static var main:MainConsole;
 		public static var model:DesignerModel;
-		
 		public static var context:Dictionary;
-		public static var instance:Designer;
 		
 		/**
 		 * Temporary storage for deleted spaces in case they need to be recovered.
@@ -71,21 +69,12 @@ package gamecheetah.designer
 		{	
 			trace("Compiling in developer mode.")
 			
-			instance = this;
-			
-			addListeners();
-			
 			// Start the engine paused and in design mode
 			Engine.main.paused = true;
 			Engine._designMode = true;
 			Input._eventsEnabled = false;
 			
-			model = new DesignerModel();
-			context = new Dictionary();
-						// Set up scroller.
-			scroller = new Scroller(0.1, 1.5, null, Scroller.ARROW_KEYS);
-			
-			// Create space for sandbox
+			// Create an empty space if none currently exists.
 			if (Engine.assets.spaces.length == 0)
 			{
 				var newSpace:Space = Engine.createSpace("Space", Engine.stage.stageWidth, Engine.stage.stageHeight);
@@ -93,9 +82,14 @@ package gamecheetah.designer
 				Engine.swapSpace(newSpace);
 			}
 			
+			model = new DesignerModel();
+			context = new Dictionary();
+			scroller = new Scroller(0.1, 1.5, Engine.space.camera, Scroller.ARROW_KEYS);
 			main = new MainConsole(this);
 			
 			super(parent);
+			
+			addListeners();
 		}
 		
 		private function addListeners():void 
@@ -111,10 +105,6 @@ package gamecheetah.designer
 		{
 			model.update("errorMessage", msg);
 		}
-		
-		
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//{ Event listeners
 		
 		/**
 		 * Event handler to test-play the Engine.
@@ -462,6 +452,40 @@ package gamecheetah.designer
 		}
 		
 		/**
+		 * Gets the unscaled collision mask for the current frame of the selected Graphic.
+		 */
+		public static function getUnscaledCollisionMask():*
+		{
+			var selectedGraphic:Graphic = model.selectedGraphic;
+			var frameMask:* = selectedGraphic._frameMasks[selectedGraphic.alwaysUseDefaultMask ? 0 : model.activeClip.frame];
+			return frameMask;
+		}
+		
+		/**
+		 * Gets the collision mask for the current frame of the selected Graphic.
+		 */
+		public static function getCollisionMask():*
+		{
+			var selectedGraphic:Graphic = model.selectedGraphic;
+			return selectedGraphic.master._getMask();
+		}
+		
+		/**
+		 * Sets the collision mask for the current frame of the selected Graphic.
+		 */
+		public static function setCollisionMask(value:*):void 
+		{
+			var selectedGraphic:Graphic = model.selectedGraphic;
+			var selectedFrame:int = selectedGraphic.alwaysUseDefaultMask ? 0 : model.activeClip.frame;
+			
+			// Some sanity checks!
+			if (selectedGraphic.frameCount <= selectedFrame || selectedFrame < 0)
+				throw new DesignerError("index error: trying to set a mask frame out of bounds!");
+				
+			selectedGraphic._frameMasks[selectedFrame] = value;
+		}
+		
+		/**
 		 * Handles a request to update the image of a Graphic.
 		 * Does not need to be called to update animations.
 		 */
@@ -471,9 +495,7 @@ package gamecheetah.designer
 			
 			// Assign new bitmap data object to Graphic.
 			model.selectedGraphic.spritesheet = bmd;
-			
-			var clip:Clip = model.selectedGraphic.newRenderable() as Clip;
-			model.update("activeClip", clip, true);
+			selectGraphic( -1);
 		}
 		
 		/**
@@ -606,8 +628,7 @@ package gamecheetah.designer
 		{
 			var bm:Bitmap = e.currentTarget.loader.content as Bitmap;
 			bm.bitmapData.colorTransform(bm.bitmapData.rect, generateTintTransform(0xff0000, 1));
-			model.selectedGraphic._frameMasks[model.selectedMaskFrame] = bm.bitmapData;
-			Designer.model.update("selectedMaskFrame", model.selectedMaskFrame, true);
+			setCollisionMask(bm.bitmapData);
 		}
 		
 		private static function onMaskLoadError(e:IOErrorEvent):void 
@@ -672,5 +693,5 @@ class Events
 	public static const instance:Events = new Events();
 	
 	public const E_PLAY_ENGINE:String = "play engine";
-	public const E_STOP_ENGINE:String = "stop engin";
+	public const E_STOP_ENGINE:String = "stop engine";
 }
