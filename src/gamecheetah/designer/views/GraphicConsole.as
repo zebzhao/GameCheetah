@@ -16,7 +16,6 @@ package gamecheetah.designer.views
 	import gamecheetah.designer.DesignerError;
 	import gamecheetah.graphics.*;
 	import gamecheetah.namespaces.*;
-	import gamecheetah.utils.ArrayUtils;
 	import gamecheetah.utils.GCError;
 	
 	use namespace hidden;
@@ -28,7 +27,7 @@ package gamecheetah.designer.views
 			
 		private var _zoomFactor:Number = 1;
 		private var _mousePos:Point = new Point();
-			
+		
 		private var
 			_drawRect:Boolean,
 			_drawBitmap:Boolean,
@@ -42,8 +41,8 @@ package gamecheetah.designer.views
 			_playBtn:IconToggleButton, _prevFrameBtn:IconButton, _nextFrameBtn:IconButton, _loopBtn:IconButton,
 			_entityContainer:ZoomPanel, _zoomFactorLbl:Label,
 			_spriteSheetBtn:IconButton, _maskBtn:IconButton, _viewBtn:IconButton, _toolsBtn:IconButton,
-			_frameSlider:Slider,
-			_frameInput:TextInput, _rateInput:TextInput,
+			_framesSlider:Slider,
+			_framesInput:TextInput, _rateInput:TextInput,
 			_rowsInput:TextInput, _columnsInput:TextInput;
 		
 		//{ ------------------------------------ Property bindings ------------------------------------
@@ -59,7 +58,9 @@ package gamecheetah.designer.views
 			// Select collision groups
 			for (var i:uint = 0; i < _collisionsList.items.length; i++)
 				if (((1 << i) & value.action) != 0)
-					_collisionsList.selectItem(i);
+					_collisionsList.selectItem(i, false);
+				else
+					_collisionsList.deselectItem(i, false);
 					
 			// Set spritesheet options
 			if (!value.hasSpritesheet) _entityContainer.content = null;
@@ -70,20 +71,27 @@ package gamecheetah.designer.views
 		public function get animationsList():Array { return null };
 		public function set animationsList(value:Array):void
 		{
-			if (!value) return;
-			_animationsList.items = value;
+			_animationsList.items = value ? value : [];
 		}
 		
 		public function get selectedAnimation():Animation { return null };
 		public function set selectedAnimation(value:Animation):void
 		{
-			if (!value) return;
+			if (!value)
+			{
+				_animationsList.deselectAll(false);
+				_framesInput.text = "";
+				_framesSlider.setBounds(0, 1, 1);
+				_rateInput.text = "";
+				_loopBtn.unfreeze();
+				return;
+			}
 			
 			Designer.model.activeClip.play(value.tag, true);
 			
 			_animationsList.selectItem(Designer.model.selectedGraphic.animations.indexOfKey(value.tag));
-			_frameInput.text = value.frames.toString();
-			_frameSlider.setBounds(0, value.frames.length - 1, 1);
+			_framesInput.text = value.frames.toString();
+			_framesSlider.setBounds(0, value.frames.length - 1, 1);
 			_rateInput.text = (value.frameRate * 100).toString();
 			
 			if (value.looping) _loopBtn.freeze();
@@ -123,9 +131,9 @@ package gamecheetah.designer.views
 			_rateUpBtn = new IconButton(this, Assets.ARROW_UP, rateUpBtn_Click, "", Label.ALIGN_RIGHT);
 			_rateDownBtn = new IconButton(this, Assets.ARROW_DOWN, rateDownBtn_Click, "", Label.ALIGN_RIGHT);
 			
-			_frameSlider = new Slider(this, 250, 8, Slider.HORIZONTAL, 0, 0, 1, frameSlider_Slide);
-			_frameInput = new TextInput(this, 195, 25, frameInput_Change, "Frame Sequence", TextInput.TYPE_UINT_VECTOR);
-			_frameInput.setHint("Animation Sequence", Label.ALIGN_BELOW);
+			_framesSlider = new Slider(this, 250, 8, Slider.HORIZONTAL, 0, 0, 1, framesSlider_Slide);
+			_framesInput = new TextInput(this, 195, 25, framesInput_Change, "Frame Sequence", TextInput.TYPE_UINT_VECTOR);
+			_framesInput.setHint("Animation Sequence", Label.ALIGN_BELOW);
 			_rateInput = new TextInput(this, 50, 25, rateInput_Change, "Rate", TextInput.TYPE_UINT);
 			_rateInput.setHint("Playback Rate", Label.ALIGN_BELOW);
 			_rateInput.minimum = 0;  _rateInput.maximum = 100;
@@ -144,7 +152,7 @@ package gamecheetah.designer.views
 			_viewList.multiselect = true;
 			_viewList.selectItem(0);
 			_spriteSheetList = new List(this, ["Browse...", "Discard", "", ""], 4, 100, 25, spriteSheetList_Select, null, null, null, null, false, false, false);
-			_toolsList = new List(this, ["Single Mask", "Load...", "Draw", "Erase", "Fill", "Clear"], 6, 100, 25, toolsList_Select, null, null, null, null, false, false, false);
+			_toolsList = new List(this, [], 6, 100, 25, toolsList_Select, null, null, null, null, false, false, false);
 			_toolsList.multiselect = true;
 			
 			_spriteSheetList.getListItem(2).editable = true;
@@ -202,17 +210,17 @@ package gamecheetah.designer.views
 
 			_entityContainer.move(stageWidth * 0.5 - 125, stageHeight * 0.5 - 160);
 			
-			_frameInput.move(_entityContainer.left, _entityContainer.bottom + 100);
-			_frameSlider.move(_frameInput.left, _frameInput.top - 15);
-			_rateInput.move(_frameInput.right + 5, _frameInput.top);
+			_framesInput.move(_entityContainer.left, _entityContainer.bottom + 100);
+			_framesSlider.move(_framesInput.left, _framesInput.top - 15);
+			_rateInput.move(_framesInput.right + 5, _framesInput.top);
 			_rateUpBtn.move(_rateInput.right + 1, _rateInput.top);
 			_rateDownBtn.move(_rateInput.right + 1, _rateInput.top + 12);
 			
-			var sliderWidth:Number = _frameSlider.width - 32;
-			_playBtn.move(_frameSlider.left, _frameSlider.top - 40);
-			_prevFrameBtn.move(_frameSlider.left + sliderWidth * 0.33, _frameSlider.top - 40);
-			_nextFrameBtn.move(_frameSlider.left + sliderWidth * 0.66, _frameSlider.top - 40);
-			_loopBtn.move(_frameSlider.left + sliderWidth, _frameSlider.top - 40);
+			var sliderWidth:Number = _framesSlider.width - 32;
+			_playBtn.move(_framesSlider.left, _framesSlider.top - 40);
+			_prevFrameBtn.move(_framesSlider.left + sliderWidth * 0.33, _framesSlider.top - 40);
+			_nextFrameBtn.move(_framesSlider.left + sliderWidth * 0.66, _framesSlider.top - 40);
+			_loopBtn.move(_framesSlider.left + sliderWidth, _framesSlider.top - 40);
 			
 			_maskBtn.move(_columnsInput.right + 15, _columnsInput.top);
 			_masksList.move(_maskBtn.left, _maskBtn.bottom + 1);
@@ -232,7 +240,7 @@ package gamecheetah.designer.views
 			{
 				// Update frame slider position
 				var activeClip:Clip = Designer.model.activeClip;
-				_frameSlider.setValue(activeClip.index);
+				_framesSlider.setValue(activeClip.index);
 				
 				// Update playback button
 				_playBtn.selected = activeClip.paused || activeClip.completed;
@@ -252,6 +260,10 @@ package gamecheetah.designer.views
 				else
 					throw new DesignerError("unrecognized frame mask found!");
 					
+				// Show extra options when editing Bitmap
+				_toolsList.items = _masksList.selectedIndex == 3 ? ["Single Mask", "Load...", "Draw", "Erase", "Fill", "Clear"] : ["Single Mask"];
+				_toolsList.selected[0] = Designer.model.selectedGraphic.alwaysUseDefaultMask;
+				
 				var currentPos:Point = new Point(
 					int((_entityContainer.mouseX - _entityContainer.contentOffset.x) / _entityContainer.contentScale),
 					int((_entityContainer.mouseY - _entityContainer.contentOffset.y) / _entityContainer.contentScale));
@@ -283,11 +295,17 @@ package gamecheetah.designer.views
 		
 		private function toolsList_Select(l:List, index:int):void 
 		{
-			l.deselectItem(1);
-			l.deselectItem(2);
-			l.deselectItem(3);
-			l.deselectItem(4);
-			l.deselectItem(5);
+			if (l.items.length >= 6)
+			{
+				l.deselectItem(1);
+				l.deselectItem(2);
+				l.deselectItem(3);
+				l.deselectItem(4);
+				l.deselectItem(5);
+			}
+			
+			// Sanity checks
+			if (!Designer.model.activeClip) return;
 			
 			if (index == 0)
 			{
@@ -398,14 +416,20 @@ package gamecheetah.designer.views
 		
 		private function nextFrameBtn_Click(b:BaseButton):void 
 		{
-			Designer.model.activeClip.paused = true;
-			Designer.model.activeClip.index = Designer.model.activeClip.index + 1;
+			if (Designer.model.activeClip)
+			{
+				Designer.model.activeClip.paused = true;
+				Designer.model.activeClip.index = Designer.model.activeClip.index + 1;
+			}
 		}
 		
 		private function prevFrameBtn_Click(b:BaseButton):void 
 		{
-			Designer.model.activeClip.paused = true;
-			Designer.model.activeClip.index = Designer.model.activeClip.index - 1;
+			if (Designer.model.activeClip)
+			{
+				Designer.model.activeClip.paused = true;
+				Designer.model.activeClip.index = Designer.model.activeClip.index - 1;
+			}
 		}
 		
 		private function rateDownBtn_Click(b:BaseButton):void 
@@ -429,29 +453,38 @@ package gamecheetah.designer.views
 		
 		private function loopBtn_Click(b:BaseButton):void 
 		{
-			Designer.model.selectedAnimation.looping = !Designer.model.selectedAnimation.looping;
-			if (Designer.model.selectedAnimation.looping) _loopBtn.freeze();
-			else _loopBtn.unfreeze();
+			if (Designer.model.selectedAnimation)
+			{
+				Designer.model.selectedAnimation.looping = !Designer.model.selectedAnimation.looping;
+				if (Designer.model.selectedAnimation.looping) _loopBtn.freeze();
+				else _loopBtn.unfreeze();
+			}
 		}
 		
 		private function playBtn_Click(b:IconToggleButton):void 
 		{
-			if (!b.selected)
+			if (Designer.model.activeClip)
 			{
-				// Pause playback
-				Designer.model.activeClip.paused = true;
-			}
-			else if (Designer.model.selectedAnimation && Designer.model.activeClip)
-			{
-				// Resume playback from current frame
-				Designer.model.activeClip.paused = false;
-				Designer.model.activeClip.play(Designer.model.selectedAnimation.tag, Designer.model.activeClip.completed);
+				if (!b.selected)
+				{
+					// Pause playback
+					Designer.model.activeClip.paused = true;
+				}
+				else if (Designer.model.selectedAnimation)
+				{
+					// Resume playback from current frame
+					Designer.model.activeClip.paused = false;
+					Designer.model.activeClip.play(Designer.model.selectedAnimation.tag, Designer.model.activeClip.completed);
+				}
 			}
 		}
 		
 		private function rateInput_Change(t:TextInput):void 
 		{
-			Designer.model.selectedAnimation.frameRate = t.value / t.maximum;
+			if (Designer.model.selectedAnimation)
+			{
+				Designer.model.selectedAnimation.frameRate = t.value / t.maximum;
+			}
 		}
 		
 		private function columnsInput_Change(t:TextInput):void 
@@ -468,15 +501,18 @@ package gamecheetah.designer.views
 			Designer.model.update("activeClip", Designer.model.selectedGraphic.newRenderable() as Clip, true);
 		}
 		
-		private function frameSlider_Slide(s:Slider):void 
+		private function framesSlider_Slide(s:Slider):void 
 		{
-			Designer.model.activeClip.paused = true;
-			Designer.model.activeClip.index = s.value;
+			if (Designer.model.activeClip)
+			{
+				Designer.model.activeClip.paused = true;
+				Designer.model.activeClip.index = s.value;
+			}
 		}
 		
-		private function frameInput_Change(t:TextInput):void 
+		private function framesInput_Change(t:TextInput):void 
 		{
-			Designer.model.selectedAnimation.frames = t.value;
+			Designer.updateAnimationFrames(t.value);
 		}
 		
 		private function addAnimationBtn_Click(b:BaseButton):void 
@@ -518,7 +554,7 @@ package gamecheetah.designer.views
 		
 		private function viewBtn_Click(b:IconButton):void 
 		{
-			if (!b.frozen)
+			if (!b.frozen && Designer.model.activeClip)
 			{
 				hideAllDropDowns();
 				b.freeze();
@@ -529,11 +565,8 @@ package gamecheetah.designer.views
 		
 		private function toolBtn_Click(b:IconButton):void 
 		{
-			if (!b.frozen)
+			if (!b.frozen && Designer.model.activeClip)
 			{
-				// Show extra options when in edit Bitmap mode
-				_toolsList.visibleItems = _masksList.selectedIndex == 3 ? 6 : 1;
-				
 				hideAllDropDowns();
 				b.freeze();
 				_toolsList.show();
@@ -543,7 +576,7 @@ package gamecheetah.designer.views
 		
 		private function maskBtn_Click(b:IconButton):void 
 		{
-			if (!b.frozen)
+			if (!b.frozen && Designer.model.activeClip)
 			{
 				hideAllDropDowns();
 				b.freeze();
@@ -589,6 +622,9 @@ package gamecheetah.designer.views
 		
 		private function masksList_Select(list:List, index:int):void 
 		{
+			// Sanity checks.
+			if (!Designer.model.selectedGraphic.hasSpritesheet) return;
+			
 			// Update collision masks for the selected Graphic object.
 			if (index == 0)
 			{
@@ -622,7 +658,8 @@ package gamecheetah.designer.views
 		private function collisionsList_Deselect(list:List, index:int):void 
 		{
 			var className:String = String(list.items[index]);
-			ArrayUtils.removeItem(className, Designer.model.selectedGraphic._collideWith);
+			var collideWith:Array = Designer.model.selectedGraphic._collideWith;
+			collideWith.splice(collideWith.indexOf(className), 1);
 			
 			// Recalculate action mask
 			Designer.model.selectedGraphic.calculateActionMask();

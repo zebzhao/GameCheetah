@@ -250,7 +250,7 @@ package gamecheetah
 				if (collisionIndex == -1) _collideWith.splice(collisionIndex, 1);
 				else
 				{
-					_action |= 1 << (collisionIndex + 1);
+					_action |= 1 << collisionIndex;
 					i++;
 				}
 			}
@@ -293,6 +293,8 @@ package gamecheetah
 			_hasSpritesheet = true;
 			// Update frame size.
 			_frameRect.setTo(0, 0, frameWidth, frameHeight);
+			
+			this.master.renderable = newRenderable();
 		}
 		
 		/**

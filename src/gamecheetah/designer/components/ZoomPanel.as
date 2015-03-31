@@ -135,7 +135,8 @@ class BackgroundStamp extends Renderable
 		clear();
 		
 		// Draw clip. Tricky: Render without transformAnchor or else scroll coordinates need to be offset!
-		_point.setTo(-scrollX + offsetX, -scrollY + offsetY);
+		_point.setTo( -scrollX + offsetX, -scrollY + offsetY);
+		
 		Renderable.draw(
 			entity.clip.buffer, this.buffer, _point,
 			entity.clip.rotation, _zero,

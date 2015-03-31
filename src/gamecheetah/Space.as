@@ -58,7 +58,11 @@ package gamecheetah
 		}
 		hidden function set _exportableEntities(value:Array):void
 		{
+			this.removeAll();
 			_entities = value;
+			// Add newly set entities
+			for each(var entity:Entity in _entities)
+				this.add(entity);
 		}
 		
 		/**

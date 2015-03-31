@@ -28,12 +28,14 @@ package gamecheetah.designer.components
 		{
 			super.width = value;
 			_handle.updateSize();
+			draw();
 		}
 		
 		override public function set height(value:Number):void 
 		{
 			super.height = value;
 			_handle.updateSize();
+			draw();
 		}
 		
 		//{ ------------------- Public Methods -------------------
@@ -46,6 +48,11 @@ package gamecheetah.designer.components
 			_handle = new SliderHandle(this, 0, 0, orientation, handler);
 			this.setBounds(min, max, handleSpan);
 			super(parent, width, height);
+		}
+		
+		override public function onMouseDown():void 
+		{
+			_handle.dragging = true;
 		}
 		
 		public function setValue(value:int):void 
@@ -61,6 +68,7 @@ package gamecheetah.designer.components
 		public function setBounds(min:int, max:int, handleSpan:uint):void 
 		{
 			_handle.setBounds(min, max, handleSpan);
+			draw();
 		}
 		
 		override public function draw():void 
@@ -82,8 +90,8 @@ class SliderHandle extends PushButton
 	private var _onSlide:Function;
 	private var _orientation:String;
 	
-	private var
-		_dragging:Boolean, _dragOffset:Point = new Point();
+	public var
+		dragging:Boolean, _dragOffset:Point = new Point();
 	
 	private var
 		_max:int, _min:int,
@@ -114,6 +122,7 @@ class SliderHandle extends PushButton
 		_span = handleSpan;
 		
 		updateSize();
+		updatePosition();
 	}
 	
 	public function updateSize():void 
@@ -140,7 +149,7 @@ class SliderHandle extends PushButton
 	
 	override public function onUpdate():void 
 	{
-		if (_dragging)
+		if (dragging)
 		{
 			if (_orientation == Slider.VERTICAL)
 				this.move(0, _parent.mouseY - _dragOffset.y);
@@ -155,7 +164,7 @@ class SliderHandle extends PushButton
 	override public function onMouseDown():void 
 	{
 		super.onMouseDown();
-		_dragging = true;
+		dragging = true;
 		_dragOffset.setTo(_parent.mouseX - this.x, _parent.mouseY - this.y);
 	}
 	
@@ -191,6 +200,6 @@ class SliderHandle extends PushButton
 	
 	private function onStageMouseUp(e:Event):void 
 	{
-		_dragging = false;
+		dragging = false;
 	}
 }

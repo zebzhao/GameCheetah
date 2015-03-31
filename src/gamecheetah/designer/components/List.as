@@ -63,6 +63,7 @@ package gamecheetah.designer.components
 		
 		public function set items(value:Array):void
 		{
+			if (shallowEquals(value, _items)) return;
 			_items = value;
 			_selected.length = _items.length;
 			for (var i:int = 0; i < _selected.length; i++) _selected[i] = false;
@@ -168,11 +169,19 @@ package gamecheetah.designer.components
 			if (_onSelect && invokeCallback) _onSelect(this, index);
 		}
 		
-		public function deselectItem(index:int):void 
+		public function deselectAll(invokeCallback:Boolean=true):void 
 		{
+			_selected.length = _items.length;
+			for (var i:int = 0; i < _selected.length; i ++)
+				deselectItem(i, invokeCallback);
+		}
+		
+		public function deselectItem(index:int, invokeCallback:Boolean=true):void 
+		{
+			_selected.length = _items.length;
 			if (!_selected[index]) return;
 			_selected[index] = false;
-			if (_onDeselect) _onDeselect(this, index);
+			if (_onDeselect && invokeCallback) _onDeselect(this, index);
 		}
 		
 		//}
@@ -241,6 +250,7 @@ package gamecheetah.designer.components
 			}
 			else
 			{
+				_slider.visible = true;
 				_slider.height = this.height;
 				_slider.setBounds(0, items.length, Math.min(items.length, _visibleItems));
 			}
@@ -269,6 +279,18 @@ package gamecheetah.designer.components
 				_listItems.push(listItem); 
 			}
 			onUpdate();
+		}
+		
+		public static function shallowEquals(array1:Array, array2:Array):Boolean 
+		{
+			// compare lengths - can save a lot of time 
+			if (array1 == null || array2 == null || array1.length != array2.length)
+				return false;
+
+			for (var i:int = 0; i < array1.length; i++)
+				if (array1[i] != array2[i]) return false;
+			
+			return true;
 		}
 	}
 }

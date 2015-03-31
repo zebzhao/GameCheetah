@@ -54,12 +54,16 @@ package gamecheetah.designer.views
 			var spaceContext:Object = Designer.getDesignerContextSetting("SPACE::" + Engine.space.tag);
 			if (spaceContext)
 			{
-				_spaceCanvas.gridW = spaceContext["gridW"];
-				_spaceCanvas.gridH = spaceContext["gridH"];
-				_spaceCanvas.gridSnapping = spaceContext["gridSnapping"];
-				_gridWidthInput.text = _spaceCanvas.gridW.toString();
-				_gridHeightInput.text = _spaceCanvas.gridH.toString();
-				_snapToGridBtn.selected = _spaceCanvas.gridSnapping;
+				_gridWidthInput.text = spaceContext["gridW"];
+				_gridHeightInput.text = spaceContext["gridH"];
+				_snapToGridBtn.selected = _spaceCanvas.gridSnapping = spaceContext["gridSnapping"];
+			}
+			else
+			{
+				// Defaults
+				_gridWidthInput.text = "1";
+				_gridHeightInput.text = "1";
+				_snapToGridBtn.selected = false;
 			}
 		}
 		
@@ -234,6 +238,7 @@ package gamecheetah.designer.views
 			{
 				this.parent.addChild(_spaceConsole);
 				this.parent.removeChild(this);
+				_playConsole.bringToFront();
 			}
 		}
 		
@@ -243,6 +248,7 @@ package gamecheetah.designer.views
 			{
 				this.parent.addChild(_graphicConsole);
 				this.parent.removeChild(this);
+				_playConsole.bringToFront();
 			}
 		}
 		

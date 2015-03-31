@@ -119,7 +119,6 @@ package gamecheetah.designer.views
 			{
 				_statsBtn.freeze();
 				_text.show();
-				this.bringToFront();
 			}
 		}
 		

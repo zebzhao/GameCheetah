@@ -38,7 +38,8 @@ package gamecheetah.designer.components
 		public static const TYPE_STRING:String = "string";
 		public static const TYPE_INT:String = "int";
 		public static const TYPE_UINT:String = "uint";
-		public static const TYPE_UINT_VECTOR:String = "vector<uint>";
+		public static const TYPE_UINT_VECTOR:String = "vector<+int>";
+		public static const TYPE_INT_VECTOR:String = "vector<int>";
 	
 		public var value:*;
 		public var maximum:Number = 999999999;
@@ -49,7 +50,8 @@ package gamecheetah.designer.components
 		{
 			if (value == _text) return;
 			super.text = value;
-			onTextChange(null);
+			onTextChange();
+			checkEmpty();
 		}
 		
 		public function get background():Boolean 
@@ -75,6 +77,7 @@ package gamecheetah.designer.components
 			if (_type == TYPE_INT) _field.restrict = "0-9\\-";
 			else if (_type == TYPE_UINT) _field.restrict = "0-9";
 			else if (_type == TYPE_UINT_VECTOR) _field.restrict = "0-9,";
+			else if (_type == TYPE_INT_VECTOR) _field.restrict = "0-9,\\-";
 			else if (_type != TYPE_STRING) throw new GCError("unrecognized input type option");
 		}
 		
@@ -219,18 +222,23 @@ package gamecheetah.designer.components
 		private function onFocusOut(e:Event):void 
 		{
 			checkEmpty();
+			_field.text = text;
 			_focused = false;
 			draw();
 		}
 		
-		private function onTextChange(e:Event):void 
+		private function onTextChange(e:Event=null):void 
 		{
-			this.value = parseText(text);
+			this.value = parseText(_field.text);
 			
 			_invalid = this.value == null;
 			_focused = Engine.stage.focus == _field;
 			
-			if (!_invalid && onChange) onChange(this);
+			if (!_invalid)
+			{
+				super.text = value;
+				if (onChange) onChange(this);
+			}
 			
 			draw();
 		}
@@ -254,7 +262,7 @@ package gamecheetah.designer.components
 			{
 				return validateNumber(input) ? int(input) : null;
 			}
-			else if (_type == TYPE_UINT_VECTOR)
+			else if (_type == TYPE_UINT_VECTOR || _type == TYPE_INT_VECTOR)
 			{
 				var i:uint, elem:String;
 				var vector:Vector.<int> = new Vector.<int>;

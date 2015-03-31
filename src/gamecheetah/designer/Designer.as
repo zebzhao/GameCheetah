@@ -279,6 +279,7 @@ package gamecheetah.designer
 			var graphic:Graphic = index != -1 ? Engine.assets.graphics.getAt(index) : model.selectedGraphic;
 			model.update("selectedGraphic", graphic, true);
 			model.update("animationsList", null, true);
+			model.update("activeClip", null, true);
 			model.update("selectedAnimation", graphic.animations.length > 0 ? graphic.animations.getAt(0) as Animation : null, true);
 		}
 		
@@ -475,6 +476,9 @@ package gamecheetah.designer
 		 */
 		public static function setCollisionMask(value:*):void 
 		{
+			// Sanity checks.
+			if (!model.activeClip) return;
+			
 			var selectedGraphic:Graphic = model.selectedGraphic;
 			var selectedFrame:int = selectedGraphic.alwaysUseDefaultMask ? 0 : model.activeClip.frame;
 			
@@ -508,6 +512,17 @@ package gamecheetah.designer
 			scroller.scrollBounds.offset( -Engine.buffer.width / 2, -Engine.buffer.height / 2);
 			scroller.setTo(scroller.point.x, scroller.point.y);
 			model.update("activeSpace", model.activeSpace, true);
+		}
+		
+		/**
+		 * Sets the frame sequence for the current animation.
+		 */
+		public static function updateAnimationFrames(value:Vector.<int>):void 
+		{
+			// Some sanity checks
+			if (!model.selectedAnimation) return;
+			model.selectedAnimation.frames = value;
+			model.update("selectedAnimation", model.selectedAnimation, true);
 		}
 		
 		/**
