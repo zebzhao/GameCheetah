@@ -267,6 +267,9 @@ package gamecheetah
 				_frameMasks.length = 0;
 				_hasSpritesheet = false;
 				_frameRect.setTo(0, 0, 0, 0);
+				
+				this.master.renderable = null;
+				
 				return;
 			}
 			

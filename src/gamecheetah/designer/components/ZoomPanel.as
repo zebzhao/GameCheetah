@@ -15,20 +15,17 @@ package gamecheetah.designer.components
 	{
 		private var
 			_hSlider:Slider, _vSlider:Slider,
-			_width:int, _height:int,
 			_stamp:BackgroundStamp,
 			_content:Entity,
 			_contentScale:Number = 1;
 			
 		public var drawMask:Boolean;
 			
-		public function ZoomPanel(parent:DisplayObjectContainer, entity:Entity, width:uint, height:uint) 
+		public function ZoomPanel(parent:BaseComponent, entity:Entity, width:uint, height:uint) 
 		{
-			_width = width;
-			_height = height;
 			_hSlider = new Slider(this, width, 10, Slider.HORIZONTAL, 0, 1, 1, slider_Slide);
 			_vSlider = new Slider(this, 10, height, Slider.VERTICAL, 0, 1, 1, slider_Slide);
-			_stamp = new BackgroundStamp(_width, _height);
+			_stamp = new BackgroundStamp(width, height);
 			
 			this._content = entity;
 			this.addChild(new Bitmap(_stamp.buffer));

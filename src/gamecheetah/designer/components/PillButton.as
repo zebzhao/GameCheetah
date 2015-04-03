@@ -6,9 +6,7 @@
  */
 package gamecheetah.designer.components 
 {
-	import flash.display.DisplayObjectContainer;
 	import flash.utils.Dictionary;
-	import gamecheetah.Space;
 	
 	public class PillButton extends PushButton 
 	{
@@ -20,7 +18,7 @@ package gamecheetah.designer.components
 		public var selected:Boolean;
 		public var togglable:Boolean;
 		
-		public function PillButton(	parent:DisplayObjectContainer, width:int = 100, height:int = 25,
+		public function PillButton(	parent:BaseComponent, width:int = 100, height:int = 25,
 									text:String=null, handler:Function=null, group:String="", togglable:Boolean=false ) 
 		{
 			super(parent, width, height, text, handler, Style.FONT_HEADER);

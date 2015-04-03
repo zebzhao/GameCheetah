@@ -27,7 +27,8 @@ package gamecheetah.designer.views
 			_sxInput:TextInput, _syInput:TextInput,
 			_mouseEnabledBtn:IconButton, _autoSizeBtn:IconButton;
 			
-			
+		//{ ------------------------------------ Property bindings ------------------------------------
+		
 		public function get selectedSpace():Space { return null };
 		public function set selectedSpace(value:Space):void 
 		{
@@ -46,6 +47,9 @@ package gamecheetah.designer.views
 			
 			else _mouseEnabledBtn.unfreeze();
 		}
+		
+		//}
+		//{ ------------------------------------ Constructor ------------------------------------
 		
 		public function SpaceConsole(parent:DisplayObjectContainer, main:MainConsole) 
 		{
@@ -88,6 +92,9 @@ package gamecheetah.designer.views
 			Designer.model.bind("selectedSpace", this, true);
 		}
 		
+		//}
+		//{ ------------------------------------ Behavior Overrides ------------------------------------
+		
 		override public function onActivate():void 
 		{
 			hideBounds();
@@ -115,6 +122,9 @@ package gamecheetah.designer.views
 			_widthInput.move(_yInput.left, _yInput.bottom + 5);
 			_heightInput.move(_widthInput.left, _widthInput.bottom + 1);
 		}
+		
+		//}
+		//{ ------------------------------------ Event listeners ------------------------------------
 		
 		private function classesBtn_Click(b:BaseButton):void 
 		{

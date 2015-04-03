@@ -9,7 +9,7 @@ https://github.com/honzabrecka/using-ant-to-build-flash
 	<property name="AIR_SDK_HOME" value="C:/AIRSDK_Compiler" />
 	<property name="PLAYER_VERSION" value="11.9" />
 	<property name="SWC_DIR" value="site\downloads" />
-	<property name="ENGINE_VERSION" value="1.1" />
+	<property name="ENGINE_VERSION" value="1.2a" />
 	<property name="DEMOS_DIR" value="site\demos\static" />
     
     <target name="swc" depends="swc-compile-dev, swc-compile-release"/>
@@ -40,7 +40,7 @@ https://github.com/honzabrecka/using-ant-to-build-flash
     
 	<target name="isometric-game-dev">
         <mxmlc failonerror="true" maxmemory="1024m"
-			output="${DEMOS_DIR}\swf\IsometricDemo-dev.swf"
+			output="${DEMOS_DIR}\swf\IsometricDemo-v${ENGINE_VERSION}-dev.swf"
 			file="demos/Isometric Demo/src/Main.as">
 			<compiler.external-library-path dir="${AIR_SDK_HOME}/frameworks/" append="true">
 				<include name="libs/player/${PLAYER_VERSION}/playerglobal.swc" />
@@ -55,7 +55,7 @@ https://github.com/honzabrecka/using-ant-to-build-flash
 	
 	<target name="isometric-game-release">
         <mxmlc failonerror="true" maxmemory="1024m"
-			output="${DEMOS_DIR}\swf\IsometricDemo-release.swf"
+			output="${DEMOS_DIR}\swf\IsometricDemo-v${ENGINE_VERSION}-release.swf"
 			file="demos/Isometric Demo/src/Main.as">
 			<compiler.external-library-path dir="${AIR_SDK_HOME}/frameworks/" append="true">
 				<include name="libs/player/${PLAYER_VERSION}/playerglobal.swc" />
@@ -71,7 +71,7 @@ https://github.com/honzabrecka/using-ant-to-build-flash
 	<target name="demos-src" depends="isometric-game-src"/>
 	
 	<target name="isometric-game-src">
-		<zip destfile="${DEMOS_DIR}\src\isometric-demo.zip">
+		<zip destfile="${DEMOS_DIR}\src\isometric-demo-v${ENGINE_VERSION}.zip">
 			<zipfileset dir="demos\Isometric Demo">
 				<include name="*/"/>
 				<exclude name="bin/" />
@@ -80,7 +80,7 @@ https://github.com/honzabrecka/using-ant-to-build-flash
 			</zipfileset>
 		</zip>
 		
-		<tar destfile="${DEMOS_DIR}\src\isometric-demo.tar">
+		<tar destfile="${DEMOS_DIR}\src\isometric-demo-v${ENGINE_VERSION}.tar">
 			<tarfileset dir="demos\Isometric Demo">
 				<include name="*/"/>
 				<exclude name="bin/" />
@@ -88,6 +88,6 @@ https://github.com/honzabrecka/using-ant-to-build-flash
 				<exclude name="lib/stash/" />
 			</tarfileset>
 		</tar>
-		<gzip destfile="${DEMOS_DIR}\src\isometric-demo.tar.gz" src="${DEMOS_DIR}\src\isometric-demo.tar"/>
+		<gzip destfile="${DEMOS_DIR}\src\isometric-demo-v${ENGINE_VERSION}.tar.gz" src="${DEMOS_DIR}\src\isometric-demo-v${ENGINE_VERSION}.tar"/>
 	</target>
 </project>

@@ -326,6 +326,9 @@ package gamecheetah.designer
 		 */
 		public static function removeEntity():void 
 		{
+			// Sanity checks.
+			if (!model.selectedEntity) return;
+			
 			Engine.space.remove(model.selectedEntity);
 			model.update("selectedEntity", null, true);
 		}

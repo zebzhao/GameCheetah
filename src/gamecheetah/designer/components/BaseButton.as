@@ -7,8 +7,6 @@
 package gamecheetah.designer.components 
 {
 	import flash.display.DisplayObjectContainer;
-	import gamecheetah.graphics.Clip;
-	import gamecheetah.utils.OrderedDict;
 
 	public class BaseButton extends BaseComponent
 	{
@@ -49,22 +47,22 @@ package gamecheetah.designer.components
 		
 		override public function onMouseDown():void 
 		{
-			if (mouseDown) 		mouseDown(this);
+			if (mouseDown != null) 		mouseDown(this);
 		}
 		
 		override public function onMouseUp():void 
 		{
-			if (mouseUp) 			mouseUp(this);
+			if (mouseUp != null) 		mouseUp(this);
 		}
 		
 		override public function onMouseOver():void 
 		{
-			if (mouseOver) 		mouseOver(this);
+			if (mouseOver != null) 		mouseOver(this);
 		}
 		
 		override public function onMouseOut():void 
 		{
-			if (mouseOut)			mouseOut(this);
+			if (mouseOut != null)		mouseOut(this);
 		}
 	}
 }

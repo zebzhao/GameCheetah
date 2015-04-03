@@ -29,6 +29,9 @@ package gamecheetah.designer.views
 		[Embed(source="/../lib/Icons/list-add.png")]
 		public static var ADD:Class;
 		
+		[Embed(source="/../lib/Icons/user-trash.png")]
+		public static var DELETE:Class;
+		
 		[Embed(source="/../lib/Icons/appointment-new.png")]
 		public static var STATS:Class;
 		

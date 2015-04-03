@@ -59,7 +59,6 @@
     <class>gamecheetah.graphics.Clip</class>
     <class>gamecheetah.graphics.Renderable</class>
     <class>gamecheetah.graphics.TextClip</class>
-    <class>gamecheetah.graphics.TextStyle</class>
     <class>gamecheetah.namespaces.hidden</class>
     <class>gamecheetah.strix.collision.Agent</class>
     <class>gamecheetah.strix.collision.Collision</class>
@@ -78,7 +77,6 @@
     <class>gamecheetah.strix.hashtable.error.ParameterError</class>
     <class>gamecheetah.strix.notification.Notification</class>
     <class>gamecheetah.strix.utils.Statistics</class>
-    <class>gamecheetah.utils.ArrayUtils</class>
     <class>gamecheetah.utils.Assets</class>
     <class>gamecheetah.utils.CallbackData</class>
     <class>gamecheetah.utils.ExtraCredits</class>

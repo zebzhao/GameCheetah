@@ -13,11 +13,12 @@ package gamecheetah.designer.components
 		//{ ------------------- Protected/Private Info -------------------
 		
 		protected var	_text:String,
-						_handler:Function,
 						_label:Label,
 						_highlighted:Boolean;
 						
 		//{ ------------------- Public properties -------------------
+		
+		public var onClick:Function;
 		
 		public function get backgroundColor():uint 
 		{
@@ -34,11 +35,11 @@ package gamecheetah.designer.components
 		
 		//{ ------------------- Constructor -------------------
 		
-		public function PushButton(	parent:DisplayObjectContainer, width:int = 100, height:int = 25,
+		public function PushButton(	parent:BaseComponent, width:int = 100, height:int = 25,
 									text:String=null, handler:Function=null, labelColor:uint=0xffffff) 
 		{
 			_text = text;
-			_handler = handler;
+			onClick = handler;
 			
 			this.setUpState(highlight);
 			this.setOverState(highlight);
@@ -55,7 +56,7 @@ package gamecheetah.designer.components
 		override public function onMouseUp():void 
 		{
 			super.onMouseUp();
-			if (_handler) _handler(this);
+			if (onClick != null) onClick(this);
 		}
 		
 		//{ ------------------- Public Methods -------------------

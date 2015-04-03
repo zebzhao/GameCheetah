@@ -8,11 +8,6 @@ package gamecheetah.designer.components
 {
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
-	import flash.display.DisplayObjectContainer;
-	import gamecheetah.designer.views.Assets;
-	import gamecheetah.graphics.Clip;
-	import gamecheetah.Space;
-	import gamecheetah.utils.OrderedDict;
 	
 	public class IconButton extends BaseButton 
 	{
@@ -43,7 +38,7 @@ package gamecheetah.designer.components
 			else if (_hintLabel) this.removeChild(_hintLabel);
 		}
 		
-		public function IconButton(parent:DisplayObjectContainer, asset:*, handler:Function=null, hint:String=null, labelAlign:String=null) 
+		public function IconButton(parent:BaseComponent, asset:*, handler:Function=null, hint:String=null, labelAlign:String=null) 
 		{
 			setIcon(asset);
 			

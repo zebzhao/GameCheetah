@@ -6,11 +6,6 @@
  */
 package gamecheetah.designer.components 
 {
-	import flash.display.Bitmap;
-	import flash.display.DisplayObjectContainer;
-	import gamecheetah.graphics.Clip;
-	import gamecheetah.Space;
-	import gamecheetah.utils.OrderedDict;
 	
 	public class IconToggleButton extends IconButton 
 	{
@@ -39,7 +34,7 @@ package gamecheetah.designer.components
 			else _hintLabel.text = _selected ? _onHint : _offHint;
 		}
 		
-		public function IconToggleButton(	parent:DisplayObjectContainer, offState:Class, onState:Class,
+		public function IconToggleButton(	parent:BaseComponent, offState:Class, onState:Class,
 											handler:Function = null,
 											offHint:String=null, onHint:String=null, labelAlign:String=null ) 
 		{

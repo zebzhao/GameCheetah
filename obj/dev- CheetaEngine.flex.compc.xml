@@ -56,59 +56,24 @@
     <class>gamecheetah.designer.bindlite.Binding</class>
     <class>gamecheetah.designer.bindlite.BindLite</class>
     <class>gamecheetah.designer.bindlite.BindMax</class>
-    <class>gamecheetah.designer.bit101.components.Accordion</class>
-    <class>gamecheetah.designer.bit101.components.CheckBox</class>
-    <class>gamecheetah.designer.bit101.components.ColorChooser</class>
-    <class>gamecheetah.designer.bit101.components.ComboBox</class>
-    <class>gamecheetah.designer.bit101.components.Component</class>
-    <class>gamecheetah.designer.bit101.components.HBox</class>
-    <class>gamecheetah.designer.bit101.components.HRangeSlider</class>
-    <class>gamecheetah.designer.bit101.components.HScrollBar</class>
-    <class>gamecheetah.designer.bit101.components.HSlider</class>
-    <class>gamecheetah.designer.bit101.components.HUISlider</class>
-    <class>gamecheetah.designer.bit101.components.InputText</class>
-    <class>gamecheetah.designer.bit101.components.Label</class>
-    <class>gamecheetah.designer.bit101.components.List</class>
-    <class>gamecheetah.designer.bit101.components.ListItem</class>
-    <class>gamecheetah.designer.bit101.components.NumericStepper</class>
-    <class>gamecheetah.designer.bit101.components.Panel</class>
-    <class>gamecheetah.designer.bit101.components.ProgressBar</class>
-    <class>gamecheetah.designer.bit101.components.PushButton</class>
-    <class>gamecheetah.designer.bit101.components.RadioButton</class>
-    <class>gamecheetah.designer.bit101.components.RangeSlider</class>
-    <class>gamecheetah.designer.bit101.components.ScrollBar</class>
-    <class>gamecheetah.designer.bit101.components.ScrollPane</class>
-    <class>gamecheetah.designer.bit101.components.Slider</class>
-    <class>gamecheetah.designer.bit101.components.Style</class>
-    <class>gamecheetah.designer.bit101.components.Text</class>
-    <class>gamecheetah.designer.bit101.components.TextArea</class>
-    <class>gamecheetah.designer.bit101.components.UISlider</class>
-    <class>gamecheetah.designer.bit101.components.VBox</class>
-    <class>gamecheetah.designer.bit101.components.VRangeSlider</class>
-    <class>gamecheetah.designer.bit101.components.VScrollBar</class>
-    <class>gamecheetah.designer.bit101.components.VSlider</class>
-    <class>gamecheetah.designer.bit101.components.VUISlider</class>
-    <class>gamecheetah.designer.bit101.components.Window</class>
-    <class>gamecheetah.designer.bit101.utils.MinimalConfigurator</class>
-    <class>gamecheetah.designer.views.AnimationEditorView</class>
+    <class>gamecheetah.designer.components.BaseButton</class>
+    <class>gamecheetah.designer.components.BaseComponent</class>
+    <class>gamecheetah.designer.components.IconButton</class>
+    <class>gamecheetah.designer.components.IconToggleButton</class>
+    <class>gamecheetah.designer.components.Label</class>
+    <class>gamecheetah.designer.components.List</class>
+    <class>gamecheetah.designer.components.PillButton</class>
+    <class>gamecheetah.designer.components.PushButton</class>
+    <class>gamecheetah.designer.components.Slider</class>
+    <class>gamecheetah.designer.components.Style</class>
+    <class>gamecheetah.designer.components.TextInput</class>
+    <class>gamecheetah.designer.components.ZoomPanel</class>
     <class>gamecheetah.designer.views.Assets</class>
-    <class>gamecheetah.designer.views.EntityEditorView</class>
-    <class>gamecheetah.designer.views.GraphicEditorView</class>
-    <class>gamecheetah.designer.views.MainView</class>
-    <class>gamecheetah.designer.views.MenuView</class>
-    <class>gamecheetah.designer.views.PlayView</class>
-    <class>gamecheetah.designer.views.SpaceEditorView</class>
-    <class>gamecheetah.designer.views.SpaceView</class>
-    <class>gamecheetah.designer.views.components.AlertWindow</class>
-    <class>gamecheetah.designer.views.components.DialogWindow</class>
-    <class>gamecheetah.designer.views.components.IconPushButton</class>
-    <class>gamecheetah.designer.views.components.ImagePane</class>
-    <class>gamecheetah.designer.views.components.InterfaceGroup</class>
-    <class>gamecheetah.designer.views.components.ItemMenu</class>
-    <class>gamecheetah.designer.views.components.MaskCanvas</class>
-    <class>gamecheetah.designer.views.components.TextWindow</class>
-    <class>gamecheetah.designer.views.components.TypedInput</class>
-    <class>gamecheetah.designer.views.components.ZoomPane</class>
+    <class>gamecheetah.designer.views.GraphicConsole</class>
+    <class>gamecheetah.designer.views.MainConsole</class>
+    <class>gamecheetah.designer.views.PlayConsole</class>
+    <class>gamecheetah.designer.views.SpaceCanvas</class>
+    <class>gamecheetah.designer.views.SpaceConsole</class>
     <class>gamecheetah.gameutils.Data</class>
     <class>gamecheetah.gameutils.Easing</class>
     <class>gamecheetah.gameutils.Input</class>
@@ -118,7 +83,6 @@
     <class>gamecheetah.graphics.Clip</class>
     <class>gamecheetah.graphics.Renderable</class>
     <class>gamecheetah.graphics.TextClip</class>
-    <class>gamecheetah.graphics.TextStyle</class>
     <class>gamecheetah.namespaces.hidden</class>
     <class>gamecheetah.strix.collision.Agent</class>
     <class>gamecheetah.strix.collision.Collision</class>
@@ -137,7 +101,6 @@
     <class>gamecheetah.strix.hashtable.error.ParameterError</class>
     <class>gamecheetah.strix.notification.Notification</class>
     <class>gamecheetah.strix.utils.Statistics</class>
-    <class>gamecheetah.utils.ArrayUtils</class>
     <class>gamecheetah.utils.Assets</class>
     <class>gamecheetah.utils.CallbackData</class>
     <class>gamecheetah.utils.ExtraCredits</class>

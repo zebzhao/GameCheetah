@@ -6,14 +6,11 @@
  */
 package gamecheetah.designer.components 
 {
-	import flash.display.DisplayObjectContainer;
 	import flash.geom.Point;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 	import flash.text.TextFormat;
 	import flash.text.TextFormatAlign;
-	import gamecheetah.graphics.TextClip;
-	import gamecheetah.Space;
 	
 	public class Label extends BaseComponent 
 	{

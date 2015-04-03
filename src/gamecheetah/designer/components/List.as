@@ -6,9 +6,6 @@
  */
 package gamecheetah.designer.components 
 {
-	import flash.display.DisplayObjectContainer;
-	import gamecheetah.graphics.Renderable;
-	import gamecheetah.Space;
 	import gamecheetah.utils.GCError;
 
 	public class List extends BaseButton
@@ -25,11 +22,11 @@ package gamecheetah.designer.components
 		
 		private var _slider:Slider;
 		
-		private var
-			_onDelete:Function, _onSwap:Function, _onSelect:Function, _onDeselect:Function, _onEdit:Function;
-		
 		//{ ------------------- Public Properties -------------------
 		
+		public var
+			onDelete:Function, onSwap:Function, onSelect:Function, onDeselect:Function, onEdit:Function;
+			
 		/**
 		 * If true, hides the scroll bar if not needed.
 		 */
@@ -102,16 +99,16 @@ package gamecheetah.designer.components
 		
 		//{ ------------------- Constructor -------------------
 		
-		public function List(	parent:DisplayObjectContainer, items:Array = null, visibleItems:uint = 8,
+		public function List(	parent:BaseComponent, items:Array = null, visibleItems:uint = 8,
 								itemWidth:uint = 125, itemHeight:uint = 25,
 								onSelect:Function = null, onDeselect:Function = null, onDelete:Function = null, onSwap:Function = null, onEdit:Function = null,
 								editable:Boolean = true, deletable:Boolean = true, swappable:Boolean = true ) 
 		{
-			_onSelect = onSelect;
-			_onDeselect = onDeselect;
-			_onDelete = onDelete;
-			_onSwap = onSwap;
-			_onEdit = onEdit;
+			this.onSelect = onSelect;
+			this.onDeselect = onDeselect;
+			this.onDelete = onDelete;
+			this.onSwap = onSwap;
+			this.onEdit = onEdit;
 			
 			this.items = items;
 			_itemWidth = itemWidth;
@@ -160,13 +157,13 @@ package gamecheetah.designer.components
 				{
 					// Deselect selected
 					_selected[index] = false;
-					if (_onDeselect && invokeCallback) _onDeselect(this, index);
+					if (onDeselect != null && invokeCallback) onDeselect(this, index);
 				}
 				return;  // Skip callback if already selected.
 			}
 			
 			_selected[index] = true;
-			if (_onSelect && invokeCallback) _onSelect(this, index);
+			if (onSelect != null && invokeCallback) onSelect(this, index);
 		}
 		
 		public function deselectAll(invokeCallback:Boolean=true):void 
@@ -181,7 +178,7 @@ package gamecheetah.designer.components
 			_selected.length = _items.length;
 			if (!_selected[index]) return;
 			_selected[index] = false;
-			if (_onDeselect && invokeCallback) _onDeselect(this, index);
+			if (onDeselect != null && invokeCallback) onDeselect(this, index);
 		}
 		
 		//}
@@ -189,12 +186,12 @@ package gamecheetah.designer.components
 		
 		internal function deleteItem(item:ListItem):void 
 		{
-			if (_onDelete) _onDelete(_listItems.indexOf(item) + _slider.value);
+			if (onDelete != null) onDelete(_listItems.indexOf(item) + _slider.value);
 		}
 		
 		internal function editItem(item:ListItem, text:String):void 
 		{
-			if (_onEdit) _onEdit(_listItems.indexOf(item) + _slider.value, text);
+			if (onEdit != null) onEdit(_listItems.indexOf(item) + _slider.value, text);
 		}
 		
 		internal function findSwapItem(item:ListItem):void 
@@ -205,8 +202,8 @@ package gamecheetah.designer.components
 				if (Math.abs(item2.top - item.top) < _itemHeight/2 &&
 					item2 != item)
 				{
-					if (_onSwap)
-						_onSwap(_listItems.indexOf(item2) + _slider.value, _listItems.indexOf(item) + _slider.value);
+					if (onSwap != null)
+						onSwap(_listItems.indexOf(item2) + _slider.value, _listItems.indexOf(item) + _slider.value);
 					break;
 				}
 			}

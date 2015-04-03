@@ -6,14 +6,10 @@
  */
 package gamecheetah.designer.components 
 {
-	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
 	import flash.events.FocusEvent;
-	import flash.events.MouseEvent;
 	import flash.text.*;
-	import flash.display.BlendMode;
-	import gamecheetah.designer.Designer;
-	import gamecheetah.*
+	import gamecheetah.*;
 	import gamecheetah.utils.GCError;
 	
 	public class TextInput extends Label 
@@ -48,10 +44,11 @@ package gamecheetah.designer.components
 		
 		override public function set text(value:String):void 
 		{
+			if (!value) value = "";
 			if (value == _text) return;
 			super.text = value;
 			onTextChange();
-			checkEmpty();
+			insertPlaceHolder();
 		}
 		
 		public function get background():Boolean 
@@ -103,7 +100,7 @@ package gamecheetah.designer.components
 		public function set placeholder(value:String):void 
 		{
 			_placeholder = value;
-			checkEmpty();
+			insertPlaceHolder();
 		}
 		
 		override public function set width(value:Number):void
@@ -118,7 +115,7 @@ package gamecheetah.designer.components
 			_field.height = value;
 		}
 		
-		public function TextInput(parent:DisplayObjectContainer, width:int=100, height:int=25, onChange:Function=null, placeholder:String=null, type:String=TYPE_STRING) 
+		public function TextInput(parent:BaseComponent, width:int=100, height:int=25, onChange:Function=null, placeholder:String=null, type:String=TYPE_STRING) 
 		{
 			super(parent, "", Style.FONT_DARK);
 			
@@ -136,7 +133,7 @@ package gamecheetah.designer.components
 			this.width = width;
 			this.height = height;
 			
-			checkEmpty();
+			insertPlaceHolder();
 			
 			this.onChange = onChange;
 		}
@@ -221,8 +218,7 @@ package gamecheetah.designer.components
 		
 		private function onFocusOut(e:Event):void 
 		{
-			checkEmpty();
-			_field.text = text;
+			insertPlaceHolder();
 			_focused = false;
 			draw();
 		}
@@ -236,18 +232,21 @@ package gamecheetah.designer.components
 			
 			if (!_invalid)
 			{
-				super.text = value;
-				if (onChange) onChange(this);
+				if (onChange != null) onChange(this);
 			}
 			
 			draw();
 		}
 		
-		private function checkEmpty():void 
+		private function insertPlaceHolder():void 
 		{
-			if (this.text == "" && placeholder)
+			if (super.text == "" && placeholder)
 			{
 				_field.text = placeholder;
+			}
+			else if (super.text)
+			{
+				_field.text = text;
 			}
 		}
 		
@@ -258,7 +257,11 @@ package gamecheetah.designer.components
 		{
 			var value:*;
 			
-			if (_type == TYPE_INT || _type == TYPE_UINT)
+			if (input.length == 0)
+			{
+				return null;
+			}
+			else if (_type == TYPE_INT || _type == TYPE_UINT)
 			{
 				return validateNumber(input) ? int(input) : null;
 			}

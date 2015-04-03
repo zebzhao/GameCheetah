@@ -77,7 +77,7 @@ package gamecheetah.designer.views
 		public function get selectedAnimation():Animation { return null };
 		public function set selectedAnimation(value:Animation):void
 		{
-			if (!value)
+			if (!value || !Designer.model.activeClip)
 			{
 				_animationsList.deselectAll(false);
 				_framesInput.text = "";
@@ -208,7 +208,7 @@ package gamecheetah.designer.views
 			_addAnimationBtn.move(_animationsList.left, _animationsList.bottom + 5);
 			_collisionsList.move(_collisionsBtn.left, _collisionsBtn.bottom + 30);
 
-			_entityContainer.move(stageWidth * 0.5 - 125, stageHeight * 0.5 - 160);
+			_entityContainer.move(stageWidth * 0.5 - 125, stageHeight * 0.5 - (_entityContainer.height + 70) / 2);
 			
 			_framesInput.move(_entityContainer.left, _entityContainer.bottom + 100);
 			_framesSlider.move(_framesInput.left, _framesInput.top - 15);

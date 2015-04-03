@@ -6,7 +6,6 @@
  */
 package gamecheetah.designer.components 
 {
-	import flash.display.DisplayObjectContainer;
 	
 	public class Slider extends PushButton 
 	{
@@ -40,7 +39,7 @@ package gamecheetah.designer.components
 		
 		//{ ------------------- Public Methods -------------------
 		
-		public function Slider(	parent:DisplayObjectContainer, width:int = 100, height:int = 8,
+		public function Slider(	parent:BaseComponent, width:int = 100, height:int = 8,
 								orientation:String = HORIZONTAL,
 								min:int = 0, max:int = 100, handleSpan:uint = 1,
 								handler:Function = null) 
@@ -157,7 +156,7 @@ class SliderHandle extends PushButton
 				this.move(_parent.mouseX - _dragOffset.x, 0);
 			
 			updatePosition();
-			if (_onSlide) _onSlide(_parent);
+			if (_onSlide != null) _onSlide(_parent);
 		}
 	}
 	

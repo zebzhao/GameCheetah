@@ -56,12 +56,14 @@ package gamecheetah.designer.views
 		}
 		public function set selectedEntity(value:Entity):void 
 		{
-			if (value == null)
+			_selectedEntity = value;
+			if (_selectedEntity == null)
 			{
 				selection.graphics.clear();
 				return;
 			}
-			_selectedEntity = value;
+			_tagInput.text = _selectedEntity.tag;
+			_depthInput.text = _selectedEntity.depth.toString();
 			drawSelectionRectangle();
 		}
 		private var _selectedEntity:Entity;
@@ -116,10 +118,14 @@ package gamecheetah.designer.views
 		}
 		private var _disabled:Boolean;
 		
+		//}
 		//{ ------------------------------------ Private variables ------------------------------------
 
 		private var _dirty:Boolean;
 		private var _lastRenderedRect:Rectangle;
+		
+		private var
+			_tagInput:TextInput, _depthInput:TextInput, _deleteBtn:IconButton;
 		
 		private var _draggingMarker:Boolean;
 		private var _draggingEntity:Boolean;
@@ -148,6 +154,12 @@ package gamecheetah.designer.views
 			overlay = new Sprite();
 			selection = new Shape();
 			
+			_deleteBtn = new IconButton(this, Assets.DELETE, deleteBtn_Click, "Delete Entity", Label.ALIGN_ABOVE);
+			_tagInput = new TextInput(this, 120, 25, tagInput_Change, "Tag", TextInput.TYPE_STRING);
+			_tagInput.setHint("Entity Name", Label.ALIGN_ABOVE);
+			_depthInput = new TextInput(this, 70, 25, depthInput_Change, "Depth", TextInput.TYPE_INT);
+			_depthInput.setHint("Depth", Label.ALIGN_ABOVE);
+			
 			leftArrow.visible = rightArrow.visible = upArrow.visible = downArrow.visible = false;
 			overlay.alpha = 0.5;
 			
@@ -171,19 +183,17 @@ package gamecheetah.designer.views
 		override public function onActivate():void 
 		{
 			startMarker.addEventListener(MouseEvent.MOUSE_DOWN, startMarker_onMouseDown);
-			Engine.displayObject.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-			Engine.displayObject.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-			Engine.displayObject.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-			Engine.stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
+			Engine.displayObject.addEventListener(MouseEvent.MOUSE_MOVE, displayObject_mouseMove);
+			Engine.displayObject.addEventListener(MouseEvent.MOUSE_DOWN, displayObject_mouseDown);
+			Engine.stage.addEventListener(MouseEvent.MOUSE_UP, stage_mouseUp);
 		}
 		
 		override public function onDeactivate():void 
 		{
 			startMarker.removeEventListener(MouseEvent.MOUSE_DOWN, startMarker_onMouseDown);
-			Engine.displayObject.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-			Engine.displayObject.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-			Engine.displayObject.removeEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-			Engine.stage.removeEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
+			Engine.displayObject.removeEventListener(MouseEvent.MOUSE_MOVE, displayObject_mouseMove);
+			Engine.displayObject.removeEventListener(MouseEvent.MOUSE_DOWN, displayObject_mouseDown);
+			Engine.stage.removeEventListener(MouseEvent.MOUSE_UP, stage_mouseUp);
 		}
 		
 		override public function onUpdate():void 
@@ -218,6 +228,20 @@ package gamecheetah.designer.views
 				drawArrows();
 				drawSelectionRectangle();
 			}
+			
+			if (_selectedEntity != null)
+			{
+				var stageWidth:Number = Engine.buffer.width;
+				var stageHeight:Number = Engine.buffer.height;
+				_tagInput.visible = _depthInput.visible = _deleteBtn.visible = true;
+				_deleteBtn.move(0.5 * stageWidth - 120, 0.5 * stageHeight);
+				_tagInput.move(_deleteBtn.right + 10, _deleteBtn.top + 3);
+				_depthInput.move(_tagInput.right + 10, _tagInput.top);
+			}
+			else
+			{
+				_tagInput.visible = _depthInput.visible = _deleteBtn.visible = false;
+			}
 		}
 		
 		//{ ------------------------------------ Event handlers ------------------------------------
@@ -248,10 +272,25 @@ package gamecheetah.designer.views
 			_draggingMarker = true;
 		}
 		
+		private function tagInput_Change(t:TextInput):void 
+		{
+			Designer.changeEntityTag(t.text);
+		}
+		
+		private function depthInput_Change(t:TextInput):void 
+		{
+			if (_selectedEntity != null) _selectedEntity.depth = int(t.value);
+		}
+		
+		private function deleteBtn_Click(b:BaseButton):void 
+		{
+			Designer.removeEntity();
+		}
+		
 		/**
 		 * Mouse press event handler for Stage.
 		 */
-		private function onMouseDown(e:MouseEvent):void 
+		private function displayObject_mouseDown(e:MouseEvent):void 
 		{
 			if (_activeSpace == null) return;
 			
@@ -286,12 +325,13 @@ package gamecheetah.designer.views
 				_dragEntityMouseOffset.setTo(x - selected.location.x, y - selected.location.y);
 				Designer.model.update("selectedEntity", selected, true);
 			}
+			else Designer.model.update("selectedEntity", null, true);
 		}
 		
 		/**
 		 * Mouse move event handler for Stage.
 		 */
-		public function onMouseMove(e:MouseEvent):void 
+		private function displayObject_mouseMove(e:MouseEvent):void 
 		{
 			if (_draggingEntity)
 			{
@@ -324,8 +364,15 @@ package gamecheetah.designer.views
 		/**
 		 * Needed for some drag and drop features.
 		 */
-		private function onStageMouseUp(e:MouseEvent):void 
+		private function stage_mouseUp(e:MouseEvent):void 
 		{
+			// Stop drag entity.
+			if (_draggingEntity)
+			{
+				_draggingEntity = false;
+				drawSelectionRectangle();
+			}	
+			
 			// Stop drag start marker.
 			if (_draggingMarker)
 			{
@@ -337,19 +384,6 @@ package gamecheetah.designer.views
 				_draggingMarker = false;
 				stopDrag();
 			}
-		}
-		
-		/**
-		 * Mouse release event handler.
-		 */
-		private function onMouseUp(e:MouseEvent):void 
-		{
-			// Stop drag entity.
-			if (_draggingEntity)
-			{
-				_draggingEntity = false;
-				drawSelectionRectangle();
-			}	
 		}
 		
 		//{ ------------------------------------ Private function ------------------------------------

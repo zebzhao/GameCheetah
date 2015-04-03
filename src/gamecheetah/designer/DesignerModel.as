@@ -6,21 +6,14 @@
  */
 package gamecheetah.designer 
 {
-	import gamecheetah.designer.bindlite.BindMax;
-	import flash.events.Event;
-	import flash.events.EventDispatcher;
 	import flash.geom.Point;
-	import flash.utils.Dictionary;
+	import gamecheetah.designer.bindlite.BindMax;
 	import gamecheetah.Engine;
 	import gamecheetah.Entity;
 	import gamecheetah.Graphic;
 	import gamecheetah.graphics.Animation;
 	import gamecheetah.graphics.Clip;
-	import gamecheetah.graphics.Renderable;
-	import gamecheetah.namespaces.hidden;
 	import gamecheetah.Space;
-	
-	use namespace hidden;
 	
 	/**
 	 * @private
