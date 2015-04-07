@@ -59,10 +59,19 @@ package gamecheetah
 		hidden function set _exportableEntities(value:Array):void
 		{
 			this.removeAll();
-			_entities = value;
 			// Add newly set entities
-			for each(var entity:Entity in _entities)
-				this.add(entity);
+			for each(var entity:Entity in value)
+			{
+				if (entity)
+				{
+					this.add(entity);
+					if (!entity.graphic)
+					{
+						entity.graphic = Engine.assets.graphics.get(entity._graphicTag);
+						entity.graphic.entities.push(entity);
+					}
+				}
+			}
 		}
 		
 		/**
@@ -396,7 +405,11 @@ package gamecheetah
 			
 			var renderList:Vector.<Entity> = new Vector.<Entity>();
 			var agent:Agent;
-			for each (agent in agents) renderList.push(_hashtable[agent.id]);
+			for each (agent in agents)
+			{
+				entity = _hashtable[agent.id]
+				if (entity) renderList.push(entity);
+			}
 			
 			// Render entities in order.
 			renderList.sort(compare);
@@ -476,7 +489,7 @@ package gamecheetah
 			for each (agent in agents)
 			{
 				entity = _hashtable[agent.id];
-				if (entity.queriable) result.push(entity);
+				if (entity && entity.queriable) result.push(entity);
 			}
 			return result;
 		}
@@ -671,32 +684,9 @@ package gamecheetah
 		 */
 		override public function restore(obj:Object):void 
 		{
-			if (_entities != null)
-			{
-				// Clean up all entities of this Space.
-				while (_entities.length > 0) removeEntity(_entities[0], true, true);
-			}
-			
 			_resetInfo = obj;
 			super.restore(obj);
-			
 			resize(bounds.x, bounds.y, bounds.width, bounds.height);
-			
-			CONFIG::developer
-			{
-				// Clean up undefined entity (from removed classes)
-				while (_entities.indexOf(undefined) != -1)
-					_entities.splice(_entities.indexOf(undefined), 1);
-			}
-			
-			var entity:Entity;
-			for each (entity in _entities)
-			{
-				entity.graphic = Engine.assets.graphics.get(entity._graphicTag);
-				entity.graphic.entities.push(entity);
-				entity._runtime = false;    // This is a design-time user-created entity.
-				addEntity(entity, true, true); 
-			}
 		}
 		
 		/**
@@ -905,7 +895,7 @@ package gamecheetah
 		hidden function _finalize():void
 		{
 			var i:int;
-			for (i = 0; i < _addQueue.length; i++) addEntity(_addQueue[i], false, false);
+			for (i = 0; i < _addQueue.length; i++) addEntity(_addQueue[i], false);
 			for (i = 0; i < _removeQueue.length; i++) removeEntity(_removeQueue[i], false, false);
 			
 			_addQueue.length = 0;
@@ -939,8 +929,8 @@ package gamecheetah
 			// Makes sure onDeactivate and onActivate are called at the end of the frame.
 			// Always call onActivate and onDeactivate after processing add/remove queues.
 			
-			for (i = 0; i < _addQueue.length; i++) addEntity(_addQueue[i], false, false);
-			for (i = 0; i < _removeQueue.length; i++) removeEntity(_removeQueue[i], false, false);
+			for (i = 0; i < _addQueue.length; i++) addEntity(_addQueue[i], false);
+			for (i = 0; i < _removeQueue.length; i++) removeEntity(_removeQueue[i], false);
 			
 			_addQueue.length = 0;
 			_removeQueue.length = 0;
@@ -1078,19 +1068,10 @@ package gamecheetah
 		 * Add an Entity to this container.
 		 * @param 	entity			Entity object to add.
 		 * @param 	dest			Location to add entity at.
-		 * @param	restoreCall		True if function is called from Restorable::restore().
 		 */
-		private function addEntity(entity:Entity, restoreCall:Boolean=false, disableCallbacks:Boolean=false):void 
+		private function addEntity(entity:Entity, disableCallbacks:Boolean=false):void 
 		{
-			CONFIG::developer
-			{
-				if (restoreCall)
-				{
-					// A restore call iterates over existing entities in "_entities".
-					if (_entities.indexOf(entity) == -1) throw new GCError("The restoreCall flag is improperly set to true!");
-				}
-			}
-			if (!restoreCall) _entities.push(entity);
+			_entities.push(entity);
 			
 			// Ensure an unique agent id is used.
 			entity._agent.id = _agentCounter++;
@@ -1103,9 +1084,7 @@ package gamecheetah
 			
 			if (_active)
 			{
-				// Activate entity immediately if called from restore().
-				if (restoreCall) activateEntity(entity, disableCallbacks);
-				else _activateQueue.push(entity, disableCallbacks);
+				_activateQueue.push(entity, disableCallbacks);
 			}
 		}
 		

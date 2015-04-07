@@ -319,7 +319,7 @@ package gamecheetah
 		{
 			//_properties = getProperties();
 			//super(_properties.concat(["_graphicTag", "tag", "depth", "location"]));
-			super(["_graphicTag", "tag", "depth", "location"]);
+			super(["_graphicTag", "tag", "depth", "location", "_runtime"]);
 			
 			_transformData = new TransformData(0, 1, 1, new Point());
 			this._agent = new Agent(0, 1, 0, 0, 0);
