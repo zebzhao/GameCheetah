@@ -80,22 +80,26 @@ package gamecheetah.designer.views
 			if (!value || !Designer.model.activeClip)
 			{
 				_animationsList.deselectAll(false);
-				_framesInput.text = "";
 				_framesSlider.setBounds(0, 1, 1);
-				_rateInput.text = "";
 				_loopBtn.unfreeze();
-				return;
+				_framesInput.visible = _rateInput.visible = _rateUpBtn.visible = _rateDownBtn.visible = _framesSlider.visible = false;
+				_playBtn.visible = _prevFrameBtn.visible = _nextFrameBtn.visible = _loopBtn.visible = false;
 			}
-			
-			Designer.model.activeClip.play(value.tag, true);
-			
-			_animationsList.selectItem(Designer.model.selectedGraphic.animations.indexOfKey(value.tag));
-			_framesInput.text = value.frames.toString();
-			_framesSlider.setBounds(0, value.frames.length - 1, 1);
-			_rateInput.text = (value.frameRate * 100).toString();
-			
-			if (value.looping) _loopBtn.freeze();
-			else _loopBtn.unfreeze();
+			else
+			{
+				Designer.model.activeClip.play(value.tag, true);
+				
+				_framesInput.visible = _rateInput.visible = _rateUpBtn.visible = _rateDownBtn.visible = _framesSlider.visible = true;
+				_playBtn.visible = _prevFrameBtn.visible = _nextFrameBtn.visible = _loopBtn.visible = true;
+				
+				_animationsList.selectItem(Designer.model.selectedGraphic.animations.indexOfKey(value.tag));
+				if (String(_framesInput.value) != value.frames.toString()) _framesInput.text = value.frames.toString();
+				_framesSlider.setBounds(0, value.frames.length - 1, 1);
+				_rateInput.text = (value.frameRate * 100).toString();
+				
+				if (value.looping) _loopBtn.freeze();
+				else _loopBtn.unfreeze();
+			}
 		}
 		
 		public function get activeClip():Clip { return null; }
@@ -481,8 +485,7 @@ package gamecheetah.designer.views
 		
 		private function rateInput_Change(t:TextInput, userTrigger:Boolean):void 
 		{
-			if (!userTrigger) return;
-			else if (Designer.model.selectedAnimation)
+			if (Designer.model.selectedAnimation)
 			{
 				Designer.model.selectedAnimation.frameRate = t.value / t.maximum;
 			}

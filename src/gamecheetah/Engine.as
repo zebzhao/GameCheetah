@@ -401,8 +401,6 @@ package gamecheetah
 			var graphic:Graphic;
 			var result:Clip;
 			
-			graphicTag = graphicTag.toLowerCase();
-			
 			if (Engine.assets.graphics.contains(graphicTag))
 			{
 				graphic = Engine.assets.graphics.get(graphicTag);
@@ -434,7 +432,6 @@ package gamecheetah
 				// Argument checking
 				if (graphicTag == null) throw new GCError("Argument error: 'graphicTag' cannot be null!");
 			}
-			graphicTag = graphicTag.toLowerCase();
 			
 			if (Engine.assets.graphics.contains(graphicTag))
 			{

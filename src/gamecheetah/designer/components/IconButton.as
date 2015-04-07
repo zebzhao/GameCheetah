@@ -43,7 +43,7 @@ package gamecheetah.designer.components
 			setIcon(asset);
 			
 			_hintLabelAlign = labelAlign;
-			this.setUpState(handler);
+			this.setDownState(handler);
 			this.hint = hint;
 			
 			super(parent, _icon.width, _icon.height);

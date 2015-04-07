@@ -272,12 +272,12 @@ package gamecheetah.designer.views
 			_draggingMarker = true;
 		}
 		
-		private function tagInput_Change(t:TextInput):void 
+		private function tagInput_Change(t:TextInput, userTrigger:Boolean):void 
 		{
 			Designer.changeEntityTag(t.text);
 		}
 		
-		private function depthInput_Change(t:TextInput):void 
+		private function depthInput_Change(t:TextInput, userTrigger:Boolean):void 
 		{
 			if (_selectedEntity != null) _selectedEntity.depth = int(t.value);
 		}
