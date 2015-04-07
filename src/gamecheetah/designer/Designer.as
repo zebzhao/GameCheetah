@@ -103,7 +103,7 @@ package gamecheetah.designer
 		 */
 		private static function errorMessage(msg:String):void 
 		{
-			model.update("errorMessage", msg);
+			model.update("errorMessage", msg, true);
 		}
 		
 		/**
@@ -353,7 +353,7 @@ package gamecheetah.designer
 				}
 				model.update("spacesList", null, true);
 			}
-			else errorMessage("Selected space is active and cannot be removed.\nClick Edit > Open to change the active space");
+			else errorMessage("Selected space is ACTIVE\nand cannot be removed.");
 		}
 		
 		/**

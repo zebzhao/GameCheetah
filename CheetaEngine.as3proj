@@ -6,8 +6,8 @@
     <movie input="" />
     <movie path="bin\IsometricDemo.swf" />
     <movie fps="30" />
-    <movie width="400" />
-    <movie height="500" />
+    <movie width="450" />
+    <movie height="450" />
     <movie version="11" />
     <movie minorVersion="9" />
     <movie platform="Flash Player" />
@@ -74,7 +74,7 @@
   </library>
   <!-- Class files to compile (other referenced classes will automatically be included) -->
   <compileTargets>
-    <compile path="demos\Isometric Demo\src\Main.as" />
+    <compile path="demos\SimpleButton\src\Main.as" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>

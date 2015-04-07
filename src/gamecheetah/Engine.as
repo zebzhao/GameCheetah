@@ -35,7 +35,7 @@ package gamecheetah
 		/**
 		 * Internal. Version of the engine.
 		 */
-		public static const __VERSION:String = "1.2a";
+		public static const __VERSION:String = "1.2.1a";
 		
 		/**
 		 * Contains all game-related assets and asset information.

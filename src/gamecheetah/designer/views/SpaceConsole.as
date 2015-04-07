@@ -165,41 +165,47 @@ package gamecheetah.designer.views
 			else hideBounds();
 		}
 		
-		private function syInput_Change(t:TextInput):void 
+		private function syInput_Change(t:TextInput, userTrigger:Boolean):void 
 		{
+			if (!userTrigger) return;
 			_startLocationList.items[1] = t.text;
 			Designer.model.selectedSpace.startLocation.y = _syInput.value as int;
 		}
 		
-		private function sxInput_Change(t:TextInput):void 
+		private function sxInput_Change(t:TextInput, userTrigger:Boolean):void 
 		{
+			if (!userTrigger) return;
 			_startLocationList.items[0] = t.text;
 			Designer.model.selectedSpace.startLocation.x = _sxInput.value as int;
 		}
 		
-		private function heightInput_Change(t:TextInput):void 
+		private function heightInput_Change(t:TextInput, userTrigger:Boolean):void 
 		{
+			if (!userTrigger) return;
 			Designer.model.selectedSpace.bounds.height = _heightInput.value as int;
 			Designer.model.selectedSpace.reindexQuadtree();
 			Designer.updateScrollBounds();
 		}
 		
-		private function widthInput_Change(t:TextInput):void 
+		private function widthInput_Change(t:TextInput, userTrigger:Boolean):void 
 		{
+			if (!userTrigger) return;
 			Designer.model.selectedSpace.bounds.width = _widthInput.value as int;
 			Designer.model.selectedSpace.reindexQuadtree();
 			Designer.updateScrollBounds();
 		}
 		
-		private function yInput_Change(t:TextInput):void 
+		private function yInput_Change(t:TextInput, userTrigger:Boolean):void 
 		{
+			if (!userTrigger) return;
 			Designer.model.selectedSpace.bounds.y = _yInput.value as int;
 			Designer.model.selectedSpace.reindexQuadtree();
 			Designer.updateScrollBounds();
 		}
 		
-		private function xInput_Change(t:TextInput):void 
+		private function xInput_Change(t:TextInput, userTrigger:Boolean):void 
 		{
+			if (!userTrigger) return;
 			Designer.model.selectedSpace.bounds.x = _xInput.value as int;
 			Designer.model.selectedSpace.reindexQuadtree();
 			Designer.updateScrollBounds();

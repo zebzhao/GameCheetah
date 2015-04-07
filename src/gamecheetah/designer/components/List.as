@@ -151,19 +151,22 @@ package gamecheetah.designer.components
 			}
 			_selected.length = _items.length;
 			
-			if (_selected[index])
+			if (index < selected.length)
 			{
-				if (multiselect)
+				if (_selected[index])
 				{
-					// Deselect selected
-					_selected[index] = false;
-					if (onDeselect != null && invokeCallback) onDeselect(this, index);
+					if (multiselect)
+					{
+						// Deselect selected
+						_selected[index] = false;
+						if (onDeselect != null && invokeCallback) onDeselect(this, index);
+					}
+					return;  // Skip callback if already selected.
 				}
-				return;  // Skip callback if already selected.
+				
+				_selected[index] = true;
+				if (onSelect != null && invokeCallback) onSelect(this, index);
 			}
-			
-			_selected[index] = true;
-			if (onSelect != null && invokeCallback) onSelect(this, index);
 		}
 		
 		public function deselectAll(invokeCallback:Boolean=true):void 
@@ -191,7 +194,9 @@ package gamecheetah.designer.components
 		
 		internal function editItem(item:ListItem, text:String):void 
 		{
-			if (onEdit != null) onEdit(_listItems.indexOf(item) + _slider.value, text);
+			var index:int = _listItems.indexOf(item) + _slider.value;
+			items[index] = text;
+			if (onEdit != null) onEdit(index, text);
 		}
 		
 		internal function findSwapItem(item:ListItem):void 

@@ -90,14 +90,19 @@ package gamecheetah.designer.components
 			
 			if (_editable)
 			{
-				_editInput = new TextInput(this, width, 25, onEdit);
+				_editInput = new TextInput(this, width, 25);
+				_editInput.field.addEventListener(Event.CHANGE, onEdit, false, -1);
 				_editInput.background = false;
 				_label = null;
 			}
 			else
 			{
 				_label = new Label(this, _text, Style.FONT_DARK, Label.ALIGN_INNER_LEFT);
-				_editInput = null;
+				if (editInput)
+				{
+					_editInput.field.removeEventListener(Event.CHANGE, onEdit);
+					_editInput = null;
+				}
 			}
 		}
 		
@@ -223,9 +228,9 @@ package gamecheetah.designer.components
 			_parent.deleteItem(this);
 		}
 		
-		private function onEdit(b:TextInput):void
+		private function onEdit(e:Event):void
 		{
-			_parent.editItem(this, b.text);
+			_parent.editItem(this, _editInput.text);
 		}
 	}
 }

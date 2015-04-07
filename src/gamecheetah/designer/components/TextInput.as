@@ -46,7 +46,7 @@ package gamecheetah.designer.components
 		{
 			if (!value) value = "";
 			if (value == _text) return;
-			super.text = value;
+			_field.text = value;
 			onTextChange();
 			insertPlaceHolder();
 		}
@@ -87,7 +87,11 @@ package gamecheetah.designer.components
 				_hintLabel.padding = 15;
 				Style.drawBaseRect(_hintLabel.graphics, -5, 0, _hintLabel.width + 10, this.height, Style.HINT_BASE, Style.HINT_ALPHA, false); 
 			}
-			else if (_hintLabel) this.removeChild(_hintLabel);
+			else if (_hintLabel)
+			{
+				this.removeChild(_hintLabel);
+				_hintLabel = null;
+			}
 			
 			draw();
 		}
@@ -226,13 +230,14 @@ package gamecheetah.designer.components
 		private function onTextChange(e:Event=null):void 
 		{
 			this.value = parseText(_field.text);
+			super.text = _field.text;
 			
 			_invalid = this.value == null;
 			_focused = Engine.stage.focus == _field;
 			
 			if (!_invalid)
 			{
-				if (onChange != null) onChange(this);
+				if (onChange != null) onChange(this, e != null);
 			}
 			
 			draw();
@@ -246,7 +251,7 @@ package gamecheetah.designer.components
 			}
 			else if (super.text)
 			{
-				_field.text = text;
+				_field.text = String(value);
 			}
 		}
 		

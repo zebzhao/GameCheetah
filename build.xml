@@ -9,7 +9,7 @@ https://github.com/honzabrecka/using-ant-to-build-flash
 	<property name="AIR_SDK_HOME" value="C:/AIRSDK_Compiler" />
 	<property name="PLAYER_VERSION" value="11.9" />
 	<property name="SWC_DIR" value="site\downloads" />
-	<property name="ENGINE_VERSION" value="1.2a" />
+	<property name="ENGINE_VERSION" value="1.2.1a" />
 	<property name="DEMOS_DIR" value="site\demos\static" />
     
     <target name="swc" depends="swc-compile-dev, swc-compile-release"/>

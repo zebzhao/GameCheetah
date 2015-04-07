@@ -32,6 +32,7 @@ package gamecheetah.designer.views
 			_addGraphicBtn:IconButton, _addSpaceBtn:IconButton,
 			_editGraphicBtn:IconButton, _editSpaceBtn:IconButton,
 			_openSpaceBtn:IconButton,
+			_errorLbl:Label,
 			_gridWidthInput:TextInput, _gridHeightInput:TextInput, _snapToGridBtn:IconToggleButton;
 		
 		//{ ------------------------------------ Property bindings ------------------------------------
@@ -82,6 +83,19 @@ package gamecheetah.designer.views
 			}
 		}
 		
+		public function get errorMessage():String { return null; }
+		public function set errorMessage(value:String):void 
+		{
+			if (value)
+			{
+				_errorLbl.tweenClip(null, { "alpha": 1 }, 0.5, null, 0, null, _errorLbl.tweenClip, [null, {"alpha": 0}, 0.5, null, 2.5]);
+				_errorLbl.text = value;
+				_errorLbl.padding = 15;
+				Style.drawBaseRect(_errorLbl.graphics, -5, 0, _errorLbl.width + 10, _errorLbl.height, Style.HINT_BASE, Style.HINT_ALPHA, false);
+			}
+			else _errorLbl.alpha = 0;
+		}
+		
 		//}
 		//{ ------------------------------------ Constructor ------------------------------------
 			
@@ -99,6 +113,9 @@ package gamecheetah.designer.views
 			_gridHeightInput.minimum = 1;
 			_gridHeightInput.setHint("Grid Height", Label.ALIGN_LEFT);
 			_snapToGridBtn = new IconToggleButton(this, Assets.UNSNAPPING, Assets.SNAPPING, snapToGridBtn_Click, "Snap", "Un-Snap", Label.ALIGN_RIGHT);
+			
+			_errorLbl = new Label(this, "", Style.FONT_BASE, Label.ALIGN_FREE);
+			_errorLbl.alpha = 0;
 			
 			_loadBtn = new IconButton(this, Assets.LOAD, loadBtn_Click, "Load Data", Label.ALIGN_ABOVE);
 			_saveBtn = new IconButton(this, Assets.SAVE, saveBtn_Click, "Save Data", Label.ALIGN_ABOVE);
@@ -122,6 +139,7 @@ package gamecheetah.designer.views
 			Designer.model.bind("graphicsList", this, true);
 			Designer.model.bind("activeSpace", this, true);
 			Designer.model.bind("selectedGraphic", this, true);
+			Designer.model.bind("errorMessage", this, true);
 			
 			super(parent);
 		}
@@ -152,6 +170,8 @@ package gamecheetah.designer.views
 			
 			_saveBtn.move(stageWidth * 0.367 - 16, stageHeight - 42);
 			_loadBtn.move(stageWidth * 0.633 - 16, stageHeight - 42);
+			
+			_errorLbl.move(stageWidth * 0.5 - _errorLbl.halfWidth, stageHeight * 0.5 - _errorLbl.halfHeight);
 			
 			_spacesBtn.move(stageWidth * 0.1 - 16, 10);
 			_spacesList.move(_spacesBtn.left, _spacesBtn.bottom + 30);
@@ -194,6 +214,9 @@ package gamecheetah.designer.views
 		private function spacesList_Edit(index:int, text:String):void 
 		{
 			var valid:Boolean = Designer.changeSpaceTag(index, text);
+			
+			if (valid) _spacesList.getListItem(index).editInput.setHint(null);
+			else _spacesList.getListItem(index).editInput.setHint("Tag duplicated!", Label.ALIGN_RIGHT);
 		}
 		
 		private function spacesList_Delete(index:int):void 
@@ -204,6 +227,9 @@ package gamecheetah.designer.views
 		private function graphicsList_Edit(index:int, text:String):void 
 		{
 			var valid:Boolean = Designer.changeGraphicTag(index, text);
+			
+			if (valid) _graphicsList.getListItem(index).editInput.setHint(null);
+			else _graphicsList.getListItem(index).editInput.setHint("Tag duplicated!", Label.ALIGN_RIGHT);
 		}
 		
 		private function graphicsList_Swap(indexA:int, indexB:int):void 
@@ -252,14 +278,16 @@ package gamecheetah.designer.views
 			}
 		}
 		
-		private function gridHeightInput_Change(b:BaseComponent):void 
+		private function gridHeightInput_Change(b:BaseComponent, userTrigger:Boolean):void 
 		{
+			if (!userTrigger) return;
 			_spaceCanvas.gridH = _gridHeightInput.value;
 			Designer.updateDesignerContext(getDesignerContext());
 		}
 		
-		private function gridWidthInput_Change(b:BaseComponent):void 
+		private function gridWidthInput_Change(b:BaseComponent, userTrigger:Boolean):void 
 		{
+			if (!userTrigger) return;
 			_spaceCanvas.gridW = _gridWidthInput.value;
 			Designer.updateDesignerContext(getDesignerContext());
 		}

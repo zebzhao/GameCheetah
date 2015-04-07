@@ -479,24 +479,25 @@ package gamecheetah.designer.views
 			}
 		}
 		
-		private function rateInput_Change(t:TextInput):void 
+		private function rateInput_Change(t:TextInput, userTrigger:Boolean):void 
 		{
-			if (Designer.model.selectedAnimation)
+			if (!userTrigger) return;
+			else if (Designer.model.selectedAnimation)
 			{
 				Designer.model.selectedAnimation.frameRate = t.value / t.maximum;
 			}
 		}
 		
-		private function columnsInput_Change(t:TextInput):void 
+		private function columnsInput_Change(t:TextInput, userTrigger:Boolean):void 
 		{
-			_spriteSheetList.items[3] = t.text;
+			if (!userTrigger) return;
 			Designer.model.selectedGraphic.columns = int(t.value);
 			Designer.model.update("activeClip", Designer.model.selectedGraphic.newRenderable() as Clip, true);
 		}
 		
-		private function rowsInput_Change(t:TextInput):void 
+		private function rowsInput_Change(t:TextInput, userTrigger:Boolean):void 
 		{
-			_spriteSheetList.items[2] = t.text;
+			if (!userTrigger) return;
 			Designer.model.selectedGraphic.rows = int(t.value);
 			Designer.model.update("activeClip", Designer.model.selectedGraphic.newRenderable() as Clip, true);
 		}
@@ -510,8 +511,9 @@ package gamecheetah.designer.views
 			}
 		}
 		
-		private function framesInput_Change(t:TextInput):void 
+		private function framesInput_Change(t:TextInput, userTrigger:Boolean):void 
 		{
+			if (!userTrigger) return;
 			Designer.updateAnimationFrames(t.value);
 		}
 		
@@ -523,6 +525,9 @@ package gamecheetah.designer.views
 		private function animations_Edit(index:int, text:String):void 
 		{
 			var valid:Boolean = Designer.changeAnimationTag(index, text);
+			
+			if (valid) _animationsList.getListItem(index).editInput.setHint(null);
+			else _animationsList.getListItem(index).editInput.setHint("Tag duplicated!", Label.ALIGN_RIGHT);
 		}
 		
 		private function animationsList_Swap(indexA:int, indexB:int):void 
