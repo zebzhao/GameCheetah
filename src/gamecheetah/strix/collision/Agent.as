@@ -26,9 +26,9 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.*/
 
 package gamecheetah.strix.collision {
-	import flash.geom.Point;
-	import gamecheetah.strix.notification.Notification;
 	import flash.geom.Rectangle;
+	import gamecheetah.strix.collision.quadtree.TreeNode;
+	import gamecheetah.strix.notification.Notification;
     
 	/**
 	 * @private
@@ -45,6 +45,9 @@ package gamecheetah.strix.collision {
             id   : uint,
             group : uint,
 			action: uint;
+			
+		public var
+			node : TreeNode;
         
 		public var
             onChange : Notification;

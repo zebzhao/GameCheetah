@@ -267,10 +267,6 @@ package gamecheetah
 		 */
 		hidden var _resetInfo:Object;
 		
-		{
-			Quadtree.throwExceptions = false;
-		}
-		
 		//}
 		//{ ------------------------------------ Constructor ------------------------------------
 		
@@ -470,7 +466,11 @@ package gamecheetah
 			for each (agent in agents)
 			{
 				entity = _hashtable[agent.id];
-				if (entity.queriable) result.push(entity);
+				if (!entity)
+				{
+					trace("temp");
+				}
+				if (entity && entity.queriable) result.push(entity);
 			}
 			return result;
 		}
@@ -505,13 +505,21 @@ package gamecheetah
 			}
 			if (entity.space != this && _addQueue.indexOf(entity) == -1)
 			{
-				if (dest != null) entity.location = dest;
-				_addQueue.push(entity);
-				entity._space = this;
-				
 				if (entity.renderable == null && entity.graphic != null)
 				{
 					entity.renderable = entity.graphic.newRenderable();
+				}
+				if (dest != null) entity.location = dest;
+				
+				if (_active)
+				{
+					_addQueue.push(entity);
+					entity._space = this;
+				}
+				else
+				{
+					// Unactive space adds entity directly.
+					addEntity(entity);
 				}
 			}
 		}

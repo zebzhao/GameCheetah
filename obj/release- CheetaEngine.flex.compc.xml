@@ -63,7 +63,6 @@
     <class>gamecheetah.strix.collision.Agent</class>
     <class>gamecheetah.strix.collision.Collision</class>
     <class>gamecheetah.strix.collision.Utils</class>
-    <class>gamecheetah.strix.collision.error.IllegalBoundsError</class>
     <class>gamecheetah.strix.collision.error.InternalError</class>
     <class>gamecheetah.strix.collision.error.InvalidObjectError</class>
     <class>gamecheetah.strix.collision.error.InvalidVolumeError</class>
@@ -72,9 +71,6 @@
     <class>gamecheetah.strix.collision.quadtree.Quadtree</class>
     <class>gamecheetah.strix.collision.quadtree.TreeNode</class>
     <class>gamecheetah.strix.collision.quadtree.TreeNodePool</class>
-    <class>gamecheetah.strix.hashtable.Hashtable</class>
-    <class>gamecheetah.strix.hashtable.error.InvalidKeyError</class>
-    <class>gamecheetah.strix.hashtable.error.ParameterError</class>
     <class>gamecheetah.strix.notification.Notification</class>
     <class>gamecheetah.strix.utils.Statistics</class>
     <class>gamecheetah.utils.Assets</class>

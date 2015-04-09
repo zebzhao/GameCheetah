@@ -45,7 +45,7 @@
     <option loadExterns="" />
     <option staticLinkRSL="True" />
     <option additional="" />
-    <option compilerConstants="CONFIG::developer, true" />
+    <option compilerConstants="CONFIG::developer,false" />
     <option minorVersion="" />
   </build>
   <!-- SWC Include Libraries -->
@@ -74,7 +74,7 @@
   </library>
   <!-- Class files to compile (other referenced classes will automatically be included) -->
   <compileTargets>
-    <compile path="demos\SimpleButton\src\Main.as" />
+    <compile path="demos\Butterflies Boids\src\Main.as" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>

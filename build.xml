@@ -36,11 +36,11 @@ https://github.com/honzabrecka/using-ant-to-build-flash
         </compc>
     </target>
 	
-	<target name="demos" depends="isometric-game-dev, isometric-game-release, isometric-game-src"/>
+	<target name="isometric" depends="isometric-d, isometric-r, isometric-s"/>
     
-	<target name="isometric-game-dev">
+	<target name="isometric-d">
         <mxmlc failonerror="true" maxmemory="1024m"
-			output="${DEMOS_DIR}\swf\IsometricDemo-v${ENGINE_VERSION}-dev.swf"
+			output="${DEMOS_DIR}\swf\isometric-v${ENGINE_VERSION}-dev.swf"
 			file="demos/Isometric Demo/src/Main.as">
 			<compiler.external-library-path dir="${AIR_SDK_HOME}/frameworks/" append="true">
 				<include name="libs/player/${PLAYER_VERSION}/playerglobal.swc" />
@@ -53,9 +53,9 @@ https://github.com/honzabrecka/using-ant-to-build-flash
         </mxmlc>
     </target>
 	
-	<target name="isometric-game-release">
+	<target name="isometric-r">
         <mxmlc failonerror="true" maxmemory="1024m"
-			output="${DEMOS_DIR}\swf\IsometricDemo-v${ENGINE_VERSION}-release.swf"
+			output="${DEMOS_DIR}\swf\isometric-v${ENGINE_VERSION}-release.swf"
 			file="demos/Isometric Demo/src/Main.as">
 			<compiler.external-library-path dir="${AIR_SDK_HOME}/frameworks/" append="true">
 				<include name="libs/player/${PLAYER_VERSION}/playerglobal.swc" />
@@ -68,10 +68,8 @@ https://github.com/honzabrecka/using-ant-to-build-flash
         </mxmlc>
     </target>
 	
-	<target name="demos-src" depends="isometric-game-src"/>
-	
-	<target name="isometric-game-src">
-		<zip destfile="${DEMOS_DIR}\src\isometric-demo-v${ENGINE_VERSION}.zip">
+	<target name="isometric-s">
+		<zip destfile="${DEMOS_DIR}\src\isometric-v${ENGINE_VERSION}.zip">
 			<zipfileset dir="demos\Isometric Demo">
 				<include name="*/"/>
 				<exclude name="bin/" />
@@ -80,7 +78,7 @@ https://github.com/honzabrecka/using-ant-to-build-flash
 			</zipfileset>
 		</zip>
 		
-		<tar destfile="${DEMOS_DIR}\src\isometric-demo-v${ENGINE_VERSION}.tar">
+		<tar destfile="${DEMOS_DIR}\src\isometric-v${ENGINE_VERSION}.tar">
 			<tarfileset dir="demos\Isometric Demo">
 				<include name="*/"/>
 				<exclude name="bin/" />
@@ -88,6 +86,59 @@ https://github.com/honzabrecka/using-ant-to-build-flash
 				<exclude name="lib/stash/" />
 			</tarfileset>
 		</tar>
-		<gzip destfile="${DEMOS_DIR}\src\isometric-demo-v${ENGINE_VERSION}.tar.gz" src="${DEMOS_DIR}\src\isometric-demo-v${ENGINE_VERSION}.tar"/>
+		<gzip destfile="${DEMOS_DIR}\src\isometric-v${ENGINE_VERSION}.tar.gz" src="${DEMOS_DIR}\src\isometric-v${ENGINE_VERSION}.tar"/>
+	</target>
+	
+	<target name="butterfly" depends="butterfly-d, butterfly-r, butterfly-s"/>
+	
+	<target name="butterfly-d">
+        <mxmlc failonerror="true" maxmemory="1024m"
+			output="${DEMOS_DIR}\swf\butterfly-v${ENGINE_VERSION}-dev.swf"
+			file="demos/Butterflies Boids/src/Main.as">
+			<compiler.external-library-path dir="${AIR_SDK_HOME}/frameworks/" append="true">
+				<include name="libs/player/${PLAYER_VERSION}/playerglobal.swc" />
+            </compiler.external-library-path>
+			<library-path
+				file="${SWC_DIR}\gamecheetah-v${ENGINE_VERSION}-dev.swc"
+				append="true">
+			</library-path>
+			<source-path path-element="demos/Butterflies Boids/src"/>
+        </mxmlc>
+    </target>
+	
+	<target name="butterfly-r">
+        <mxmlc failonerror="true" maxmemory="1024m"
+			output="${DEMOS_DIR}\swf\butterfly-v${ENGINE_VERSION}-release.swf"
+			file="demos/Butterflies Boids/src/Main.as">
+			<compiler.external-library-path dir="${AIR_SDK_HOME}/frameworks/" append="true">
+				<include name="libs/player/${PLAYER_VERSION}/playerglobal.swc" />
+            </compiler.external-library-path>
+			<library-path
+				file="${SWC_DIR}\gamecheetah-v${ENGINE_VERSION}-release.swc"
+				append="true">
+			</library-path>
+			<source-path path-element="demos/Butterflies Boids/src"/>
+        </mxmlc>
+    </target>
+	
+	<target name="butterfly-s">
+		<zip destfile="${DEMOS_DIR}\src\butterfly-v${ENGINE_VERSION}.zip">
+			<zipfileset dir="demos\Butterflies Boids">
+				<include name="*/"/>
+				<exclude name="bin/" />
+				<exclude name="obj/" />
+				<exclude name="lib/" />
+			</zipfileset>
+		</zip>
+		
+		<tar destfile="${DEMOS_DIR}\src\butterfly-v${ENGINE_VERSION}.tar">
+			<tarfileset dir="demos\Butterflies Boids">
+				<include name="*/"/>
+				<exclude name="bin/" />
+				<exclude name="obj/" />
+				<exclude name="lib/" />
+			</tarfileset>
+		</tar>
+		<gzip destfile="${DEMOS_DIR}\src\butterfly-v${ENGINE_VERSION}.tar.gz" src="${DEMOS_DIR}\src\butterfly-v${ENGINE_VERSION}.tar"/>
 	</target>
 </project>

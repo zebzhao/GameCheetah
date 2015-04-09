@@ -280,14 +280,12 @@ package gamecheetah.designer.views
 		
 		private function gridHeightInput_Change(b:BaseComponent, userTrigger:Boolean):void 
 		{
-			if (!userTrigger) return;
 			_spaceCanvas.gridH = _gridHeightInput.value;
 			Designer.updateDesignerContext(getDesignerContext());
 		}
 		
 		private function gridWidthInput_Change(b:BaseComponent, userTrigger:Boolean):void 
 		{
-			if (!userTrigger) return;
 			_spaceCanvas.gridW = _gridWidthInput.value;
 			Designer.updateDesignerContext(getDesignerContext());
 		}

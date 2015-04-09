@@ -29,8 +29,7 @@ package gamecheetah.strix.collision.quadtree {
     
     import gamecheetah.strix.collision.Agent;
     import gamecheetah.strix.collision.Collision;
-    import gamecheetah.strix.collision.error.IllegalBoundsError;
-    import gamecheetah.strix.collision.error.InternalError;
+    import gamecheetah.strix.collision.error.*;
     import gamecheetah.strix.notification.Notification;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
@@ -38,7 +37,7 @@ package gamecheetah.strix.collision.quadtree {
     /**
 	 * @private
 	 */
-    internal final class TreeNode {
+    public final class TreeNode {
 
         private static const
             READD           : Boolean = true,
@@ -102,9 +101,6 @@ package gamecheetah.strix.collision.quadtree {
 		}
         
         public function addObject( object:Agent, readd:Boolean=false ) : TreeNode {
-            if( Quadtree.throwExceptions && !rect.containsRect(object) )
-                throw new IllegalBoundsError("Attempted to insert and object with, or update an object to, illegal bounds.");
-            
             //If object exceeds half-width x half-width, it straddles some axis, and must be stored here
             if ( object.width > (rect.width / 2) || object.height > (rect.height / 2) )
                 return addObjectToSelf(object, readd);
@@ -188,7 +184,7 @@ package gamecheetah.strix.collision.quadtree {
 			{
 				//Object is no longer well contained by self
 				deleteObject(object);
-				root.addObject(object);
+				object.node = root.addObject(object);
 			}
 		}
         
@@ -327,12 +323,14 @@ package gamecheetah.strix.collision.quadtree {
         
         public function deleteObject( object:Agent ) : void {
             for( var i : uint = 0; i < objects.length; i++ ) {
-                if( objects[i].id == object.id ) {
+                if ( objects[i].id == object.id ) {
+					objects[i].node = null;
                     objects[i].onChange.removeListener(Notification.ALL, objectMoveHandler);
                     objects.splice(i, 1);
                     return;
                 }
             }
+			throw new InvalidObjectError("Object not removed successfully.");
         }
         
         

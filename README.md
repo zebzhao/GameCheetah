@@ -11,7 +11,12 @@ GameCheetah is an AS3 library designed for quickly prototyping games using Flash
 
 
 ##Changes:
-	
+###v1.2.1
+- added &lt;Renderable&gt;.hFlipped, &lt;Renderable&gt;.vFlipped for flipped rendering
+- UI bug fixes
+- minor bug fixes
+- fixed quadtree hashTable issues and duplicating agent ids
+
 ###v1.2
 *New features:*
 - improved UI to be more user-friendly

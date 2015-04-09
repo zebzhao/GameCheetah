@@ -1,6 +1,8 @@
 package gamecheetah.strix.utils 
 {
-	
+	/**
+	 * @private
+	 */
 	public class Statistics 
 	{
 		

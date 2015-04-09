@@ -27,11 +27,10 @@ either expressed or implied, of the FreeBSD Project.*/
 
 package gamecheetah.strix.collision.quadtree {
 
+	import flash.utils.Dictionary;
 	import gamecheetah.strix.collision.Agent;
 	import gamecheetah.strix.collision.Collision;
-	import gamecheetah.strix.collision.error.IllegalBoundsError;
 	import gamecheetah.strix.collision.error.InvalidObjectError;
-	import gamecheetah.strix.hashtable.Hashtable;
 	import gamecheetah.strix.utils.Statistics;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
@@ -43,11 +42,7 @@ package gamecheetah.strix.collision.quadtree {
         
         private var
             rootNode   : TreeNode,
-            idTreeNode : Hashtable;
-            
-        public static var
-            throwExceptions : Boolean = true;
-			
+            idTreeNode : Dictionary;
 		
 		/**
 		 * Total number of rough collision checks performed by the quadtree.
@@ -96,7 +91,7 @@ package gamecheetah.strix.collision.quadtree {
         public function Quadtree( rect:Rectangle, maxDepth:uint=8  ) {
             this.rootNode = new TreeNode(rect, 0, maxDepth-1, null, null);
             this.rootNode.root = this.rootNode;
-            this.idTreeNode = new Hashtable(int(Math.pow(2, maxDepth / 2)), CONFIG::developer);
+            this.idTreeNode = new Dictionary();
         }
 		
 		public function print():String 
@@ -105,20 +100,18 @@ package gamecheetah.strix.collision.quadtree {
 		}
 
         public function addAgent( agent:Agent ) : void {
-            if( throwExceptions && idTreeNode[agent.id] != null )
-                throw new InvalidObjectError("Object with ID " + agent.id + " already exists.");
+            if( idTreeNode[agent.id] != null )
+                return;
             
-            if( throwExceptions && !rootNode.rect.containsRect(agent) )
-                throw new IllegalBoundsError("Object with ID " + agent.id + " has illegal bounds.");
-            
-            idTreeNode[agent.id] = rootNode.addObject(agent);
+			agent.node = rootNode.addObject(agent)
+            idTreeNode[agent.id] = agent;
         }
         
 
         public function deleteAgent( agent:Agent ) : void {
-            var treeNode : TreeNode = idTreeNode[agent.id] as TreeNode;
+            var treeNode : TreeNode = idTreeNode[agent.id].node as TreeNode;
             
-            if( throwExceptions && treeNode == null )
+            if( treeNode == null )
                 throw new InvalidObjectError("Object with ID " + agent.id + " does not exist.");
             
             treeNode.deleteObject(agent);
@@ -127,9 +120,6 @@ package gamecheetah.strix.collision.quadtree {
 
         
         public function queryVolume( rect:Rectangle, group:uint=0xffffffff ) : Vector.<Agent> {
-            if( throwExceptions && !rootNode.rect.containsRect(rect) )
-                throw new IllegalBoundsError("Region of interest has illegal bounds.");
-            
             var objects : Vector.<Agent> = new Vector.<Agent>;
             
             rootNode.queryVolume(rect, group, objects);
@@ -143,9 +133,6 @@ package gamecheetah.strix.collision.quadtree {
 
         
         public function queryPoint( point:Point, group:uint=0xffffffff ) : Vector.<Agent> {
-            if( throwExceptions && !rootNode.rect.containsPoint(point) )
-                throw new IllegalBoundsError("Query is out of bounds.");
-            
             var agents : Vector.<Agent> = new Vector.<Agent>;
             
             rootNode.queryPoint(point, group, agents);

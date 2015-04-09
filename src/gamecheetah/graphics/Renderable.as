@@ -83,6 +83,17 @@ package gamecheetah.graphics
 		public var transformAnchor:Point = new Point;
 		
 		/**
+		 * Set to true to flip the clip horizontally.
+		 */
+		public var hFlipped:Boolean;
+		
+		/**
+		 * Set to true to flip the clip vertically.
+		 */
+		public var vFlipped:Boolean;
+		
+		
+		/**
 		* Current image to render.
 		*/
 		public function get buffer():BitmapData { return _buffer; }
@@ -180,6 +191,9 @@ package gamecheetah.graphics
 				if (isNaN(scaleY) || scaleY < 0) trace("Warning: scaleY is negative or NaN detected!");
 				if (isNaN(tintAlpha) || tintAlpha < 0) trace("Warning: tintAlpha is negative or NaN detected!");
 			}
+			
+			var scaleX:Number = hFlipped ? -this.scaleX : this.scaleX;
+			var scaleY:Number = vFlipped ? -this.scaleY : this.scaleY;
 			
 			if (rotation != 0 || alpha < 1 || scaleX != 1 || scaleY != 1 || tintAlpha != 0)
 			{
